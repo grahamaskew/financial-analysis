@@ -908,6 +908,8 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   </div>
 </div>
 
+
+
 <script>
 // ═══════════════════════════════════════════════════════
 // EMBEDDED LOOKUP TABLES
@@ -970,16 +972,14 @@ function switchTab(tab) {
 // SETUP
 // ═══════════════════════════════════════════════════════
 function initSetup() {
-  const grid = document.getElementById('catGrid');
-  grid.innerHTML = '';
   const defaults = ['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'];
   const codes = ['S1/G1','S2/G2','S3/G3','S4/G4','S5/COMP1'];
-  defaults.forEach((d,i) => {
-    grid.innerHTML += `<div class="form-group">
+  const html = defaults.map((d,i) => `
+    <div class="form-group">
       <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
       <input type="text" id="cat${i}" value="${state.setup.categories[i]||d}" placeholder="${d}">
-    </div>`;
-  });
+    </div>`).join('');
+  document.getElementById('catGrid').innerHTML = html;
 }
 
 function updateTopbar() {
