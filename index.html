@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Benchmarking Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6687e1;
+  --primary-light: #8aa3e8;
+  --primary-dark: #4a6bc8;
+  --primary-faint: #eef1fb;
+  --primary-subtle: #d8dff7;
+  --bg: #f7f8fc;
+  --bg2: #ffffff;
+  --panel: #ffffff;
+  --border: #e2e6f0;
+  --border2: #c8cfea;
+  --text: #1a1f36;
+  --text2: #4a5068;
+  --text3: #8890aa;
+  --green: #22c55e;
+  --green-bg: #f0fdf4;
+  --green-border: #bbf7d0;
+  --red: #ef4444;
+  --red-bg: #fef2f2;
+  --red-border: #fecaca;
+  --orange: #f97316;
+  --orange-bg: #fff7ed;
+  --orange-border: #fed7aa;
+  --gold: #eab308;
+  --gold-bg: #fefce8;
+  --radius: 8px;
+  --radius2: 12px;
+  --shadow: 0 1px 4px rgba(102,135,225,0.08), 0 4px 16px rgba(102,135,225,0.06);
+  --shadow2: 0 2px 8px rgba(102,135,225,0.12);
+  --font: 'Geist', sans-serif;
+  --mono: 'Geist Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 0 var(--border);
+}
+.topbar-logo { width: 48px; height: 48px; flex-shrink: 0; }
+.topbar-logo img { width: 48px; height: 48px; object-fit: contain; }
+.topbar-divider { width: 1px; height: 28px; background: var(--border); }
+.topbar-client {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text3);
+}
+.topbar-client span { color: var(--text2); font-weight: 500; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text3);
+}
+.chip.active { background: var(--primary-faint); border-color: var(--primary-subtle); color: var(--primary); }
+.chip.done { background: var(--green-bg); border-color: var(--green-border); color: #16a34a; }
+.chip.warn { background: var(--orange-bg); border-color: var(--orange-border); color: var(--orange); }
+
+/* ── NAV TABS ── */
+.nav-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 2px;
+}
+.nav-tab {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.nav-tab:hover { color: var(--text2); }
+.nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.nav-tab.locked { opacity: 0.4; cursor: not-allowed; }
+.nav-tab .tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 5px;
+  background: var(--red);
+  color: white;
+}
+.nav-tab.done-tab .tab-check { color: var(--green); margin-left: 5px; font-size: 12px; }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.card-body { padding: 20px; }
+
+/* ── FORMS ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1/-1; }
+label { font-size: 12px; font-weight: 500; color: var(--text2); }
+input[type="text"], input[type="number"], select, textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg2);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(102,135,225,0.12);
+}
+input::placeholder { color: var(--text3); }
+select { cursor: pointer; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--bg); border-color: var(--border); color: var(--text2); }
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-faint); }
+.btn-ghost { background: transparent; color: var(--text3); }
+.btn-ghost:hover { color: var(--primary); background: var(--primary-faint); }
+.btn-danger { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: white; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-lg { padding: 10px 20px; font-size: 14px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius2);
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg);
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--primary);
+  background: var(--primary-faint);
+}
+.upload-zone.done {
+  border-color: var(--green);
+  background: var(--green-bg);
+  border-style: solid;
+}
+.upload-icon { font-size: 32px; margin-bottom: 8px; }
+.upload-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.upload-sub { font-size: 12px; color: var(--text3); }
+.upload-file-info { font-size: 12px; font-family: var(--mono); color: var(--text2); margin-top: 8px; }
+
+/* ── TABLES ── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: var(--bg); }
+th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--primary-faint); }
+td.mono { font-family: var(--mono); font-size: 12px; }
+td.bold { font-weight: 600; color: var(--text); }
+td.code-cell { font-family: var(--mono); font-size: 11px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+.badge-s1 { background: #eff6ff; color: #2563eb; }
+.badge-s2 { background: #f0fdf4; color: #16a34a; }
+.badge-s3 { background: #fff7ed; color: #c2410c; }
+.badge-s4 { background: #fdf4ff; color: #9333ea; }
+.badge-s5 { background: #ecfdf5; color: #059669; }
+.badge-g1 { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-g2 { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-g3 { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.badge-g4 { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+.badge-g5 { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-g6 { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+.badge-c1 { background: #fef3c7; color: #92400e; }
+.badge-c2e { background: #e0f2fe; color: #0369a1; }
+.badge-c2o { background: #fce7f3; color: #9d174d; }
+.badge-c3 { background: #f3e8ff; color: #6d28d9; }
+.badge-c4 { background: #f1f5f9; color: #475569; }
+.badge-sub { background: #fff1f2; color: #be123c; }
+.badge-o { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.badge-a { background: #f8fafc; color: #374151; border: 1px solid #e2e8f0; }
+.badge-sx { background: #fffbeb; color: #b45309; }
+.badge-i { background: #fef2f2; color: #b91c1c; }
+.badge-d { background: #f1f5f9; color: #64748b; }
+.badge-m { background: #f1f5f9; color: #6b7280; }
+.badge-oi { background: #ecfdf5; color: #065f46; }
+.badge-oe { background: #fef2f2; color: #991b1b; }
+.badge-b { background: #fdf4ff; color: #86198f; }
+.badge-t { background: #f8fafc; color: #1e3a5f; }
+.badge-ni { background: #f0fdf4; color: #14532d; }
+.badge-skip { background: #f1f5f9; color: #94a3b8; }
+.badge-unmatch { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+
+/* ── BENCHMARK METRICS ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.metric-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--border);
+}
+.metric-card.ok::before { background: var(--green); }
+.metric-card.warn::before { background: var(--gold); }
+.metric-card.bad::before { background: var(--red); }
+.metric-card.great::before { background: var(--primary); }
+.metric-name { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.metric-vals { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.metric-prior { font-size: 18px; font-weight: 600; color: var(--text3); font-family: var(--mono); }
+.metric-arrow { font-size: 14px; color: var(--text3); }
+.metric-current { font-size: 24px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.metric-yoy { font-size: 11px; font-weight: 600; }
+.metric-yoy.up { color: var(--green); }
+.metric-yoy.down { color: var(--red); }
+.metric-benchmark { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.metric-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.metric-status.ok { background: var(--green-bg); color: #16a34a; }
+.metric-status.warn { background: var(--gold-bg); color: #854d0e; }
+.metric-status.bad { background: var(--red-bg); color: var(--red); }
+.metric-status.great { background: var(--primary-faint); color: var(--primary-dark); }
+
+/* ── PROGRESS BAR ── */
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width 0.5s ease; }
+.progress-fill.ok { background: var(--green); }
+.progress-fill.warn { background: var(--gold); }
+.progress-fill.bad { background: var(--red); }
+
+/* ── ALERTS ── */
+.alert { padding: 12px 16px; border-radius: var(--radius); font-size: 13px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+.alert-info { background: var(--primary-faint); border: 1px solid var(--primary-subtle); color: var(--primary-dark); }
+.alert-success { background: var(--green-bg); border: 1px solid var(--green-border); color: #15803d; }
+.alert-warn { background: var(--orange-bg); border: 1px solid var(--orange-border); color: #9a3412; }
+.alert-error { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+.alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── YOY TABLE ── */
+.yoy-section { font-size: 12px; font-weight: 600; color: var(--text3); background: var(--bg); padding: 8px 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.yoy-pos { color: var(--green); font-weight: 600; }
+.yoy-neg { color: var(--red); font-weight: 600; }
+.yoy-total td { font-weight: 700; color: var(--text); background: var(--primary-faint) !important; }
+
+/* ── SECTION HEADERS ── */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.section-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+
+/* ── STEP INDICATOR ── */
+.steps { display: flex; align-items: center; gap: 0; margin-bottom: 28px; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text3); }
+.step.active { color: var(--primary); }
+.step.done { color: var(--green); }
+.step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  background: var(--border);
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.step.active .step-num { background: var(--primary); color: white; }
+.step.done .step-num { background: var(--green); color: white; }
+.step-line { flex: 1; height: 1px; background: var(--border); min-width: 20px; }
+.step-line.done { background: var(--green); }
+
+/* ── COMP CROSS-CHECK ── */
+.cross-check-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.cross-check-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+.cross-check-item.match { border-color: var(--green-border); background: var(--green-bg); }
+.cross-check-item.mismatch { border-color: var(--red-border); background: var(--red-bg); }
+.cross-check-label { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 6px; }
+.cross-check-val { font-size: 14px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.cross-check-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── MISC ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.row { display: flex; align-items: center; gap: 12px; }
+.row.space { justify-content: space-between; }
+.spacer { flex: 1; }
+.text-mono { font-family: var(--mono); }
+.text-muted { color: var(--text3); }
+.text-small { font-size: 12px; }
+.text-right { text-align: right; }
+.mt4 { margin-top: 4px; }
+.mt8 { margin-top: 8px; }
+.mt16 { margin-top: 16px; }
+.mb8 { margin-bottom: 8px; }
+.mb16 { margin-bottom: 16px; }
+.hidden { display: none !important; }
+.tag {
+  display: inline-flex;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  background: var(--primary-faint);
+  color: var(--primary);
+}
+
+/* ── LOOKUP EDITOR ── */
+.lookup-editor { max-height: 400px; overflow-y: auto; }
+.lookup-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.lookup-row:last-child { border-bottom: none; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,31,54,0.4);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  box-shadow: var(--shadow2);
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close { font-size: 18px; cursor: pointer; color: var(--text3); background: none; border: none; line-height: 1; }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .cross-check-grid { grid-template-columns: repeat(3, 1fr); }
+  .metrics-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <img src="data:image/webp;base64,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" alt="Logo" width="48" height="48">
+  </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-client">Client: <span id="topbarClient">—</span></div>
+  <div class="topbar-client" style="margin-left:12px">Prior Year: <span id="topbarPrior">—</span></div>
+  <div class="topbar-client" style="margin-left:12px">Current Year: <span id="topbarCurrent">—</span></div>
+  <div class="topbar-right">
+    <span class="chip" id="chipPL">P&L</span>
+    <span class="chip" id="chipPayroll">Payroll</span>
+    <span class="chip" id="chipAnalysis">Analysis</span>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-bar">
+  <div class="nav-tab active" data-tab="setup" onclick="switchTab('setup')">① Setup</div>
+  <div class="nav-tab" data-tab="pl" onclick="switchTab('pl')">② P&L Upload <span id="plBadge" class="tab-badge hidden">!</span></div>
+  <div class="nav-tab" data-tab="payroll" onclick="switchTab('payroll')">③ Payroll Census <span id="payrollBadge" class="tab-badge hidden">!</span></div>
+  <div class="nav-tab locked" data-tab="benchmarks" onclick="switchTab('benchmarks')">④ Benchmarks</div>
+  <div class="nav-tab locked" data-tab="yoy" onclick="switchTab('yoy')">⑤ Year-over-Year</div>
+  <div class="nav-tab" data-tab="lookups" onclick="switchTab('lookups')">⚙ Lookup Tables</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══════════════════════════════════════════════
+     TAB 1 — SETUP
+══════════════════════════════════════════════ -->
+<div class="page active" id="page-setup">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Client Setup</div>
+      <div class="section-sub">Configure client details and revenue categories before uploading data</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Client Information</div>
+        <div class="card-sub">Enter the client name and analysis period</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Company Name</label>
+          <input type="text" id="companyName" placeholder="e.g. ABC Integration Company" oninput="updateTopbar()">
+        </div>
+        <div class="form-group">
+          <label>Prior Year</label>
+          <input type="number" id="priorYear" placeholder="e.g. 2022" min="2000" max="2099" oninput="updateTopbar()">
+        </div>
+        <div class="form-group">
+          <label>Current Year</label>
+          <input type="number" id="currentYear" placeholder="e.g. 2023" min="2000" max="2099" oninput="updateTopbar()">
+        </div>
+        <div class="form-group">
+          <label>Current Year Through Month #</label>
+          <select id="throughMonth">
+            <option value="12">12 — Full Year</option>
+            <option value="1">1 — January</option>
+            <option value="2">2 — February</option>
+            <option value="3">3 — March</option>
+            <option value="4">4 — April</option>
+            <option value="5">5 — May</option>
+            <option value="6">6 — June</option>
+            <option value="7">7 — July</option>
+            <option value="8">8 — August</option>
+            <option value="9">9 — September</option>
+            <option value="10">10 — October</option>
+            <option value="11">11 — November</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Revenue & COGS Categories</div>
+        <div class="card-sub">Define up to 5 categories. These map to codes S1–S5 (revenue) and G1–G5 (COGS).</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="catGrid" class="form-grid-3"></div>
+      <div class="alert alert-info mt16" style="margin-bottom:0">
+        <span class="alert-icon">ℹ</span>
+        Category names must match the labels used in your P&L lookup table. Changes here affect all labels throughout the tool.
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; justify-content:flex-end; gap:10px">
+    <button class="btn btn-primary btn-lg" onclick="completeSetup()">Save Setup & Continue →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 2 — P&L UPLOAD
+══════════════════════════════════════════════ -->
+<div class="page" id="page-pl">
+  <div class="section-header">
+    <div>
+      <div class="section-title">P&L Upload & Category Mapping</div>
+      <div class="section-sub">Upload QuickBooks P&L exports for prior and current year. Account numbers are stripped automatically.</div>
+    </div>
+  </div>
+
+  <div class="steps mb8">
+    <div class="step active" id="plStep1"><div class="step-num">1</div> Upload Files</div>
+    <div class="step-line" id="plLine1"></div>
+    <div class="step" id="plStep2"><div class="step-num">2</div> Resolve Unmatched</div>
+    <div class="step-line" id="plLine2"></div>
+    <div class="step" id="plStep3"><div class="step-num">3</div> Review & Confirm</div>
+  </div>
+
+  <!-- Upload section -->
+  <div id="plUploadSection">
+    <div class="form-grid">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-header"><div class="card-title" id="priorYearLabel">Prior Year P&L</div></div>
+        <div class="card-body">
+          <div class="upload-zone" id="priorUploadZone" onclick="document.getElementById('priorFileInput').click()" ondragover="handleDragOver(event,'priorUploadZone')" ondragleave="handleDragLeave(event,'priorUploadZone')" ondrop="handleDrop(event,'prior')">
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Click or drag to upload</div>
+            <div class="upload-sub">CSV export from QuickBooks • Two columns: Account Name, Amount</div>
+            <div class="upload-file-info" id="priorFileInfo"></div>
+          </div>
+          <input type="file" id="priorFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'prior')">
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-header"><div class="card-title" id="currentYearLabel">Current Year P&L</div></div>
+        <div class="card-body">
+          <div class="upload-zone" id="currentUploadZone" onclick="document.getElementById('currentFileInput').click()" ondragover="handleDragOver(event,'currentUploadZone')" ondragleave="handleDragLeave(event,'currentUploadZone')" ondrop="handleDrop(event,'current')">
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Click or drag to upload</div>
+            <div class="upload-sub">CSV export from QuickBooks • Two columns: Account Name, Amount</div>
+            <div class="upload-file-info" id="currentFileInfo"></div>
+          </div>
+          <input type="file" id="currentFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'current')">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-primary" id="processPLBtn" onclick="processPL()" disabled>Process P&L Files →</button>
+    </div>
+  </div>
+
+  <!-- Unmatched accounts -->
+  <div id="plUnmatchedSection" class="hidden">
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <div><strong id="unmatchedCount">0</strong> account(s) were not found in the lookup table. Assign a category code to each before continuing. Use <strong>SKIP</strong> to exclude an account from calculations.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Unmatched Accounts</div>
+        <button class="btn btn-sm btn-secondary" onclick="skipAllUnmatched()">Mark All as SKIP</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap" style="border:none; border-radius:0">
+          <table>
+            <thead><tr><th>Account Name</th><th>Prior Year</th><th>Current Year</th><th>Assign Code</th><th>Save to Lookup</th></tr></thead>
+            <tbody id="unmatchedTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn btn-secondary" onclick="backToUpload()">← Back</button>
+      <button class="btn btn-primary" id="confirmMappingBtn" onclick="confirmPLMapping()">Confirm Mapping →</button>
+    </div>
+  </div>
+
+  <!-- Review section -->
+  <div id="plReviewSection" class="hidden">
+    <div class="alert alert-success" id="plSuccessAlert">
+      <span class="alert-icon">✅</span>
+      P&L data successfully mapped. Review the category totals below, then proceed to Payroll Census.
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Mapped Category Totals</div></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap" style="border:none;border-radius:0">
+          <table>
+            <thead><tr><th>Code</th><th>Category</th><th class="text-right">Prior Year</th><th class="text-right">Current Year</th></tr></thead>
+            <tbody id="plSummaryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn btn-secondary" onclick="resetPL()">← Re-upload</button>
+      <button class="btn btn-primary" onclick="switchTab('payroll')">Continue to Payroll →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 3 — PAYROLL CENSUS
+══════════════════════════════════════════════ -->
+<div class="page" id="page-payroll">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Payroll Census</div>
+      <div class="section-sub">Upload QuickBooks payroll export. Titles are matched automatically to COMP buckets.</div>
+    </div>
+  </div>
+
+  <div class="form-grid mb16" style="margin-bottom:16px">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header"><div class="card-title">Payroll Export Upload</div></div>
+      <div class="card-body">
+        <div class="upload-zone" id="payrollUploadZone" onclick="document.getElementById('payrollFileInput').click()" ondragover="handleDragOver(event,'payrollUploadZone')" ondragleave="handleDragLeave(event,'payrollUploadZone')" ondrop="handleDrop(event,'payroll')">
+          <div class="upload-icon">👥</div>
+          <div class="upload-title">Click or drag to upload</div>
+          <div class="upload-sub">QuickBooks payroll export • Columns: Employee Name, Title, Annual Wages</div>
+          <div class="upload-file-info" id="payrollFileInfo"></div>
+        </div>
+        <input type="file" id="payrollFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handlePayrollFile(event)">
+        <div class="mt8 text-small text-muted">Required columns: <span class="tag">name</span> <span class="tag">title</span> <span class="tag">annual_wages</span> Optional: <span class="tag">hours_per_week</span> <span class="tag">billing_rate</span> <span class="tag">billable_pct</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header"><div class="card-title">Additional Inputs</div></div>
+      <div class="card-body">
+        <div class="form-group mb8">
+          <label>COMP 4 Benefits Rate (% of total wages)</label>
+          <input type="number" id="comp4Rate" value="3.45" step="0.01" min="0" max="100" placeholder="e.g. 3.45">
+        </div>
+        <div class="form-group mb8">
+          <label>Subcontractor Budget / Month ($)</label>
+          <input type="number" id="subBudget" value="0" step="100" min="0" placeholder="e.g. 5000">
+        </div>
+        <div class="form-group">
+          <label>Average Hourly Billing Rate ($)</label>
+          <input type="number" id="billingRate" value="130" step="1" min="0" placeholder="e.g. 130">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual entry fallback -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Payroll Census</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="addPayrollRow()">+ Add Employee</button>
+        <button class="btn btn-sm btn-secondary" onclick="clearPayroll()">Clear All</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap" style="border:none;border-radius:0;max-height:400px;overflow-y:auto">
+        <table>
+          <thead><tr><th>Employee Name</th><th>Title</th><th>COMP Bucket</th><th>Owner</th><th>Billable</th><th class="text-right">Annual Wages</th><th>Hrs/Wk</th><th>Bill Rate</th><th>Bill %</th><th></th></tr></thead>
+          <tbody id="payrollTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unmatched payroll titles -->
+  <div id="payrollUnmatchedSection" class="hidden">
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <strong id="payrollUnmatchedCount">0</strong> employee title(s) were not found in the lookup table. Assign a COMP bucket to each.
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Unmatched Titles</div></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap" style="border:none;border-radius:0">
+          <table>
+            <thead><tr><th>Employee</th><th>Title</th><th>Annual Wages</th><th>COMP Bucket</th><th>Owner</th><th>Billable</th><th>Save to Lookup</th></tr></thead>
+            <tbody id="payrollUnmatchedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMP Cross-check -->
+  <div class="card" id="compCrossCheck" style="margin-top:20px">
+    <div class="card-header">
+      <div>
+        <div class="card-title">COMP Cross-Validation</div>
+        <div class="card-sub">Payroll Census totals vs. P&L coded amounts. Green = match within 1%.</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="runCrossCheck()">Run Check</button>
+    </div>
+    <div class="card-body">
+      <div class="cross-check-grid" id="crossCheckGrid">
+        <div class="cross-check-item"><div class="cross-check-label">COMP 1</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">COMP 2E</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">COMP 2O</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">COMP 3</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">COMP 4</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+    <button class="btn btn-primary" onclick="runAnalysis()">Run Analysis →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 4 — BENCHMARKS
+══════════════════════════════════════════════ -->
+<div class="page" id="page-benchmarks">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Financial Benchmarks</div>
+      <div class="section-sub" id="benchmarkSubtitle">Year-over-year performance vs. industry benchmarks</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="window.print()">⎙ Print</button>
+  </div>
+  <div id="benchmarksContent">
+    <div class="alert alert-info"><span class="alert-icon">ℹ</span>Complete Setup, P&L Upload, and Payroll Census to generate benchmarks.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 5 — YEAR-OVER-YEAR
+══════════════════════════════════════════════ -->
+<div class="page" id="page-yoy">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Year-over-Year P&L Comparison</div>
+      <div class="section-sub" id="yoySubtitle">Detailed income statement comparison</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="window.print()">⎙ Print</button>
+  </div>
+  <div id="yoyContent">
+    <div class="alert alert-info"><span class="alert-icon">ℹ</span>Complete P&L Upload to generate the year-over-year comparison.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 6 — LOOKUP TABLES
+══════════════════════════════════════════════ -->
+<div class="page" id="page-lookups">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Lookup Tables</div>
+      <div class="section-sub">View, edit, and export the embedded P&L and Payroll lookup tables</div>
+    </div>
+  </div>
+
+  <!-- P&L Lookup -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">P&L Category Lookup</div>
+        <div class="card-sub" id="plLookupCount"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('plLookupUpload').click()">↑ Upload New Version</button>
+        <button class="btn btn-sm btn-secondary" onclick="exportPLLookup()">↓ Download CSV</button>
+        <button class="btn btn-sm btn-secondary" onclick="addPLLookupRow()">+ Add Row</button>
+      </div>
+    </div>
+    <input type="file" id="plLookupUpload" accept=".csv" style="display:none" onchange="uploadPLLookup(event)">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap" style="border:none;border-radius:0;max-height:360px;overflow-y:auto">
+        <table>
+          <thead><tr><th>Account Name</th><th>Category Code</th><th></th></tr></thead>
+          <tbody id="plLookupBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payroll Lookup -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Payroll Title Lookup</div>
+        <div class="card-sub" id="payrollLookupCount"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('payrollLookupUpload').click()">↑ Upload New Version</button>
+        <button class="btn btn-sm btn-secondary" onclick="exportPayrollLookup()">↓ Download CSV</button>
+        <button class="btn btn-sm btn-secondary" onclick="addPayrollLookupRow()">+ Add Row</button>
+      </div>
+    </div>
+    <input type="file" id="payrollLookupUpload" accept=".csv" style="display:none" onchange="uploadPayrollLookup(event)">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap" style="border:none;border-radius:0;max-height:360px;overflow-y:auto">
+        <table>
+          <thead><tr><th>Title</th><th>COMP Bucket</th><th>Owner</th><th>Billable</th><th></th></tr></thead>
+          <tbody id="payrollLookupBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Benchmark Ranges -->
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">Benchmark Ranges</div><div class="card-sub">Industry benchmark thresholds used in the analysis output</div></div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap" style="border:none;border-radius:0">
+        <table>
+          <thead><tr><th>Metric</th><th>Not OK</th><th>OK</th><th>Good</th><th>Very Good</th></tr></thead>
+          <tbody id="benchmarkRangesBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<!-- MODAL -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// EMBEDDED LOOKUP TABLES
+// ═══════════════════════════════════════════════════════
+const DEFAULT_PL_LOOKUP = [
+["SALES E (Equipment)","SKIP"],["Equipment Sales","S1"],["Equipment Discounts","S1"],["CI Equipment","S1"],["Electrical Equipment","S1"],["Component Sales","S1"],["Sales Discounts","S1"],["Total SALES E (Equipment)","SKIP"],["SALES P (Install Parts)","SKIP"],["CI Install Parts","S2"],["Electrical Install Parts","S2"],["Total SALES P (Install Parts)","SKIP"],["SALES O (Other Revenue Streams)","SKIP"],["Total SALES O (Other Revenue Streams)","SKIP"],["Security Gear","S1"],["Managed Services","S4"],["SALES M (Managed Services)","SKIP"],["Total SALES M (Managed Services)","SKIP"],["SALES F (Lighting Fixtures)","S1"],["SALES S (Services & Labor)","SKIP"],["Labor - Warranty","S5"],["Labor - Discounts","S5"],["Installation Labor","S5"],["Service Labor","S5"],["CI Labor","S5"],["Electrical Labor","S5"],["Warranty Discounts","S5"],["Labor (Over) / Under","S5"],["Total SALES S (Services & Labor)","SKIP"],["Total SALES S (CI Services & Labor)","SKIP"],["SALES S (Electrical Services & Labor)","SKIP"],["Income","SKIP"],["Total Income","SKIP"],["Ordinary Income/Expense","SKIP"],["Cost of Goods Sold","SKIP"],["COGS E (Equipment)","SKIP"],["Total COGS E (Equipment)","SKIP"],["COGS P (Install Parts)","SKIP"],["Total COGS P (Install Parts)","SKIP"],["COGS O (Other Revenue Streams)","SKIP"],["Total COGS O (Other Revenue Streams)","SKIP"],["COGS M (Managed Services)","G4"],["COGS F (Lighting Fixtures)","G1"],["COGS V (Vendor Disc/Rebates)","SKIP"],["Prompt Pay Discount","G6"],["Rebates","G6"],["Tariffs","G6"],["Total COGS V (Vendor Disc/Rebates)","SKIP"],["COGS Z (Inventory Adjusts)","G5"],["Total COGS","SKIP"],["Gross Profit","SKIP"],["Compensation","SKIP"],["Expense","SKIP"],["SUBCONTRACTORS *","SUB"],["SUBCONTRACTORS","SUB"],["COMP 1 - Direct Labor Wages","SKIP"],["Tech Wages / Salaries","C1"],["Tech Bonuses","C1"],["Total COMP 1 - Direct Labor Wages","SKIP"],["COMP 2E - Admin Wages, Employee","SKIP"],["Wages / Salaries","C2E"],["Bonuses","C2E"],["Total COMP 2E - Admin Wages, Employee","SKIP"],["COMP 2O - Admin Wages, Owners","C2O"],["COMP 3 - Sales Wages & Comm","SKIP"],["Wages/Salaries","C3"],["Comm/Bonus","C3"],["Wages / Salaries / Draws","C3"],["Commissions & Bonuses","C3"],["Total COMP 3 - Sales Wages & Comm","SKIP"],["COMP 4 - Pay Taxes & Benefits","SKIP"],["Benefit Admin Fees","C4"],["Education & Training","C4"],["Fringe Benefits - Other","C4"],["Insurance - Health, Dental, Vis","C4"],["Insurance - Work Comp","C4"],["Payroll Processing Fees","C4"],["Recruiting Expense","C4"],["Retirement Contribution","C4"],["Taxes - Payroll","C4"],["401(k) Company Match","C4"],["Life/Disability Insurance","C4"],["Health Insurance","C4"],["Payroll Taxes and Expenses","C4"],["Workers Comp Insurance","C4"],["Education/Training","C4"],["Recruiting Expenses","C4"],["Total COMP 4 - Pay Taxes & Benefits","SKIP"],["ADMIN EXPENSE","SKIP"],["Accounting Fees","A"],["Bank Service Charges","A"],["Business Licenses and Permits","A"],["Business Licenses & Fees","A"],["Computer and Internet Expenses","A"],["Consulting Fees","A"],["Dues and Subscriptions","A"],["Insurance Expense","A"],["Business/ Liability Insurance","A"],["Total Insurance Expense","SKIP"],["IT Services","A"],["Legal Fees","A"],["Office Equipment","A"],["Office Supplies","A"],["Professional Memberships","A"],["Professional Fees","A"],["Software Licenses & Fees","A"],["Software Licenses and Fees","A"],["Telephone Expense","A"],["Accounting","A"],["Legal","A"],["Consulting/Coaching","A"],["Total ADMIN EXPENSE","SKIP"],["OCCUPANCY EXPENSE","SKIP"],["Internet","O"],["Rent Expense","O"],["Repairs and Maint-Bldg","O"],["Repairs and Maintenance","O"],["Taxes - Real Estate / Pers Prop","O"],["Property Taxes","O"],["Utilities","O"],["Security & Janitorial","O"],["Total OCCUPANCY EXPENSE","SKIP"],["SALES EXPENSE","SKIP"],["Advertising / Promotion","SX"],["Advertising and Promotion","SX"],["Auto & Truck - Gas,Repair,Maint","SX"],["Auto & Truck - Insurance","SX"],["Auto & Truck - Leases","SX"],["Automobile Expense","SX"],["Auto Repairs & Maintenance","SX"],["Fuel","SX"],["Mileage Reimbursement","SX"],["Tolls, Parking","SX"],["Total Automobile Expense","SKIP"],["Credit Card Processing Fees","SX"],["Credit Card Merchant Fees","SX"],["Freight Costs","SX"],["Freight and Shipping","SX"],["Job Permits","SX"],["Meals and Entertainment","SX"],["Reimbursed Mileage *","SX"],["Small Tools","SX"],["Small Tools and Equipment","SX"],["Sponsorships / Donations","SX"],["Sponorships and Donations","SX"],["Travel","SX"],["Travel & Lodging","SX"],["Website","SX"],["Sales Tax","SX"],["Uniforms","SX"],["Total SALES EXPENSE","SKIP"],["Total Expense","SKIP"],["Net Ordinary Income","SKIP"],["Other Income/Expense","SKIP"],["Other Income","SKIP"],["SECURITY MONITORING","SKIP"],["Revenues","OI"],["Expenses","OE"],["Total SECURITY MONITORING","SKIP"],["OUTSIDE SERVICES (3rd Party Services)","SKIP"],["OUTSIDE SERVICES","SKIP"],["Total OUTSIDE SERVICES","SKIP"],["OTHER INCOME","SKIP"],["Gain/Loss on Asset Sale","OI"],["Rental Income","OI"],["Interest Income","OI"],["Total Other Income","SKIP"],["Other Expense","SKIP"],["CHARITABLE CONTRIBUTIONS","OE"],["INTEREST *","I"],["INTEREST","I"],["DEPRECIATION *","D"],["AMORTIZATION *","D"],["INCOME TAXES","T"],["BONUSES","B"],["Owners BONUSES","B"],["MISCELLANEOUS","M"],["OTHER EXPENSE","OE"],["Ask My Accountant","SKIP"],["Total Other Expense","SKIP"],["Net Other Income","SKIP"],["Net Income","SKIP"],["Member 1 Draws","SKIP"],["Member 2 Draws","SKIP"],["Member 1 Equity","SKIP"],["Member 2 Equity","SKIP"],["Shareholder Distribution","SKIP"],["Retained Earnings","SKIP"],["Capital Stock","SKIP"],["Opening Balance Equity","SKIP"]
+];
+
+const DEFAULT_PAYROLL_LOOKUP = [["Access Control Technician","COMP1","No","Yes"],["Accounts Payable","COMP2E","No","No"],["Accounts Receivable","COMP2E","No","No"],["Account Executive","COMP3","No","No"],["Account Manager","COMP3","No","No"],["Acoustical Consultant","COMP1","No","Yes"],["Administrative Assistant","COMP2E","No","No"],["Admin ","COMP2E","No","No"],["Alarm Technician","COMP1","No","Yes"],["AP","COMP2E","No","No"],["AP Specialist","COMP2E","No","No"],["Application Engineer","COMP1","No","Yes"],["Apprentice Tech","COMP1","No","Yes"],["Apprentice Technician","COMP1","No","Yes"],["Associate Project Manager","COMP2E","No","No"],["Audio Video Installer","COMP1","No","Yes"],["Audio Visual Engineer","COMP1","No","Yes"],["Audio Visual Programmer","COMP1","No","Yes"],["Audio Visual Technician","COMP1","No","Yes"],["Automation Programmer","COMP1","No","Yes"],["AV Designer","COMP2E","No","No"],["AV Engineer","COMP2E","No","No"],["AV Installer","COMP1","No","Yes"],["AV Programmer","COMP1","No","Yes"],["AV Sales Consultant","COMP3","No","No"],["AV System Designer","COMP2E","No","No"],["AV Tech","COMP1","No","Yes"],["AV Technician","COMP1","No","Yes"],["AR","COMP2E","No","No"],["A/R Manager","COMP2E","No","No"],["Bench","COMP1","No","Yes"],["Bench Technician","COMP1","No","Yes"],["Bid Coordinator","COMP3","No","No"],["Billing Specialist","COMP2E","No","No"],["Bookkeeper","COMP2E","No","No"],["Branch Manager","COMP2E","No","No"],["Brand Manager","COMP2E","No","No"],["Business Development Manager","COMP3","No","No"],["Business Development Rep","COMP3","No","No"],["Business Owner","COMP2O","Yes","No"],["Cable Guy","COMP1","No","Yes"],["Cable Tech","COMP1","No","Yes"],["Cable Technician","COMP1","No","Yes"],["CAD Designer","COMP2E","No","No"],["CAD Technician","COMP2E","No","No"],["CCTV Technician","COMP1","No","Yes"],["CEO","COMP2O","Yes","No"],["CFO","COMP2E","No","No"],["Client Advisor","COMP2E","No","No"],["Client Care Coordinator","COMP2E","No","No"],["Client Relationship Manager","COMP2E","No","No"],["Client Service Manager","COMP2E","No","No"],["Client Service Technician","COMP1","No","Yes"],["Client Service Tech ","COMP1","No","Yes"],["Client Success Manager","COMP2E","No","No"],["Co-Founder","COMP2O","Yes","No"],["Commercial AV Technician","COMP1","No","Yes"],["Commissioning Engineer","COMP1","No","Yes"],["Commissioning Specialist","COMP1","No","Yes"],["Commissioning Technician","COMP1","No","Yes"],["Concierge","COMP2E","No","No"],["Construction Coordinator","COMP2E","No","No"],["Content Manager","COMP2E","No","No"],["Control System Programmer","COMP1","No","Yes"],["Controller","COMP2E","No","No"],["Controls Engineer","COMP1","No","Yes"],["COO","COMP2E","No","No"],["Custom Integrator","COMP1","No","Yes"],["Customer Care Specialist","COMP2E","No","No"],["Customer Success Manager","COMP2E","No","No"],["Cybersecurity Technician","COMP1","No","Yes"],["Deployment Manager","COMP2E","No","No"],["Deployment Technician","COMP1","No","Yes"],["Design Engineer","COMP2E","No","No"],["Designer","COMP2E","No","No"],["Device Deployment Technician","COMP1","No","Yes"],["Director of Operations","COMP2E","No","No"],["Director of Sales","COMP3","No","No"],["Dispatch","COMP2E","No","No"],["Dispatcher","COMP2E","No","No"],["Door Entry Technician","COMP1","No","Yes"],["Draftsperson","COMP2E","No","No"],["DSP Programmer","COMP1","No","Yes"],["Electronics Technician","COMP1","No","Yes"],["Engineer","COMP2E","No","No"],["Estimating","COMP2E","No","No"],["Estimator","COMP2E","No","No"],["Executive Assistant","COMP2E","No","No"],["Fabrication","COMP1","No","Yes"],["Fabrication Technician","COMP1","No","Yes"],["Field Engineer","COMP1","No","Yes"],["Field Service Technician","COMP1","No","Yes"],["Field Tech","COMP1","No","Yes"],["Field Technician","COMP1","No","Yes"],["Founder","COMP2O","Yes","No"],["GM","COMP2E","No","No"],["General Manager","COMP2E","No","No"],["Golf Simulator Technician","COMP1","No","Yes"],["Help Desk Technician","COMP1","No","Yes"],["Home Automation Engineer","COMP1","No","Yes"],["Home Automation Programmer","COMP1","No","Yes"],["Home Technology Advisor","COMP2E","No","No"],["Home Technology Professional","COMP1","No","Yes"],["Home Theater Installer","COMP1","No","Yes"],["Home Theater Specialist","COMP1","No","Yes"],["HR Manager","COMP2E","No","No"],["Implementation Manager","COMP2E","No","No"],["Infrastructure Technician","COMP1","No","Yes"],["Install Tech","COMP1","No","Yes"],["Install Technician","COMP1","No","Yes"],["Installation Manager","COMP2E","No","No"],["Installation Technician","COMP1","No","Yes"],["Installer","COMP1","No","Yes"],["Integration Developer","COMP2E","No","No"],["Integration Technician","COMP1","No","Yes"],["Inventory Manager","COMP2E","No","No"],["Inventory Specialist","COMP2E","No","No"],["IT Support Specialist","COMP1","No","Yes"],["IT Technician","COMP1","No","Yes"],["Junior Installer","COMP1","No","Yes"],["Junior Tech","COMP1","No","Yes"],["Lead Installer","COMP1","No","Yes"],["Lead Technician","COMP1","No","Yes"],["Lead Tech","COMP1","No","Yes"],["Lighting Control Designer","COMP2E","No","No"],["Lighting Control Programmer","COMP1","No","Yes"],["Lighting Control Technician","COMP1","No","Yes"],["Lighting Systems Designer","COMP2E","No","No"],["Logistics Coordinator","COMP2E","No","No"],["Low Voltage Installer","COMP1","No","Yes"],["Low Voltage Technician","COMP1","No","Yes"],["Low-Volt Tech","COMP1","No","Yes"],["Maintenance Technician","COMP1","No","Yes"],["Managing Director","COMP2E","No","No"],["Managing Partner","COMP2E","No","No"],["Marketing Coordinator","COMP2E","No","No"],["Marketing Manager","COMP2E","No","No"],["Media Room Specialist","COMP1","No","Yes"],["Motorized Shade Technician","COMP1","No","Yes"],["Network Administrator","COMP1","No","Yes"],["Network Engineer","COMP1","No","Yes"],["Network Tech","COMP1","No","Yes"],["Network Technician","COMP1","No","Yes"],["NOC Engineer","COMP1","No","Yes"],["NOC Technician","COMP1","No","Yes"],["Office","COMP2E","No","No"],["Office Administrator","COMP2E","No","No"],["Office Manager","COMP2E","No","No"],["Operations Manager","COMP2E","No","No"],["Ops","COMP2E","No","No"],["Outdoor Systems Technician","COMP1","No","Yes"],["Owner","COMP2O","Yes","No"],["Partner","COMP2E","No","No"],["Payroll Specialist","COMP2E","No","No"],["PM","COMP2E","No","No"],["PMO","COMP2E","No","No"],["Pre-Sales Engineer","COMP2E","No","No"],["Pre-Wire Guy","COMP1","No","Yes"],["Pre-Wire Tech","COMP1","No","Yes"],["Prewire Tech","COMP1","No","Yes"],["Pre-Wire Technician","COMP1","No","Yes"],["Prewire Technician","COMP1","No","Yes"],["President","COMP2O","Yes","No"],["Procurement Specialist","COMP2E","No","No"],["Programmer","COMP1","No","Yes"],["Project Administrator","COMP2E","No","No"],["Project Coordinator","COMP2E","No","No"],["Project Engineer","COMP2E","No","No"],["Project Manager","COMP2E","No","No"],["Project Scheduler","COMP2E","No","No"],["Proposal Manager","COMP2E","No","No"],["Purchasing","COMP2E","No","No"],["Purchasing Agent","COMP2E","No","No"],["Purchasing Manager","COMP2E","No","No"],["QA Bench Technician","COMP1","No","Yes"],["QA Technician","COMP1","No","Yes"],["Quality Control Technician","COMP1","No","Yes"],["Rack Builder","COMP1","No","Yes"],["Rack Fabrication Technician","COMP1","No","Yes"],["Rack Guy","COMP1","No","Yes"],["Rack Tech","COMP1","No","Yes"],["Receptionist","COMP2E","No","No"],["Recruiter","COMP2E","No","No"],["Regional Manager","COMP2E","No","No"],["Remote Support Technician","COMP1","No","Yes"],["Repair Technician","COMP1","No","Yes"],["Residential AV Technician","COMP1","No","Yes"],["Retrofit Technician","COMP1","No","Yes"],["Sales","COMP3","No","No"],["Sales Consultant","COMP3","No","No"],["Sales Director","COMP3","No","No"],["Sales Engineer","COMP3","No","No"],["Sales Guy","COMP3","No","No"],["Sales Manager","COMP3","No","No"],["Sales Rep","COMP3","No","No"],["Salesperson","COMP3","No","No"],["Scope Writer","COMP2E","No","No"],["Security Technician","COMP1","No","Yes"],["Senior Installer","COMP1","No","Yes"],["Senior Project Manager","COMP2E","No","No"],["Senior Tech","COMP1","No","Yes"],["Service","COMP1","No","Yes"],["Service Coordinator","COMP2E","No","No"],["Service Dispatcher","COMP2E","No","No"],["Service Manager","COMP2E","No","No"],["Service Tech","COMP1","No","Yes"],["Service Technician","COMP1","No","Yes"],["Shade Designer","COMP2E","No","No"],["Shade Programmer","COMP1","No","Yes"],["Shade Tech","COMP1","No","Yes"],["Shade Technician","COMP1","No","Yes"],["Shop Technician","COMP1","No","Yes"],["Showroom Consultant","COMP2E","No","No"],["Showroom Manager","COMP2E","No","No"],["Site Coordinator","COMP2E","No","No"],["Smart Home Consultant","COMP2E","No","No"],["Smart Home Designer","COMP2E","No","No"],["Smart Home Installer","COMP1","No","Yes"],["Smart Home Integrator","COMP1","No","Yes"],["Social Media Manager","COMP2E","No","No"],["Software Developer","COMP2E","No","No"],["Solutions Consultant","COMP2E","No","No"],["Solutions Engineer","COMP2E","No","No"],["Specification Writer","COMP2E","No","No"],["Staff Accountant","COMP2E","No","No"],["Staging Technician","COMP1","No","Yes"],["Startup Technician","COMP1","No","Yes"],["Structured Cabling Technician","COMP1","No","Yes"],["Support","COMP1","No","Yes"],["Support Specialist","COMP1","No","Yes"],["Surveillance Technician","COMP1","No","Yes"],["Systems Administrator","COMP2E","No","No"],["Systems Designer","COMP2E","No","No"],["Systems Engineer","COMP2E","No","No"],["Systems Integration Specialist","COMP1","No","Yes"],["Systems Integrator","COMP1","No","Yes"],["Systems Technician","COMP1","No","Yes"],["Tech","COMP1","No","Yes"],["Technician","COMP1","No","Yes"],["Technical Support Specialist","COMP1","No","Yes"],["Technology Consultant","COMP2E","No","No"],["Technology Designer","COMP2E","No","No"],["Technology Integrator","COMP1","No","Yes"],["Termination Technician","COMP1","No","Yes"],["Trim Guy","COMP1","No","Yes"],["Trim Tech","COMP1","No","Yes"],["Trim-Out Technician","COMP1","No","Yes"],["UI Programmer","COMP1","No","Yes"],["VP of Engineering","COMP2E","No","No"],["VP of Operations","COMP2E","No","No"],["VP of Sales","COMP3","No","No"],["Warehouse","COMP2E","No","No"],["Warehouse Associate","COMP2E","No","No"],["Warehouse Manager","COMP2E","No","No"],["Warranty Technician","COMP1","No","Yes"],["Wi-Fi Engineer","COMP1","No","Yes"],["Wiring Technician","COMP1","No","Yes"]];
+
+const BENCHMARK_RANGES = [
+  {metric:"Total Revenue",         notOK:null,    ok:null,     good:null,    veryGood:null,   note:"Track YOY growth"},
+  {metric:"Sales Productivity (Rev/FTE)", notOK:"<$175K", ok:"$175K–$250K", good:">$200K", veryGood:">$250K", note:"Annual revenue per FTE"},
+  {metric:"Direct Labor Productivity (Labor Rev/BEE)", notOK:"<$7K/mo", ok:"≥$7K/mo", good:">$8.33K/mo", veryGood:">$10K/mo", note:"Monthly labor revenue per BEE"},
+  {metric:"Direct Labor Utilization",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"55–65% benchmark"},
+  {metric:"Equipment GM%",         notOK:"<28%",   ok:"≥28%",   good:"≥33%",  veryGood:"≥40%", note:"35–40% benchmark"},
+  {metric:"Parts GM%",             notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"55–65% benchmark"},
+  {metric:"Lighting Fixtures GM%", notOK:"<20%",   ok:"≥20%",   good:"≥25%",  veryGood:"≥30%", note:"25–30% benchmark"},
+  {metric:"Managed Services GM%",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"No fixed benchmark"},
+  {metric:"Overall Gross Margin",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"≥60% target"},
+  {metric:"COMP % of Revenue",     notOK:">37.5%", ok:"≤37.5%", good:"≤34%",  veryGood:"≤30%", note:"≤30% target"},
+  {metric:"GP per Payroll Dollar", notOK:"<1.5",   ok:"≥1.5",   good:"≥1.7",  veryGood:"≥1.9", note:">1.9 target"},
+  {metric:"Admin % of Revenue",    notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
+  {metric:"Occupancy % of Revenue",notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
+  {metric:"Sales Expense % of Rev",notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
+  {metric:"Total MOC % of Revenue",notOK:">17.5%", ok:"≤17.5%", good:"≤15%",  veryGood:"≤12%", note:"<16% benchmark"},
+  {metric:"Net Operating Profit %",notOK:"<5%",    ok:"≥5%",    good:"≥10%",  veryGood:"≥15%", note:"10–20% benchmark"},
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const state = {
+  setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'] },
+  plLookup: [...DEFAULT_PL_LOOKUP],
+  payrollLookup: [...DEFAULT_PAYROLL_LOOKUP],
+  benchmarkRanges: [...BENCHMARK_RANGES],
+  priorPL: null,   // { raw:[], mapped:{} }
+  currentPL: null,
+  payrollData: [],
+  priorUploaded: false,
+  currentUploaded: false,
+  analysisRun: false,
+};
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  const locked = ['benchmarks','yoy'];
+  if (locked.includes(tab) && !state.analysisRun) return;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(`page-${tab}`).classList.add('active');
+  if (tab === 'lookups') renderLookupTables();
+}
+
+// ═══════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════
+function initSetup() {
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  const defaults = ['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'];
+  const codes = ['S1/G1','S2/G2','S3/G3','S4/G4','S5/COMP1'];
+  defaults.forEach((d,i) => {
+    grid.innerHTML += `<div class="form-group">
+      <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
+      <input type="text" id="cat${i}" value="${state.setup.categories[i]||d}" placeholder="${d}">
+    </div>`;
+  });
+}
+
+function updateTopbar() {
+  const c = document.getElementById('companyName').value || '—';
+  const p = document.getElementById('priorYear').value || '—';
+  const cu = document.getElementById('currentYear').value || '—';
+  document.getElementById('topbarClient').textContent = c;
+  document.getElementById('topbarPrior').textContent = p;
+  document.getElementById('topbarCurrent').textContent = cu;
+  document.getElementById('priorYearLabel').textContent = p !== '—' ? `${p} P&L (Prior Year)` : 'Prior Year P&L';
+  document.getElementById('currentYearLabel').textContent = cu !== '—' ? `${cu} P&L (Current Year)` : 'Current Year P&L';
+  document.getElementById('yoySubtitle').textContent = (p !== '—' && cu !== '—') ? `${p} vs ${cu} — Detailed Income Statement` : 'Detailed income statement comparison';
+  document.getElementById('benchmarkSubtitle').textContent = (p !== '—' && cu !== '—') ? `${p} vs ${cu} — Performance vs. Industry Benchmarks` : 'Year-over-year performance vs. industry benchmarks';
+}
+
+function completeSetup() {
+  const company = document.getElementById('companyName').value.trim();
+  const prior = document.getElementById('priorYear').value;
+  const current = document.getElementById('currentYear').value;
+  if (!company) { alert('Please enter a company name.'); return; }
+  if (!prior || !current) { alert('Please enter both prior and current year.'); return; }
+  state.setup.company = company;
+  state.setup.priorYear = prior;
+  state.setup.currentYear = current;
+  state.setup.throughMonth = parseInt(document.getElementById('throughMonth').value);
+  for (let i = 0; i < 5; i++) {
+    state.setup.categories[i] = document.getElementById(`cat${i}`).value.trim() || state.setup.categories[i];
+  }
+  document.querySelector('[data-tab="setup"]').innerHTML = '① Setup <span class="done-tab"><span class="tab-check">✓</span></span>';
+  switchTab('pl');
+}
+
+// ═══════════════════════════════════════════════════════
+// FILE HANDLING UTILITIES
+// ═══════════════════════════════════════════════════════
+function handleDragOver(e, zoneId) { e.preventDefault(); document.getElementById(zoneId).classList.add('drag-over'); }
+function handleDragLeave(e, zoneId) { document.getElementById(zoneId).classList.remove('drag-over'); }
+function handleDrop(e, type) {
+  e.preventDefault();
+  const zoneId = type === 'prior' ? 'priorUploadZone' : type === 'current' ? 'currentUploadZone' : 'payrollUploadZone';
+  document.getElementById(zoneId).classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processUploadedFile(file, type);
+}
+
+function handleFileSelect(e, type) {
+  const file = e.target.files[0];
+  if (file) processUploadedFile(file, type);
+}
+
+function handlePayrollFile(e) {
+  const file = e.target.files[0];
+  if (file) processUploadedFile(file, 'payroll');
+}
+
+function processUploadedFile(file, type) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result;
+    const rows = parseCSV(text);
+    if (type === 'prior') { processPLFile(rows, 'prior', file.name); }
+    else if (type === 'current') { processPLFile(rows, 'current', file.name); }
+    else if (type === 'payroll') { processPayrollFileData(rows, file.name); }
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/
+?
+/).filter(l => l.trim());
+  return lines.map(line => {
+    const result = [];
+    let inQuotes = false, current = '';
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQuotes = !inQuotes; }
+      else if (line[i] === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+      else { current += line[i]; }
+    }
+    result.push(current.trim());
+    return result;
+  });
+}
+
+function stripAccountNumber(name) {
+  return name.replace(/^\d+\s+/, '').trim();
+}
+
+// ═══════════════════════════════════════════════════════
+// P&L PROCESSING
+// ═══════════════════════════════════════════════════════
+function buildLookupMap() {
+  const map = {};
+  state.plLookup.forEach(([name, code]) => { map[name] = code; });
+  return map;
+}
+
+function processPLFile(rows, type, filename) {
+  // Skip header row if present
+  let dataRows = rows;
+  if (rows.length > 0 && isNaN(parseFloat(rows[0][rows[0].length-1]))) dataRows = rows.slice(1);
+
+  const lookupMap = buildLookupMap();
+  const mapped = [], unmatched = [];
+
+  dataRows.forEach(row => {
+    if (row.length < 2) return;
+    const raw = row[0];
+    const amount = parseFloat(row[row.length-1].replace(/[$,\s]/g,'')) || 0;
+    const clean = stripAccountNumber(raw);
+    const code = lookupMap[clean];
+    if (!code) { unmatched.push({raw, clean, amount}); }
+    else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
+  });
+
+  if (type === 'prior') {
+    state.priorPL = {raw: dataRows, mapped, unmatched, filename};
+    state.priorUploaded = true;
+    const zone = document.getElementById('priorUploadZone');
+    zone.classList.add('done');
+    zone.querySelector('.upload-icon').textContent = '✅';
+    zone.querySelector('.upload-title').textContent = filename;
+    zone.querySelector('.upload-sub').textContent = `${mapped.length} accounts mapped · ${unmatched.length} unmatched`;
+    document.getElementById('priorFileInfo').textContent = '';
+  } else {
+    state.currentPL = {raw: dataRows, mapped, unmatched, filename};
+    state.currentUploaded = true;
+    const zone = document.getElementById('currentUploadZone');
+    zone.classList.add('done');
+    zone.querySelector('.upload-icon').textContent = '✅';
+    zone.querySelector('.upload-title').textContent = filename;
+    zone.querySelector('.upload-sub').textContent = `${mapped.length} accounts mapped · ${unmatched.length} unmatched`;
+  }
+
+  document.getElementById('processPLBtn').disabled = !(state.priorUploaded && state.currentUploaded);
+}
+
+function processPL() {
+  // Collect all unique unmatched across both years
+  const allUnmatched = {};
+  [...(state.priorPL?.unmatched||[])].forEach(u => {
+    if (!allUnmatched[u.clean]) allUnmatched[u.clean] = {clean:u.clean, prior:0, current:0};
+    allUnmatched[u.clean].prior += u.amount;
+  });
+  [...(state.currentPL?.unmatched||[])].forEach(u => {
+    if (!allUnmatched[u.clean]) allUnmatched[u.clean] = {clean:u.clean, prior:0, current:0};
+    allUnmatched[u.clean].current += u.amount;
+  });
+
+  const unmatchedList = Object.values(allUnmatched);
+
+  if (unmatchedList.length === 0) {
+    showPLReview();
+    return;
+  }
+
+  // Show unmatched UI
+  document.getElementById('plUploadSection').classList.add('hidden');
+  document.getElementById('plUnmatchedSection').classList.remove('hidden');
+  document.getElementById('unmatchedCount').textContent = unmatchedList.length;
+  document.getElementById('plBadge').textContent = unmatchedList.length;
+  document.getElementById('plBadge').classList.remove('hidden');
+
+  setPLStep(2);
+
+  const codes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T','NI','SKIP'];
+  const tbody = document.getElementById('unmatchedTableBody');
+  tbody.innerHTML = unmatchedList.map((u,i) => `
+    <tr>
+      <td class="bold">${u.clean}</td>
+      <td class="mono text-right">${fmtDollar(u.prior)}</td>
+      <td class="mono text-right">${fmtDollar(u.current)}</td>
+      <td>
+        <select id="unmatch_${i}" style="width:100px;padding:4px 6px;font-size:12px">
+          <option value="">— Select —</option>
+          ${codes.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-secondary" onclick="savePLToLookup(${i},'${escHtml(u.clean)}')">Save</button>
+      </td>
+    </tr>`).join('');
+}
+
+function savePLToLookup(idx, name) {
+  const code = document.getElementById(`unmatch_${idx}`).value;
+  if (!code) { alert('Please select a code first.'); return; }
+  state.plLookup.push([name, code]);
+  const btn = document.querySelector(`#unmatchedTableBody tr:nth-child(${idx+1}) td:last-child button`);
+  if(btn) { btn.textContent = '✓ Saved'; btn.disabled = true; btn.className = 'btn btn-sm btn-ghost'; }
+}
+
+function skipAllUnmatched() {
+  document.querySelectorAll('[id^="unmatch_"]').forEach(sel => { sel.value = 'SKIP'; });
+}
+
+function confirmPLMapping() {
+  // Apply manual mappings to the data
+  const rows = document.querySelectorAll('#unmatchedTableBody tr');
+  const newMap = {};
+  rows.forEach((row, i) => {
+    const sel = document.getElementById(`unmatch_${i}`);
+    if (sel && sel.value) {
+      const name = row.querySelector('td.bold').textContent;
+      newMap[name] = sel.value;
+    }
+  });
+
+  // Re-map with new codes
+  const remapPL = (plData) => {
+    if (!plData) return;
+    plData.unmatched.forEach(u => {
+      const code = newMap[u.clean];
+      if (code && code !== 'SKIP') {
+        plData.mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount});
+      }
+    });
+    plData.unmatched = plData.unmatched.filter(u => !newMap[u.clean]);
+  };
+  remapPL(state.priorPL);
+  remapPL(state.currentPL);
+
+  document.getElementById('plBadge').classList.add('hidden');
+  document.getElementById('plUnmatchedSection').classList.add('hidden');
+  showPLReview();
+}
+
+function showPLReview() {
+  document.getElementById('plUploadSection').classList.add('hidden');
+  document.getElementById('plUnmatchedSection').classList.add('hidden');
+  document.getElementById('plReviewSection').classList.remove('hidden');
+  setPLStep(3);
+
+  // Build summary
+  const allCodes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T'];
+  const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
+  const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
+
+  const labelMap = {
+    S1:`Revenue — ${state.setup.categories[0]}`, S2:`Revenue — ${state.setup.categories[1]}`,
+    S3:`Revenue — ${state.setup.categories[2]}`, S4:`Revenue — ${state.setup.categories[3]}`,
+    S5:`Revenue — ${state.setup.categories[4]}`,
+    G1:`COGS — ${state.setup.categories[0]}`, G2:`COGS — ${state.setup.categories[1]}`,
+    G3:`COGS — ${state.setup.categories[2]}`, G4:`COGS — ${state.setup.categories[3]}`,
+    G5:'COGS — Inventory Adj', G6:'COGS — Vendor Disc/Rebates',
+    SUB:'Subcontractors', C1:'COMP 1 — Direct Labor', C2E:'COMP 2E — Admin (Emp)',
+    C2O:'COMP 2O — Admin (Owner)', C3:'COMP 3 — Sales', C4:'COMP 4 — Benefits/Taxes',
+    O:'Occupancy', A:'Admin', SX:'Sales Expense', I:'Interest', D:'Depreciation',
+    M:'Miscellaneous', OI:'Other Income', OE:'Other Expense', B:'Bonuses', T:'Taxes'
+  };
+
+  const tbody = document.getElementById('plSummaryBody');
+  let rows = '';
+  allCodes.forEach(code => {
+    const p = priorTotals[code] || 0;
+    const c = currentTotals[code] || 0;
+    if (p === 0 && c === 0) return;
+    rows += `<tr>
+      <td><span class="badge badge-${code.toLowerCase().replace('/','')}">${code}</span></td>
+      <td>${labelMap[code]||code}</td>
+      <td class="mono text-right">${fmtDollar(p)}</td>
+      <td class="mono text-right">${fmtDollar(c)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows;
+
+  document.getElementById('chipPL').className = 'chip done';
+  document.getElementById('chipPL').textContent = 'P&L ✓';
+  document.querySelector('[data-tab="pl"]').innerHTML = '② P&L Upload <span class="done-tab"><span class="tab-check">✓</span></span>';
+}
+
+function aggregateByCode(mapped) {
+  const totals = {};
+  mapped.forEach(({code, amount}) => {
+    totals[code] = (totals[code]||0) + amount;
+  });
+  return totals;
+}
+
+function backToUpload() {
+  document.getElementById('plUnmatchedSection').classList.add('hidden');
+  document.getElementById('plUploadSection').classList.remove('hidden');
+  setPLStep(1);
+}
+
+function resetPL() {
+  state.priorPL = null; state.currentPL = null;
+  state.priorUploaded = false; state.currentUploaded = false;
+  document.getElementById('plReviewSection').classList.add('hidden');
+  document.getElementById('plUploadSection').classList.remove('hidden');
+  ['prior','current'].forEach(t => {
+    const zone = document.getElementById(`${t}UploadZone`);
+    zone.classList.remove('done');
+    zone.querySelector('.upload-icon').textContent = '📄';
+    zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
+    zone.querySelector('.upload-sub').textContent = 'CSV export from QuickBooks • Two columns: Account Name, Amount';
+  });
+  document.getElementById('processPLBtn').disabled = true;
+  setPLStep(1);
+}
+
+function setPLStep(n) {
+  for (let i=1;i<=3;i++) {
+    document.getElementById(`plStep${i}`).className = 'step' + (i<n?' done':i===n?' active':'');
+    if (i<3) document.getElementById(`plLine${i}`).className = 'step-line' + (i<n?' done':'');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PAYROLL PROCESSING
+// ═══════════════════════════════════════════════════════
+function processPayrollFileData(rows, filename) {
+  let dataRows = rows;
+  const firstRow = rows[0] || [];
+  // Detect header
+  if (firstRow.some(c => /name|title|wage/i.test(c))) dataRows = rows.slice(1);
+
+  const payrollMap = {};
+  state.payrollLookup.forEach(([title, comp, isOwner, isBillable]) => {
+    payrollMap[title.toLowerCase()] = {comp, isOwner: isOwner==='Yes'||isOwner==='yes', isBillable: isBillable==='Yes'||isBillable==='yes'};
+  });
+
+  const employees = [], unmatched = [];
+
+  dataRows.forEach(row => {
+    if (row.length < 2) return;
+    const name = row[0] || '';
+    const title = row[1] || '';
+    const wages = parseFloat((row[2]||'').replace(/[$,]/g,'')) || 0;
+    const hoursPerWeek = parseFloat(row[3]) || 40;
+    const billingRate = parseFloat(row[4]) || parseFloat(document.getElementById('billingRate').value) || 130;
+    const billablePct = parseFloat(row[5]) || 1;
+
+    const match = payrollMap[title.toLowerCase()];
+    if (match) {
+      employees.push({name, title, comp:match.comp, isOwner:match.isOwner, isBillable:match.isBillable, wages, hoursPerWeek, billingRate, billablePct});
+    } else {
+      unmatched.push({name, title, wages, hoursPerWeek, billingRate, billablePct});
+    }
+  });
+
+  state.payrollData = employees;
+  renderPayrollTable();
+
+  if (unmatched.length > 0) {
+    renderPayrollUnmatched(unmatched);
+  }
+
+  document.getElementById('payrollUploadZone').classList.add('done');
+  document.getElementById('payrollUploadZone').querySelector('.upload-icon').textContent = '✅';
+  document.getElementById('payrollUploadZone').querySelector('.upload-title').textContent = filename;
+  document.getElementById('payrollUploadZone').querySelector('.upload-sub').textContent = `${employees.length} matched · ${unmatched.length} unmatched`;
+}
+
+function renderPayrollTable() {
+  const tbody = document.getElementById('payrollTableBody');
+  if (state.payrollData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px">No employees added yet. Upload a payroll file or click "+ Add Employee".</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = state.payrollData.map((emp,i) => `
+    <tr>
+      <td><input type="text" value="${escHtml(emp.name)}" onchange="updatePayrollRow(${i},'name',this.value)" style="width:120px;padding:3px 6px;font-size:12px"></td>
+      <td><input type="text" value="${escHtml(emp.title)}" onchange="updatePayrollRow(${i},'title',this.value)" style="width:120px;padding:3px 6px;font-size:12px"></td>
+      <td>
+        <select onchange="updatePayrollRow(${i},'comp',this.value)" style="padding:3px 6px;font-size:12px">
+          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}" ${emp.comp===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="checkbox" ${emp.isOwner?'checked':''} onchange="updatePayrollRow(${i},'isOwner',this.checked)"></td>
+      <td><input type="checkbox" ${emp.isBillable?'checked':''} onchange="updatePayrollRow(${i},'isBillable',this.checked)"></td>
+      <td class="text-right"><input type="number" value="${emp.wages}" onchange="updatePayrollRow(${i},'wages',parseFloat(this.value)||0)" style="width:90px;padding:3px 6px;font-size:12px;text-align:right"></td>
+      <td><input type="number" value="${emp.hoursPerWeek}" onchange="updatePayrollRow(${i},'hoursPerWeek',parseFloat(this.value)||40)" style="width:50px;padding:3px 6px;font-size:12px"></td>
+      <td><input type="number" value="${emp.billingRate}" onchange="updatePayrollRow(${i},'billingRate',parseFloat(this.value)||0)" style="width:60px;padding:3px 6px;font-size:12px"></td>
+      <td><input type="number" value="${(emp.billablePct*100).toFixed(0)}" onchange="updatePayrollRow(${i},'billablePct',parseFloat(this.value)/100||0)" style="width:50px;padding:3px 6px;font-size:12px"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="removePayrollRow(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function renderPayrollUnmatched(unmatched) {
+  const section = document.getElementById('payrollUnmatchedSection');
+  section.classList.remove('hidden');
+  document.getElementById('payrollUnmatchedCount').textContent = unmatched.length;
+
+  const tbody = document.getElementById('payrollUnmatchedBody');
+  tbody.innerHTML = unmatched.map((emp,i) => `
+    <tr>
+      <td class="bold">${escHtml(emp.name)}</td>
+      <td>${escHtml(emp.title)}</td>
+      <td class="mono text-right">${fmtDollar(emp.wages)}</td>
+      <td>
+        <select id="pu_comp_${i}" style="padding:4px 6px;font-size:12px">
+          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="checkbox" id="pu_owner_${i}"></td>
+      <td><input type="checkbox" id="pu_bill_${i}" checked></td>
+      <td>
+        <button class="btn btn-sm btn-secondary" onclick="resolvePayrollUnmatched(${i},'${escHtml(emp.name)}','${escHtml(emp.title)}',${emp.wages},${emp.hoursPerWeek})">
+          Add & Save
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function resolvePayrollUnmatched(i, name, title, wages, hours) {
+  const comp  = document.getElementById(`pu_comp_${i}`).value;
+  const isOwner = document.getElementById(`pu_owner_${i}`).checked;
+  const isBillable = document.getElementById(`pu_bill_${i}`).checked;
+  state.payrollData.push({name, title, comp, isOwner, isBillable, wages, hoursPerWeek:hours, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1});
+  state.payrollLookup.push([title, comp, isOwner?'Yes':'No', isBillable?'Yes':'No']);
+  renderPayrollTable();
+  const row = document.querySelector(`#payrollUnmatchedBody tr:nth-child(${i+1})`);
+  if (row) { row.style.opacity = '0.4'; row.querySelector('button').textContent = '✓ Added'; row.querySelector('button').disabled = true; }
+}
+
+function addPayrollRow() {
+  state.payrollData.push({name:'', title:'', comp:'COMP1', isOwner:false, isBillable:true, wages:0, hoursPerWeek:40, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1});
+  renderPayrollTable();
+}
+
+function removePayrollRow(i) { state.payrollData.splice(i,1); renderPayrollTable(); }
+function updatePayrollRow(i, field, val) { state.payrollData[i][field] = val; }
+function clearPayroll() { state.payrollData = []; renderPayrollTable(); }
+
+// ═══════════════════════════════════════════════════════
+// COMP CROSS-CHECK
+// ═══════════════════════════════════════════════════════
+function runCrossCheck() {
+  const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
+  const comp4Rate = (parseFloat(document.getElementById('comp4Rate').value)||3.45)/100;
+
+  const censusTotals = {C1:0, C2E:0, C2O:0, C3:0, C4:0};
+  state.payrollData.forEach(emp => {
+    const key = emp.comp.replace('COMP','C').replace('2E','2E').replace('2O','2O');
+    if (censusTotals[key] !== undefined) censusTotals[key] += emp.wages;
+  });
+  const totalWages = Object.values(censusTotals).reduce((a,b)=>a+b,0);
+  censusTotals.C4 = totalWages * comp4Rate;
+
+  const grid = document.getElementById('crossCheckGrid');
+  const buckets = [{key:'C1',label:'COMP 1'},{key:'C2E',label:'COMP 2E'},{key:'C2O',label:'COMP 2O'},{key:'C3',label:'COMP 3'},{key:'C4',label:'COMP 4'}];
+
+  grid.innerHTML = buckets.map(({key,label}) => {
+    const census = censusTotals[key] || 0;
+    const pl = priorTotals[key] || 0;
+    const hasPL = state.priorPL !== null;
+    const pct = pl > 0 ? Math.abs(census-pl)/pl : 0;
+    const isMatch = hasPL && pct <= 0.01;
+    const isMismatch = hasPL && pct > 0.01;
+    const cls = !hasPL ? '' : isMatch ? 'match' : 'mismatch';
+    return `<div class="cross-check-item ${cls}">
+      <div class="cross-check-label">${label}</div>
+      <div class="cross-check-val">${fmtDollar(census)}</div>
+      <div class="cross-check-sub">${hasPL ? (isMatch ? `✓ P&L: ${fmtDollar(pl)}` : `P&L: ${fmtDollar(pl)} · Δ ${fmtPct(pct)}`) : 'Census only'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// ANALYSIS ENGINE
+// ═══════════════════════════════════════════════════════
+function runAnalysis() {
+  if (!state.priorPL || !state.currentPL) {
+    alert('Please complete P&L upload before running analysis.'); return;
+  }
+
+  const prior = aggregateByCode(state.priorPL.mapped);
+  const curr  = aggregateByCode(state.currentPL.mapped);
+  const months = state.setup.throughMonth;
+  const annFactor = 12 / months;
+  const cats = state.setup.categories;
+
+  // Revenue totals
+  const priorRev = (prior.S1||0)+(prior.S2||0)+(prior.S3||0)+(prior.S4||0)+(prior.S5||0);
+  const currRev  = (curr.S1||0)+(curr.S2||0)+(curr.S3||0)+(curr.S4||0)+(curr.S5||0);
+  const currRevAnn = currRev * annFactor;
+
+  // COGS
+  const priorCOGS = (prior.G1||0)+(prior.G2||0)+(prior.G3||0)+(prior.G4||0)+(prior.G5||0)+(prior.G6||0);
+  const currCOGS  = (curr.G1||0)+(curr.G2||0)+(curr.G3||0)+(curr.G4||0)+(curr.G5||0)+(curr.G6||0);
+
+  // GP before labor
+  const priorGP = priorRev - priorCOGS;
+  const currGP  = currRev  - currCOGS;
+
+  // Compensation
+  const comp4Rate = (parseFloat(document.getElementById('comp4Rate').value)||3.45)/100;
+  const payrollTotals = {C1:0,C2E:0,C2O:0,C3:0};
+  state.payrollData.forEach(emp => {
+    const key = emp.comp.replace('COMP','C');
+    if (payrollTotals[key]!==undefined) payrollTotals[key] += emp.wages;
+  });
+  const totalWages = Object.values(payrollTotals).reduce((a,b)=>a+b,0);
+  const usePayroll = state.payrollData.length > 0;
+
+  const priorC1  = usePayroll ? payrollTotals.C1 : (prior.C1||0);
+  const currC1   = usePayroll ? payrollTotals.C1 : (curr.C1||0);
+  const priorComp = (prior.C1||0)+(prior.C2E||0)+(prior.C2O||0)+(prior.C3||0)+(prior.C4||0);
+  const currComp  = (curr.C1||0)+(curr.C2E||0)+(curr.C2O||0)+(curr.C3||0)+(curr.C4||0);
+
+  // FTE / BEE from payroll
+  const ftes = state.payrollData.reduce((a,e)=>a+(e.hoursPerWeek/40),0) || 7.5;
+  const bees = state.payrollData.filter(e=>e.isBillable).reduce((a,e)=>a+(e.hoursPerWeek/40),0) || 5;
+
+  // Expenses
+  const priorAdmin = prior.A||0, currAdmin = curr.A||0;
+  const priorOcc   = prior.O||0, currOcc   = curr.O||0;
+  const priorSX    = prior.SX||0, currSX   = curr.SX||0;
+  const priorMOC   = priorAdmin+priorOcc+priorSX;
+  const currMOC    = currAdmin+currOcc+currSX;
+
+  // Operating profit
+  const priorNOI = priorGP - priorComp - priorMOC;
+  const currNOI  = currGP  - currComp  - currMOC;
+
+  // GM by category
+  const gmPct = (rev, cogs) => rev > 0 ? (rev-cogs)/rev : null;
+
+  const metrics = {
+    priorRev, currRev, currRevAnn,
+    priorGP, currGP,
+    priorGM: gmPct(priorRev, priorCOGS),
+    currGM:  gmPct(currRev,  currCOGS),
+    priorC1, currC1,
+    priorComp, currComp,
+    priorAdmin, currAdmin,
+    priorOcc, currOcc,
+    priorSX, currSX,
+    priorMOC, currMOC,
+    priorNOI, currNOI,
+    priorNOIPct: priorRev > 0 ? priorNOI/priorRev : null,
+    currNOIPct:  currRev  > 0 ? currNOI/currRev   : null,
+    priorCompPct: priorRev > 0 ? priorComp/priorRev : null,
+    currCompPct:  currRev  > 0 ? currComp/currRev   : null,
+    priorGPP: priorComp > 0 ? priorGP/priorComp : null,
+    currGPP:  currComp  > 0 ? currGP/currComp   : null,
+    priorRevFTE: ftes > 0 ? priorRev/ftes : null,
+    currRevFTE:  ftes > 0 ? currRev/ftes  : null,
+    priorLaborRevBEE: bees > 0 ? (prior.S5||0)/bees/12 : null,
+    currLaborRevBEE:  bees > 0 ? (curr.S5||0)/bees/12  : null,
+    ftes, bees, prior, curr, cats,
+  };
+
+  state.analysisRun = true;
+  state.metrics = metrics;
+
+  renderBenchmarks(metrics);
+  renderYOY(metrics);
+
+  // Unlock tabs
+  document.querySelectorAll('.nav-tab.locked').forEach(t => t.classList.remove('locked'));
+  document.getElementById('chipAnalysis').className = 'chip done';
+  document.getElementById('chipAnalysis').textContent = 'Analysis ✓';
+  document.getElementById('chipPayroll').className = 'chip done';
+  document.getElementById('chipPayroll').textContent = 'Payroll ✓';
+  runCrossCheck();
+  switchTab('benchmarks');
+}
+
+// ═══════════════════════════════════════════════════════
+// BENCHMARKS RENDER
+// ═══════════════════════════════════════════════════════
+function benchStatus(value, ranges) {
+  if (value === null || value === undefined) return {cls:'', label:'No data'};
+  const {notOKThresh, okThresh, goodThresh, veryGoodThresh, higher} = ranges;
+  if (higher) {
+    if (value >= veryGoodThresh) return {cls:'great', label:'Very Good'};
+    if (value >= goodThresh)     return {cls:'ok',    label:'Good'};
+    if (value >= okThresh)       return {cls:'warn',  label:'OK'};
+    return {cls:'bad', label:'Not OK'};
+  } else {
+    if (value <= veryGoodThresh) return {cls:'great', label:'Very Good'};
+    if (value <= goodThresh)     return {cls:'ok',    label:'Good'};
+    if (value <= okThresh)       return {cls:'warn',  label:'OK'};
+    return {cls:'bad', label:'Not OK'};
+  }
+}
+
+function metricCard(name, prior, curr, fmt, ranges, benchmark, note) {
+  const status = ranges ? benchStatus(curr, ranges) : {cls:'', label:''};
+  const yoyDelta = (prior !== null && curr !== null && prior !== 0) ? (curr-prior)/Math.abs(prior) : null;
+  const yoyClass = yoyDelta === null ? '' : (yoyDelta >= 0 ? 'up' : 'down');
+  const yoyText  = yoyDelta === null ? '' : `${yoyDelta>=0?'▲':'▼'} ${Math.abs(yoyDelta*100).toFixed(1)}% YOY`;
+  const barPct = ranges ? Math.min(100, Math.max(0, curr/(ranges.veryGoodThresh*1.2)*100)) : 0;
+
+  return `<div class="metric-card ${status.cls}">
+    <div class="metric-name">${name}</div>
+    <div class="metric-vals">
+      ${prior !== null ? `<div class="metric-prior">${fmt(prior)}</div><div class="metric-arrow">→</div>` : ''}
+      <div class="metric-current">${curr !== null ? fmt(curr) : '—'}</div>
+    </div>
+    ${yoyText ? `<div class="metric-yoy ${yoyClass}">${yoyText}</div>` : ''}
+    <div class="metric-benchmark">${benchmark}</div>
+    ${status.label ? `<div class="metric-status ${status.cls}">${status.label}</div>` : ''}
+    ${ranges ? `<div class="progress-bar"><div class="progress-fill ${status.cls}" style="width:${barPct}%"></div></div>` : ''}
+  </div>`;
+}
+
+function renderBenchmarks(m) {
+  const cats = m.cats;
+  const pY = state.setup.priorYear, cY = state.setup.currentYear;
+  const priorGMBycat = {
+    S1: gmPct(m.prior.S1, m.prior.G1), S2: gmPct(m.prior.S2, m.prior.G2),
+    S3: gmPct(m.prior.S3, m.prior.G3), S4: gmPct(m.prior.S4, m.prior.G4),
+  };
+  const currGMBycat = {
+    S1: gmPct(m.curr.S1, m.curr.G1), S2: gmPct(m.curr.S2, m.curr.G2),
+    S3: gmPct(m.curr.S3, m.curr.G3), S4: gmPct(m.curr.S4, m.curr.G4),
+  };
+
+  let html = `
+  <div style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Revenue Summary</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div><div class="text-muted text-small">${pY} Revenue</div><div style="font-size:22px;font-weight:700;font-family:var(--mono)">${fmtDollar(m.priorRev)}</div></div>
+          <div><div class="text-muted text-small">${cY} Revenue (YTD)</div><div style="font-size:22px;font-weight:700;font-family:var(--mono)">${fmtDollar(m.currRev)}</div></div>
+          <div><div class="text-muted text-small">${cY} Annualized</div><div style="font-size:22px;font-weight:700;color:var(--primary);font-family:var(--mono)">${fmtDollar(m.currRevAnn)}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title mb8" style="margin-bottom:12px">Revenue & Profitability</div>
+  <div class="metrics-grid">
+    ${metricCard('Total Revenue', m.priorRev, m.currRev, fmtDollar, null, 'Track YOY growth', '')}
+    ${metricCard('Gross Profit', m.priorGP, m.currGP, fmtDollar, null, 'Revenue minus COGS', '')}
+    ${metricCard('Overall Gross Margin', m.priorGM, m.currGM, fmtPct,
+      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true},
+      'Target ≥60%', '')}
+    ${metricCard('Net Operating Profit %', m.priorNOIPct, m.currNOIPct, fmtPct,
+      {notOKThresh:0.05, okThresh:0.05, goodThresh:0.10, veryGoodThresh:0.15, higher:true},
+      '10–20% benchmark', '')}
+  </div>
+
+  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Gross Margin by Category</div>
+  <div class="metrics-grid">
+    ${metricCard(`${cats[0]} GM%`, priorGMBycat.S1, currGMBycat.S1, fmtPct,
+      {notOKThresh:0.28, okThresh:0.28, goodThresh:0.33, veryGoodThresh:0.40, higher:true}, '35–40% benchmark','')}
+    ${metricCard(`${cats[1]} GM%`, priorGMBycat.S2, currGMBycat.S2, fmtPct,
+      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true}, '55–65% benchmark','')}
+    ${metricCard(`${cats[2]} GM%`, priorGMBycat.S3, currGMBycat.S3, fmtPct,
+      {notOKThresh:0.20, okThresh:0.20, goodThresh:0.25, veryGoodThresh:0.30, higher:true}, '25–30% benchmark','')}
+    ${metricCard(`${cats[3]} GM%`, priorGMBycat.S4, currGMBycat.S4, fmtPct,
+      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true}, 'No fixed benchmark','')}
+  </div>
+
+  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Compensation</div>
+  <div class="metrics-grid">
+    ${metricCard('COMP % of Revenue', m.priorCompPct, m.currCompPct, fmtPct,
+      {notOKThresh:0.375, okThresh:0.375, goodThresh:0.34, veryGoodThresh:0.30, higher:false}, '≤30% target','')}
+    ${metricCard('GP per Payroll Dollar', m.priorGPP, m.currGPP, v=>v.toFixed(2)+'x',
+      {notOKThresh:1.5, okThresh:1.5, goodThresh:1.7, veryGoodThresh:1.9, higher:true}, '>1.9x target','')}
+    ${metricCard('Sales Productivity (Rev/FTE)', m.priorRevFTE, m.currRevFTE, fmtDollar,
+      {notOKThresh:175000, okThresh:175000, goodThresh:200000, veryGoodThresh:250000, higher:true}, '$175K–$250K benchmark','')}
+    ${metricCard('Labor Productivity (Rev/BEE/mo)', m.priorLaborRevBEE, m.currLaborRevBEE, fmtDollar,
+      {notOKThresh:7000, okThresh:7000, goodThresh:8330, veryGoodThresh:10000, higher:true}, '$7K–$10K/mo benchmark','')}
+  </div>
+
+  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Major Operating Costs</div>
+  <div class="metrics-grid">
+    ${metricCard('Admin % of Revenue', m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct,
+      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
+    ${metricCard('Occupancy % of Revenue', m.priorRev>0?m.priorOcc/m.priorRev:null, m.currRev>0?m.currOcc/m.currRev:null, fmtPct,
+      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
+    ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null, m.currRev>0?m.currSX/m.currRev:null, fmtPct,
+      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
+    ${metricCard('Total MOC % of Revenue', m.priorRev>0?m.priorMOC/m.priorRev:null, m.currRev>0?m.currMOC/m.currRev:null, fmtPct,
+      {notOKThresh:0.175, okThresh:0.175, goodThresh:0.15, veryGoodThresh:0.12, higher:false}, '<16% benchmark','')}
+  </div>`;
+
+  document.getElementById('benchmarksContent').innerHTML = html;
+}
+
+function gmPct(rev, cogs) { return (rev && rev > 0) ? (rev - (cogs||0)) / rev : null; }
+
+// ═══════════════════════════════════════════════════════
+// YOY RENDER
+// ═══════════════════════════════════════════════════════
+function renderYOY(m) {
+  const cats = m.cats;
+  const pY = state.setup.priorYear, cY = state.setup.currentYear;
+  const p = m.prior, c = m.curr;
+
+  const yoyRow = (label, pVal, cVal, isTotal=false) => {
+    const delta = cVal - pVal;
+    const pct = pVal !== 0 ? delta/Math.abs(pVal) : null;
+    const cls = isTotal ? 'yoy-total' : '';
+    const dCls = delta >= 0 ? 'yoy-pos' : 'yoy-neg';
+    return `<tr class="${cls}">
+      <td>${label}</td>
+      <td class="mono text-right">${fmtDollar(pVal)}</td>
+      <td class="mono text-right">${pVal>0?fmtPct(pVal/m.priorRev):''}</td>
+      <td class="mono text-right">${fmtDollar(cVal)}</td>
+      <td class="mono text-right">${cVal>0?fmtPct(cVal/m.currRev):''}</td>
+      <td class="mono text-right ${dCls}">${delta>=0?'+':''}${fmtDollar(delta)}</td>
+      <td class="mono text-right ${dCls}">${pct!==null?(delta>=0?'+':'')+fmtPct(pct):''}</td>
+    </tr>`;
+  };
+
+  const secRow = (label) => `<tr><td colspan="7" class="yoy-section">${label}</td></tr>`;
+
+  const priorRev = (p.S1||0)+(p.S2||0)+(p.S3||0)+(p.S4||0)+(p.S5||0);
+  const currRev  = (c.S1||0)+(c.S2||0)+(c.S3||0)+(c.S4||0)+(c.S5||0);
+  const priorCOGS= (p.G1||0)+(p.G2||0)+(p.G3||0)+(p.G4||0)+(p.G5||0)+(p.G6||0);
+  const currCOGS = (c.G1||0)+(c.G2||0)+(c.G3||0)+(c.G4||0)+(c.G5||0)+(c.G6||0);
+  const priorGP  = priorRev-priorCOGS, currGP=currRev-currCOGS;
+  const priorComp= (p.C1||0)+(p.C2E||0)+(p.C2O||0)+(p.C3||0)+(p.C4||0);
+  const currComp = (c.C1||0)+(c.C2E||0)+(c.C2O||0)+(c.C3||0)+(c.C4||0);
+  const priorMOC = (p.A||0)+(p.O||0)+(p.SX||0);
+  const currMOC  = (c.A||0)+(c.O||0)+(c.SX||0);
+  const priorNOI = priorGP-priorComp-priorMOC;
+  const currNOI  = currGP-currComp-currMOC;
+
+  const html = `
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap" style="border:none;border-radius:0">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:220px">Line Item</th>
+              <th class="text-right">${pY} $</th>
+              <th class="text-right">${pY} %</th>
+              <th class="text-right">${cY} $</th>
+              <th class="text-right">${cY} %</th>
+              <th class="text-right">Change $</th>
+              <th class="text-right">Change %</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${secRow('REVENUE')}
+            ${yoyRow(cats[0], p.S1||0, c.S1||0)}
+            ${yoyRow(cats[1], p.S2||0, c.S2||0)}
+            ${yoyRow(cats[2], p.S3||0, c.S3||0)}
+            ${yoyRow(cats[3], p.S4||0, c.S4||0)}
+            ${yoyRow(cats[4], p.S5||0, c.S5||0)}
+            ${yoyRow('TOTAL REVENUE', priorRev, currRev, true)}
+            ${secRow('COST OF GOODS SOLD')}
+            ${yoyRow(`COGS — ${cats[0]}`, p.G1||0, c.G1||0)}
+            ${yoyRow(`COGS — ${cats[1]}`, p.G2||0, c.G2||0)}
+            ${yoyRow(`COGS — ${cats[2]}`, p.G3||0, c.G3||0)}
+            ${yoyRow(`COGS — ${cats[3]}`, p.G4||0, c.G4||0)}
+            ${yoyRow('Inventory Adjustments', p.G5||0, c.G5||0)}
+            ${yoyRow('Vendor Disc / Rebates', p.G6||0, c.G6||0)}
+            ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
+            ${yoyRow('GROSS PROFIT', priorGP, currGP, true)}
+            ${secRow('COMPENSATION')}
+            ${yoyRow('COMP 1 — Direct Labor', p.C1||0, c.C1||0)}
+            ${yoyRow('COMP 2E — Admin (Employees)', p.C2E||0, c.C2E||0)}
+            ${yoyRow('COMP 2O — Admin (Owners)', p.C2O||0, c.C2O||0)}
+            ${yoyRow('COMP 3 — Sales', p.C3||0, c.C3||0)}
+            ${yoyRow('COMP 4 — Benefits & Taxes', p.C4||0, c.C4||0)}
+            ${yoyRow('Subcontractors', p.SUB||0, c.SUB||0)}
+            ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
+            ${secRow('MAJOR OPERATING COSTS')}
+            ${yoyRow('Admin Expense', p.A||0, c.A||0)}
+            ${yoyRow('Occupancy Expense', p.O||0, c.O||0)}
+            ${yoyRow('Sales Expense', p.SX||0, c.SX||0)}
+            ${yoyRow('TOTAL MOC', priorMOC, currMOC, true)}
+            ${secRow('OTHER')}
+            ${yoyRow('Interest', p.I||0, c.I||0)}
+            ${yoyRow('Depreciation', p.D||0, c.D||0)}
+            ${yoyRow('Miscellaneous', p.M||0, c.M||0)}
+            ${yoyRow('Other Income', p.OI||0, c.OI||0)}
+            ${yoyRow('Other Expense', p.OE||0, c.OE||0)}
+            ${yoyRow('Bonuses', p.B||0, c.B||0)}
+            ${yoyRow('Taxes', p.T||0, c.T||0)}
+            ${yoyRow('NET OPERATING PROFIT', priorNOI, currNOI, true)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('yoyContent').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// LOOKUP TABLE EDITOR
+// ═══════════════════════════════════════════════════════
+function renderLookupTables() {
+  // P&L Lookup
+  document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
+  const codes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T','NI','SKIP'];
+  const plBody = document.getElementById('plLookupBody');
+  plBody.innerHTML = state.plLookup.map(([name, code], i) => `
+    <tr>
+      <td><input type="text" value="${escHtml(name)}" onchange="state.plLookup[${i}][0]=this.value" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
+      <td>
+        <select onchange="state.plLookup[${i}][1]=this.value" style="padding:3px 6px;font-size:12px">
+          ${codes.map(c=>`<option value="${c}" ${code===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="btn btn-sm btn-danger" onclick="state.plLookup.splice(${i},1);renderLookupTables()">✕</button></td>
+    </tr>`).join('');
+
+  // Payroll Lookup
+  document.getElementById('payrollLookupCount').textContent = `${state.payrollLookup.length} titles`;
+  const payBody = document.getElementById('payrollLookupBody');
+  payBody.innerHTML = state.payrollLookup.map(([title, comp, owner, bill], i) => `
+    <tr>
+      <td><input type="text" value="${escHtml(title)}" onchange="state.payrollLookup[${i}][0]=this.value" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
+      <td>
+        <select onchange="state.payrollLookup[${i}][1]=this.value" style="padding:3px 6px;font-size:12px">
+          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </td>
+      <td style="text-align:center"><input type="checkbox" ${(owner==='Yes'||owner===true)?'checked':''} onchange="state.payrollLookup[${i}][2]=this.checked?'Yes':'No'"></td>
+      <td style="text-align:center"><input type="checkbox" ${(bill==='Yes'||bill===true)?'checked':''} onchange="state.payrollLookup[${i}][3]=this.checked?'Yes':'No'"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="state.payrollLookup.splice(${i},1);renderLookupTables()">✕</button></td>
+    </tr>`).join('');
+
+  // Benchmark Ranges
+  const bmBody = document.getElementById('benchmarkRangesBody');
+  bmBody.innerHTML = state.benchmarkRanges.map((r,i) => `
+    <tr>
+      <td class="bold">${r.metric}</td>
+      <td class="mono" style="color:var(--red)">${r.notOK||'—'}</td>
+      <td class="mono" style="color:var(--gold)">${r.ok||'—'}</td>
+      <td class="mono" style="color:var(--green)">${r.good||'—'}</td>
+      <td class="mono" style="color:var(--primary)">${r.veryGood||'—'}</td>
+    </tr>`).join('');
+}
+
+function addPLLookupRow() { state.plLookup.push(['New Account','SKIP']); renderLookupTables(); }
+function addPayrollLookupRow() { state.payrollLookup.push(['New Title','COMP1','No','Yes']); renderLookupTables(); }
+
+function exportPLLookup() {
+  const csv = 'account_name,category_code
+' + state.plLookup.map(([n,c])=>`"${n}","${c}"`).join('
+');
+  downloadFile(csv, 'pl_lookup.csv', 'text/csv');
+}
+
+function exportPayrollLookup() {
+  const csv = 'title,comp_bucket,is_owner,is_billable
+' + state.payrollLookup.map(r=>`"${r[0]}","${r[1]}","${r[2]}","${r[3]}"`).join('
+');
+  downloadFile(csv, 'payroll_lookup.csv', 'text/csv');
+}
+
+function uploadPLLookup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const rows = parseCSV(ev.target.result).slice(1);
+    if (rows.length > 0) { state.plLookup = rows.filter(r=>r.length>=2); renderLookupTables(); }
+  };
+  reader.readAsText(file);
+}
+
+function uploadPayrollLookup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const rows = parseCSV(ev.target.result).slice(1);
+    if (rows.length > 0) { state.payrollLookup = rows.filter(r=>r.length>=4); renderLookupTables(); }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+function fmtDollar(v) {
+  if (v === null || v === undefined) return '—';
+  const abs = Math.abs(v);
+  const str = abs >= 1000000 ? `$${(abs/1000000).toFixed(2)}M` : `$${Math.round(abs).toLocaleString()}`;
+  return v < 0 ? `(${str})` : str;
+}
+function fmtPct(v) { return v === null || v === undefined ? '—' : (v*100).toFixed(1)+'%'; }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function downloadFile(content, filename, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type:mime}));
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initSetup();
+  updateTopbar();
+});
+</script>
+</body>
+</html>
