@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --primary: #6687e1;
@@ -1036,25 +1037,42 @@ function handlePayrollFile(e) {
 }
 
 function processUploadedFile(file, type) {
-  function decode(text) {
-    const rows = parseCSV(text);
-    if (type === 'prior')   { processPLFile(rows, 'prior',   file.name); }
-    else if (type === 'current')  { processPLFile(rows, 'current', file.name); }
-    else if (type === 'payroll')  { processPayrollFileData(rows,    file.name); }
+  function dispatch(rows) {
+    if (type === 'prior')        { processPLFile(rows, 'prior',   file.name); }
+    else if (type === 'current') { processPLFile(rows, 'current', file.name); }
+    else if (type === 'payroll') { processPayrollFileData(rows,    file.name); }
   }
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const text = e.target.result;
-    if (text.includes('\uFFFD')) {
-      // UTF-8 produced replacement chars — re-read as Windows-1252
-      const reader2 = new FileReader();
-      reader2.onload = (e2) => { decode(e2.target.result); };
-      reader2.readAsText(file, 'windows-1252');
-    } else {
-      decode(text);
-    }
-  };
-  reader.readAsText(file, 'UTF-8');
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'xlsx' || ext === 'xls') {
+    // Parse binary Excel file using SheetJS
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, {type: 'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+        dispatch(rows);
+      } catch(err) {
+        alert('Could not parse Excel file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    // Parse CSV — try UTF-8 first, fall back to Windows-1252
+    function decodeText(text) { dispatch(parseCSV(text)); }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      if (text.includes('\uFFFD')) {
+        const reader2 = new FileReader();
+        reader2.onload = (e2) => { decodeText(e2.target.result); };
+        reader2.readAsText(file, 'windows-1252');
+      } else {
+        decodeText(text);
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
 }
 
 function parseCSV(text) {
@@ -1096,7 +1114,13 @@ function processPLFile(rows, type, filename) {
   dataRows.forEach(row => {
     if (row.length < 2) return;
     const raw = row[0];
-    const amount = parseFloat(row[row.length-1].replace(/[$,\s]/g,'')) || 0;
+    const amount = (() => {
+      for (let i = 1; i < row.length; i++) {
+        const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+        if (!isNaN(v) && (row[i]||'').toString().trim() !== '') return v;
+      }
+      return 0;
+    })();
     const clean = stripAccountNumber(raw);
     const code = lookupMap[clean];
     if (!code) { unmatched.push({raw, clean, amount}); }
