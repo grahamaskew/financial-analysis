@@ -1048,9 +1048,7 @@ function processUploadedFile(file, type) {
 }
 
 function parseCSV(text) {
-  const lines = text.split(/
-?
-/).filter(l => l.trim());
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
   return lines.map(line => {
     const result = [];
     let inQuotes = false, current = '';
@@ -1811,16 +1809,12 @@ function addPLLookupRow() { state.plLookup.push(['New Account','SKIP']); renderL
 function addPayrollLookupRow() { state.payrollLookup.push(['New Title','COMP1','No','Yes']); renderLookupTables(); }
 
 function exportPLLookup() {
-  const csv = 'account_name,category_code
-' + state.plLookup.map(([n,c])=>`"${n}","${c}"`).join('
-');
+  const csv = 'account_name,category_code\n' + state.plLookup.map(([n,c])=>`"${n}","${c}"`).join('\n');
   downloadFile(csv, 'pl_lookup.csv', 'text/csv');
 }
 
 function exportPayrollLookup() {
-  const csv = 'title,comp_bucket,is_owner,is_billable
-' + state.payrollLookup.map(r=>`"${r[0]}","${r[1]}","${r[2]}","${r[3]}"`).join('
-');
+  const csv = 'title,comp_bucket,is_owner,is_billable\n' + state.payrollLookup.map(r=>`"${r[0]}","${r[1]}","${r[2]}","${r[3]}"`).join('\n');
   downloadFile(csv, 'payroll_lookup.csv', 'text/csv');
 }
 
