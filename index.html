@@ -1036,15 +1036,25 @@ function handlePayrollFile(e) {
 }
 
 function processUploadedFile(file, type) {
+  function decode(text) {
+    const rows = parseCSV(text);
+    if (type === 'prior')   { processPLFile(rows, 'prior',   file.name); }
+    else if (type === 'current')  { processPLFile(rows, 'current', file.name); }
+    else if (type === 'payroll')  { processPayrollFileData(rows,    file.name); }
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     const text = e.target.result;
-    const rows = parseCSV(text);
-    if (type === 'prior') { processPLFile(rows, 'prior', file.name); }
-    else if (type === 'current') { processPLFile(rows, 'current', file.name); }
-    else if (type === 'payroll') { processPayrollFileData(rows, file.name); }
+    if (text.includes('\uFFFD')) {
+      // UTF-8 produced replacement chars — re-read as Windows-1252
+      const reader2 = new FileReader();
+      reader2.onload = (e2) => { decode(e2.target.result); };
+      reader2.readAsText(file, 'windows-1252');
+    } else {
+      decode(text);
+    }
   };
-  reader.readAsText(file);
+  reader.readAsText(file, 'UTF-8');
 }
 
 function parseCSV(text) {
