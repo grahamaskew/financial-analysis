@@ -882,7 +882,11 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   <!-- Benchmark Ranges -->
   <div class="card">
     <div class="card-header">
-      <div><div class="card-title">Benchmark Ranges</div><div class="card-sub">Industry benchmark thresholds used in the analysis output</div></div>
+      <div>
+        <div class="card-title">Benchmark Ranges <span id="bmModifiedBadge" class="chip active hidden" style="font-size:10px;margin-left:8px">Modified</span></div>
+        <div class="card-sub">Edit thresholds directly. Enter values in display format (e.g. 28%, $175K, 1.9x). Changes apply to the next analysis run.</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="resetBenchmarkRanges()">↺ Reset to Defaults</button>
     </div>
     <div class="card-body" style="padding:0">
       <div class="table-wrap" style="border:none;border-radius:0">
@@ -919,24 +923,7 @@ const DEFAULT_PL_LOOKUP = [["401(k) Company Match","C4"],["Accounting","A"],["Ac
 
 const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","COMP2E","No","No"],["Access Control Technician","COMP1","No","Yes"],["Account Executive","COMP3","No","No"],["Account Manager","COMP3","No","No"],["Accounts Payable","COMP2E","No","No"],["Accounts Receivable","COMP2E","No","No"],["Acoustical Consultant","COMP1","No","Yes"],["Admin ","COMP2E","No","No"],["Administrative Assistant","COMP2E","No","No"],["Alarm Technician","COMP1","No","Yes"],["AP","COMP2E","No","No"],["AP Specialist","COMP2E","No","No"],["Application Engineer","COMP1","No","Yes"],["Apprentice Tech","COMP1","No","Yes"],["Apprentice Technician","COMP1","No","Yes"],["AR","COMP2E","No","No"],["Associate Project Manager","COMP2E","No","No"],["Install","COMP1","No","Yes"],["Service","COMP1","No","Yes"],["Audio Video Installer","COMP1","No","Yes"],["Audio Visual Engineer","COMP1","No","Yes"],["Audio Visual Programmer","COMP1","No","Yes"],["Audio Visual Technician","COMP1","No","Yes"],["Automation Programmer","COMP1","No","Yes"],["AV Designer","COMP2E","No","No"],["AV Engineer","COMP2E","No","No"],["AV Install Tech","COMP1","No","Yes"],["AV Installer","COMP1","No","Yes"],["AV Programmer","COMP1","No","Yes"],["AV Sales Consultant","COMP3","No","No"],["AV System Designer","COMP2E","No","No"],["AV Tech","COMP1","No","Yes"],["AV Technician","COMP1","No","Yes"],["Bench","COMP1","No","Yes"],["Bench Technician","COMP1","No","Yes"],["Bid Coordinator","COMP3","No","No"],["Billing Specialist","COMP2E","No","No"],["Bookkeeper","COMP2E","No","No"],["Branch Manager","COMP2E","No","No"],["Brand Manager","COMP2E","No","No"],["Business Development","COMP3","No","No"],["Business Development Manager","COMP3","No","No"],["Business Development Rep","COMP3","No","No"],["Business Owner","COMP2O","Yes","No"],["Cable Guy","COMP1","No","Yes"],["Cable Tech","COMP1","No","Yes"],["Cable Technician","COMP1","No","Yes"],["CAD Designer","COMP2E","No","No"],["CAD Technician","COMP2E","No","No"],["CCTV Technician","COMP1","No","Yes"],["CEO","COMP2O","Yes","No"],["CFO","COMP2E","No","No"],["Client Advisor","COMP2E","No","No"],["Client Care Coordinator","COMP2E","No","No"],["Client Relationship Manager","COMP2E","No","No"],["Client Service Manager","COMP2E","No","No"],["Client Service Tech ","COMP1","No","Yes"],["Client Service Technician","COMP1","No","Yes"],["Client Success Manager","COMP2E","No","No"],["Co-Founder","COMP2O","Yes","No"],["Commercial AV Technician","COMP1","No","Yes"],["Commissioning Engineer","COMP1","No","Yes"],["Commissioning Specialist","COMP1","No","Yes"],["Commissioning Technician","COMP1","No","Yes"],["Concierge","COMP2E","No","No"],["Construction Coordinator","COMP2E","No","No"],["Content Manager","COMP2E","No","No"],["Contract Admin","COMP2E","No","No"],["Control System Programmer","COMP1","No","Yes"],["Controller","COMP2E","No","No"],["Controls Engineer","COMP1","No","Yes"],["COO","COMP2E","No","No"],["Custom Integrator","COMP1","No","Yes"],["Customer Care Specialist","COMP2E","No","No"],["Customer Success Manager","COMP2E","No","No"],["Cybersecurity Technician","COMP1","No","Yes"],["Deployment Manager","COMP2E","No","No"],["Deployment Technician","COMP1","No","Yes"],["Design Engineer","COMP2E","No","No"],["Design Manager","COMP2E","No","No"],["Designer","COMP2E","No","No"],["Device Deployment Technician","COMP1","No","Yes"],["Director of Operations","COMP2E","No","No"],["Director of Sales","COMP3","No","No"],["Dispatch","COMP2E","No","No"],["Dispatcher","COMP2E","No","No"],["Door Entry Technician","COMP1","No","Yes"],["Draftsperson","COMP2E","No","No"],["DSP Programmer","COMP1","No","Yes"],["Electronics Technician","COMP1","No","Yes"],["Engineer","COMP2E","No","No"],["Estimating","COMP2E","No","No"],["Estimator","COMP2E","No","No"],["Executive Assistant","COMP2E","No","No"],["Fabrication","COMP1","No","Yes"],["Fabrication Technician","COMP1","No","Yes"],["Field Engineer","COMP1","No","Yes"],["Field Service Technician","COMP1","No","Yes"],["Field Tech","COMP1","No","Yes"],["Field Technician","COMP1","No","Yes"],["Founder","COMP2O","Yes","No"],["General Manager","COMP2E","No","No"],["GM","COMP2E","No","No"],["Golf Simulator Technician","COMP1","No","Yes"],["Help Desk","COMP2E","No","No"],["Help Desk Technician","COMP1","No","Yes"],["Home Automation Engineer","COMP1","No","Yes"],["Home Automation Programmer","COMP1","No","Yes"],["Home Technology Advisor","COMP2E","No","No"],["Home Technology Professional","COMP1","No","Yes"],["Home Theater Installer","COMP1","No","Yes"],["Home Theater Specialist","COMP1","No","Yes"],["HR Manager","COMP2E","No","No"],["Implementation Manager","COMP2E","No","No"],["Infrastructure Technician","COMP1","No","Yes"],["Install Tech","COMP1","No","Yes"],["Install Technician","COMP1","No","Yes"],["Installation Manager","COMP2E","No","No"],["Installation Technician","COMP1","No","Yes"],["Installer","COMP1","No","Yes"],["Integration Developer","COMP2E","No","No"],["Integration Technician","COMP1","No","Yes"],["Inventory Manager","COMP2E","No","No"],["Inventory Specialist","COMP2E","No","No"],["IT Specialist","COMP2E","No","No"],["IT Support Specialist","COMP1","No","Yes"],["IT Technician","COMP1","No","Yes"],["Junior Installer","COMP1","No","Yes"],["Junior Tech","COMP1","No","Yes"],["Lead Installer","COMP1","No","Yes"],["Lead Tech","COMP1","No","Yes"],["Lead Technician","COMP1","No","Yes"],["Lighting Control Designer","COMP2E","No","No"],["Lighting Control Programmer","COMP1","No","Yes"],["Lighting Control Technician","COMP1","No","Yes"],["Lighting Systems Designer","COMP2E","No","No"],["Linked Install","COMP1","No","Yes"],["Logistics Coordinator","COMP2E","No","No"],["Low Voltage Installer","COMP1","No","Yes"],["Low Voltage Technician","COMP1","No","Yes"],["Low-Volt Tech","COMP1","No","Yes"],["Maintenance Technician","COMP1","No","Yes"],["Managing Director","COMP2E","No","No"],["Managing Partner","COMP2E","No","No"],["Marketing Coordinator","COMP2E","No","No"],["Marketing Manager","COMP2E","No","No"],["Media Room Specialist","COMP1","No","Yes"],["Motorized Shade Technician","COMP1","No","Yes"],["Network Administrator","COMP1","No","Yes"],["Network Engineer","COMP1","No","Yes"],["Network Tech","COMP1","No","Yes"],["Network Technician","COMP1","No","Yes"],["NOC Engineer","COMP1","No","Yes"],["NOC Technician","COMP1","No","Yes"],["Office","COMP2E","No","No"],["Office Administrator","COMP2E","No","No"],["Office Manager","COMP2E","No","No"],["Operations Manager","COMP2E","No","No"],["Ops","COMP2E","No","No"],["Outdoor Systems Technician","COMP1","No","Yes"],["Owner","COMP2O","Yes","No"],["Partner","COMP2E","No","No"],["Payroll Specialist","COMP2E","No","No"],["PM","COMP2E","No","No"],["PMO","COMP2E","No","No"],["Pre-Sales Engineer","COMP2E","No","No"],["Pre-Wire Guy","COMP1","No","Yes"],["Pre-Wire Tech","COMP1","No","Yes"],["Pre-Wire Technician","COMP1","No","Yes"],["President","COMP2O","Yes","No"],["Prewire Tech","COMP1","No","Yes"],["Prewire Technician","COMP1","No","Yes"],["Procurement Specialist","COMP2E","No","No"],["Production Manager","COMP2E","No","No"],["Programmer","COMP1","No","Yes"],["Project Administrator","COMP2E","No","No"],["Project Coordinator","COMP2E","No","No"],["Project Engineer","COMP2E","No","No"],["Project Manager","COMP2E","No","No"],["Project Scheduler","COMP2E","No","No"],["Proposal Manager","COMP2E","No","No"],["Purchaser","COMP2E","No","No"],["Purchasing","COMP2E","No","No"],["Purchasing Agent","COMP2E","No","No"],["Purchasing Manager","COMP2E","No","No"],["QA Bench Technician","COMP1","No","Yes"],["QA Technician","COMP1","No","Yes"],["Quality Control Technician","COMP1","No","Yes"],["Rack Build Tech","COMP1","No","Yes"],["Rack Builder","COMP1","No","Yes"],["Rack Fabrication Technician","COMP1","No","Yes"],["Rack Guy","COMP1","No","Yes"],["Rack Tech","COMP1","No","Yes"],["Receptionist","COMP2E","No","No"],["Recruiter","COMP2E","No","No"],["Regional Manager","COMP2E","No","No"],["Remote Support Technician","COMP1","No","Yes"],["Repair Technician","COMP1","No","Yes"],["Residential AV Technician","COMP1","No","Yes"],["Retrofit Technician","COMP1","No","Yes"],["Sales","COMP3","No","No"],["Sales Consultant","COMP3","No","No"],["Sales Director","COMP3","No","No"],["Sales Engineer","COMP3","No","No"],["Sales Guy","COMP3","No","No"],["Sales Manager","COMP3","No","No"],["Sales Rep","COMP3","No","No"],["Salesman","COMP3","No","No"],["Salesperson","COMP3","No","No"],["Scope Writer","COMP2E","No","No"],["Security Tech","COMP1","No","Yes"],["Security Technician","COMP1","No","Yes"],["Senior Installer","COMP1","No","Yes"],["Senior Project Manager","COMP2E","No","No"],["Senior Tech","COMP1","No","Yes"],["Service Coordinator","COMP2E","No","No"],["Service Dispatcher","COMP2E","No","No"],["Service Manager","COMP2E","No","No"],["Service Tech","COMP1","No","Yes"],["Service Technician","COMP1","No","Yes"],["Shade Designer","COMP2E","No","No"],["Shade Programmer","COMP1","No","Yes"],["Shade Tech","COMP1","No","Yes"],["Shade Technician","COMP1","No","Yes"],["Shop Technician","COMP1","No","Yes"],["Showroom Consultant","COMP2E","No","No"],["Showroom Manager","COMP2E","No","No"],["Site Coordinator","COMP2E","No","No"],["Smart Home Consultant","COMP2E","No","No"],["Smart Home Designer","COMP2E","No","No"],["Smart Home Installer","COMP1","No","Yes"],["Smart Home Integrator","COMP1","No","Yes"],["Social Media Manager","COMP2E","No","No"],["Software Developer","COMP2E","No","No"],["Solutions Consultant","COMP2E","No","No"],["Solutions Engineer","COMP2E","No","No"],["Specification Writer","COMP2E","No","No"],["Staff Accountant","COMP2E","No","No"],["Staging Technician","COMP1","No","Yes"],["Startup Technician","COMP1","No","Yes"],["Structured Cabling Technician","COMP1","No","Yes"],["Support","COMP1","No","Yes"],["Support Specialist","COMP1","No","Yes"],["Surveillance Technician","COMP1","No","Yes"],["Systems Administrator","COMP2E","No","No"],["Systems Designer","COMP2E","No","No"],["Systems Engineer","COMP2E","No","No"],["Systems Integration Specialist","COMP1","No","Yes"],["Systems Integrator","COMP1","No","Yes"],["Systems Technician","COMP1","No","Yes"],["Tech","COMP1","No","Yes"],["Technical Support Specialist","COMP1","No","Yes"],["Technician","COMP1","No","Yes"],["Technology Consultant","COMP2E","No","No"],["Technology Designer","COMP2E","No","No"],["Technology Integrator","COMP1","No","Yes"],["Termination Technician","COMP1","No","Yes"],["Trim Guy","COMP1","No","Yes"],["Trim Tech","COMP1","No","Yes"],["Trim-Out Technician","COMP1","No","Yes"],["UI Programmer","COMP1","No","Yes"],["VP of Engineering","COMP2E","No","No"],["VP of Operations","COMP2E","No","No"],["VP of Sales","COMP3","No","No"],["Warehouse","COMP2E","No","No"],["Warehouse Associate","COMP2E","No","No"],["Warehouse Manager","COMP2E","No","No"],["Warranty Technician","COMP1","No","Yes"],["Wi-Fi Engineer","COMP1","No","Yes"],["Wiring Technician","COMP1","No","Yes"]];
 
-const BENCHMARK_RANGES = [
-  {metric:"Total Revenue",         notOK:null,    ok:null,     good:null,    veryGood:null,   note:"Track YOY growth"},
-  {metric:"Sales Productivity (Rev/FTE)", notOK:"<$175K", ok:"$175K–$250K", good:">$200K", veryGood:">$250K", note:"Annual revenue per FTE"},
-  {metric:"Direct Labor Productivity (Labor Rev/BEE)", notOK:"<$7K/mo", ok:"≥$7K/mo", good:">$8.33K/mo", veryGood:">$10K/mo", note:"Monthly labor revenue per BEE"},
-  {metric:"Direct Labor Utilization",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"55–65% benchmark"},
-  {metric:"Equipment GM%",         notOK:"<28%",   ok:"≥28%",   good:"≥33%",  veryGood:"≥40%", note:"35–40% benchmark"},
-  {metric:"Parts GM%",             notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"55–65% benchmark"},
-  {metric:"Lighting Fixtures GM%", notOK:"<20%",   ok:"≥20%",   good:"≥25%",  veryGood:"≥30%", note:"25–30% benchmark"},
-  {metric:"Managed Services GM%",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"No fixed benchmark"},
-  {metric:"Overall Gross Margin",  notOK:"<40%",   ok:"≥40%",   good:"≥50%",  veryGood:"≥60%", note:"≥60% target"},
-  {metric:"COMP % of Revenue",     notOK:">37.5%", ok:"≤37.5%", good:"≤34%",  veryGood:"≤30%", note:"≤30% target"},
-  {metric:"GP per Payroll Dollar", notOK:"<1.5",   ok:"≥1.5",   good:"≥1.7",  veryGood:"≥1.9", note:">1.9 target"},
-  {metric:"Admin % of Revenue",    notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
-  {metric:"Occupancy % of Revenue",notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
-  {metric:"Sales Expense % of Rev",notOK:">8%",    ok:"≤8%",    good:"≤6%",   veryGood:"≤4%",  note:"4–8% benchmark"},
-  {metric:"Total MOC % of Revenue",notOK:">17.5%", ok:"≤17.5%", good:"≤15%",  veryGood:"≤12%", note:"<16% benchmark"},
-  {metric:"Net Operating Profit %",notOK:"<5%",    ok:"≥5%",    good:"≥10%",  veryGood:"≥15%", note:"10–20% benchmark"},
-];
+const BENCHMARK_RANGES = [{metric:"Sales Productivity (Rev/FTE)",notOK:"<$175K",ok:"$175K–$200K",good:">$200K-$250K",veryGood:">$250K",note:"Annual revenue per FTE",notOKThresh:175000.0,okThresh:175000.0,goodThresh:200000.0,veryGoodThresh:250000.0,higher:true},{metric:"Direct Labor Productivity (Labor Rev/BEE)",notOK:"<$10K/mo",ok:"≥$10K/mo-$13K/mo",good:">$13K/mo-$15K/mo",veryGood:">$15K/mo",note:"Monthly labor revenue per BEE",notOKThresh:10000.0,okThresh:10000.0,goodThresh:13000.0,veryGoodThresh:15000.0,higher:true},{metric:"Direct Labor Utilization",notOK:"<50%",ok:"≥50%",good:"≥55%",veryGood:"≥60%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.55,veryGoodThresh:0.6,higher:true},{metric:"Equipment GM%",notOK:"<30%",ok:"≥30%",good:"≥38%",veryGood:"≥43%",note:"35-40% benchmark",notOKThresh:0.3,okThresh:0.3,goodThresh:0.38,veryGoodThresh:0.43,higher:true},{metric:"Parts GM%",notOK:"<50%",ok:"≥50%",good:"≥60%",veryGood:"≥70%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.6,veryGoodThresh:0.7,higher:true},{metric:"Lighting Fixtures GM%",notOK:"<20%",ok:"≥20%",good:"≥30%",veryGood:"≥35%",note:"25-30% benchmark",notOKThresh:0.2,okThresh:0.2,goodThresh:0.3,veryGoodThresh:0.35,higher:true},{metric:"Managed Services GM%",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:"No fixed benchmark",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"Overall Gross Margin",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:">=60% target",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"COMP % of Revenue",notOK:">37.5%",ok:"≤37.5%",good:"≤34%",veryGood:"≤30%",note:"<=30% target",notOKThresh:0.375,okThresh:0.375,goodThresh:0.34,veryGoodThresh:0.3,higher:false},{metric:"GP per Payroll Dollar",notOK:"<1.5",ok:"≥1.5",good:"≥1.7",veryGood:"≥1.9",note:">1.9x target",notOKThresh:1.5,okThresh:1.5,goodThresh:1.7,veryGoodThresh:1.9,higher:true},{metric:"Admin % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Occupancy % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Sales Expense % of Rev",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Total MOC % of Revenue",notOK:">17.5%",ok:"≤17.5%",good:"≤15%",veryGood:"≤12%",note:"<16% benchmark",notOKThresh:0.175,okThresh:0.175,goodThresh:0.15,veryGoodThresh:0.12,higher:false},{metric:"Net Operating Profit %",notOK:"<8%",ok:"≥8%",good:"≥15%",veryGood:"≥25%",note:"10-20% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.15,veryGoodThresh:0.25,higher:true}];
 
 // ═══════════════════════════════════════════════════════
 // STATE
@@ -945,7 +932,7 @@ const state = {
   setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'] },
   plLookup: [...DEFAULT_PL_LOOKUP],
   payrollLookup: [...DEFAULT_PAYROLL_LOOKUP],
-  benchmarkRanges: [...BENCHMARK_RANGES],
+  benchmarkRanges: BENCHMARK_RANGES.map(r => Object.assign({}, r)),
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1669,18 +1656,25 @@ function runAnalysis() {
 // ═══════════════════════════════════════════════════════
 function benchStatus(value, ranges) {
   if (value === null || value === undefined) return {cls:'', label:'No data'};
+  if (!ranges) return {cls:'', label:''};
   const {notOKThresh, okThresh, goodThresh, veryGoodThresh, higher} = ranges;
+  if (notOKThresh === null && okThresh === null) return {cls:'', label:''};
   if (higher) {
-    if (value >= veryGoodThresh) return {cls:'great', label:'Very Good'};
-    if (value >= goodThresh)     return {cls:'ok',    label:'Good'};
-    if (value >= okThresh)       return {cls:'warn',  label:'OK'};
+    if (veryGoodThresh !== null && value >= veryGoodThresh) return {cls:'great', label:'Very Good'};
+    if (goodThresh     !== null && value >= goodThresh)     return {cls:'ok',    label:'Good'};
+    if (okThresh       !== null && value >= okThresh)       return {cls:'warn',  label:'OK'};
     return {cls:'bad', label:'Not OK'};
   } else {
-    if (value <= veryGoodThresh) return {cls:'great', label:'Very Good'};
-    if (value <= goodThresh)     return {cls:'ok',    label:'Good'};
-    if (value <= okThresh)       return {cls:'warn',  label:'OK'};
+    if (veryGoodThresh !== null && value <= veryGoodThresh) return {cls:'great', label:'Very Good'};
+    if (goodThresh     !== null && value <= goodThresh)     return {cls:'ok',    label:'Good'};
+    if (okThresh       !== null && value <= okThresh)       return {cls:'warn',  label:'OK'};
     return {cls:'bad', label:'Not OK'};
   }
+}
+
+// Helper: get live benchmark ranges from state by metric name
+function getBM(metricName) {
+  return state.benchmarkRanges.find(r => r.metric === metricName) || null;
 }
 
 function metricCard(name, prior, curr, fmt, ranges, benchmark, note) {
@@ -1731,55 +1725,38 @@ function renderBenchmarks(m) {
 
   <div class="section-title mb8" style="margin-bottom:12px">Revenue & Profitability</div>
   <div class="metrics-grid">
-    ${metricCard('Total Revenue', m.priorRev, m.currRev, fmtDollar, null, 'Track YOY growth', '')}
+    ${metricCard('Total Revenue', m.priorRev, m.currRev, fmtDollar, null, 'YOY comparison — no benchmark', '')}
     ${metricCard('Gross Profit', m.priorGP, m.currGP, fmtDollar, null, 'Revenue minus COGS', '')}
-    ${metricCard('Overall Gross Margin', m.priorGM, m.currGM, fmtPct,
-      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true},
-      'Target ≥60%', '')}
-    ${metricCard('Net Operating Profit %', m.priorNOIPct, m.currNOIPct, fmtPct,
-      {notOKThresh:0.05, okThresh:0.05, goodThresh:0.10, veryGoodThresh:0.15, higher:true},
-      '10–20% benchmark', '')}
+    ${metricCard('Overall Gross Margin', m.priorGM, m.currGM, fmtPct, getBM('Overall Gross Margin'), getBM('Overall Gross Margin')?.note||'', '')}
+    ${metricCard('Net Operating Profit %', m.priorNOIPct, m.currNOIPct, fmtPct, getBM('Net Operating Profit %'), getBM('Net Operating Profit %')?.note||'', '')}
   </div>
 
   <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Gross Margin by Category</div>
   <div class="metrics-grid">
-    ${metricCard(`${cats[0]} GM%`, priorGMBycat.S1, currGMBycat.S1, fmtPct,
-      {notOKThresh:0.28, okThresh:0.28, goodThresh:0.33, veryGoodThresh:0.40, higher:true}, '35–40% benchmark','')}
-    ${metricCard(`${cats[1]} GM%`, priorGMBycat.S2, currGMBycat.S2, fmtPct,
-      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true}, '55–65% benchmark','')}
-    ${metricCard(`${cats[2]} GM%`, priorGMBycat.S3, currGMBycat.S3, fmtPct,
-      {notOKThresh:0.20, okThresh:0.20, goodThresh:0.25, veryGoodThresh:0.30, higher:true}, '25–30% benchmark','')}
-    ${metricCard(`${cats[3]} GM%`, priorGMBycat.S4, currGMBycat.S4, fmtPct,
-      {notOKThresh:0.40, okThresh:0.40, goodThresh:0.50, veryGoodThresh:0.60, higher:true}, 'No fixed benchmark','')}
+    ${metricCard(cats[0]+' GM%', priorGMBycat.S1, currGMBycat.S1, fmtPct, getBM('Equipment GM%'),         getBM('Equipment GM%')?.note||'',         '')}
+    ${metricCard(cats[1]+' GM%', priorGMBycat.S2, currGMBycat.S2, fmtPct, getBM('Parts GM%'),             getBM('Parts GM%')?.note||'',             '')}
+    ${metricCard(cats[2]+' GM%', priorGMBycat.S3, currGMBycat.S3, fmtPct, getBM('Lighting Fixtures GM%'), getBM('Lighting Fixtures GM%')?.note||'', '')}
+    ${metricCard(cats[3]+' GM%', priorGMBycat.S4, currGMBycat.S4, fmtPct, getBM('Managed Services GM%'),  getBM('Managed Services GM%')?.note||'',  '')}
   </div>
 
   <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Compensation</div>
   <div class="metrics-grid">
-    ${metricCard('COMP % of Revenue', m.priorCompPct, m.currCompPct, fmtPct,
-      {notOKThresh:0.375, okThresh:0.375, goodThresh:0.34, veryGoodThresh:0.30, higher:false}, '≤30% target','')}
-    ${metricCard('GP per Payroll Dollar', m.priorGPP, m.currGPP, v=>v.toFixed(2)+'x',
-      {notOKThresh:1.5, okThresh:1.5, goodThresh:1.7, veryGoodThresh:1.9, higher:true}, '>1.9x target','')}
-    ${metricCard('Sales Productivity (Rev/FTE)', m.priorRevFTE, m.currRevFTE, fmtDollar,
-      {notOKThresh:175000, okThresh:175000, goodThresh:200000, veryGoodThresh:250000, higher:true}, '$175K–$250K benchmark','')}
-    ${metricCard('Labor Productivity (Rev/BEE/mo)', m.priorLaborRevBEE, m.currLaborRevBEE, fmtDollar,
-      {notOKThresh:7000, okThresh:7000, goodThresh:8330, veryGoodThresh:10000, higher:true}, '$7K–$10K/mo benchmark','')}
+    ${metricCard('COMP % of Revenue',            m.priorCompPct,      m.currCompPct,       fmtPct,              getBM('COMP % of Revenue'),                          getBM('COMP % of Revenue')?.note||'',                          '')}
+    ${metricCard('GP per Payroll Dollar',         m.priorGPP,          m.currGPP,           v=>v.toFixed(2)+'x', getBM('GP per Payroll Dollar'),                      getBM('GP per Payroll Dollar')?.note||'',                      '')}
+    ${metricCard('Sales Productivity (Rev/FTE)',  m.priorRevFTE,       m.currRevFTE,        fmtDollar,           getBM('Sales Productivity (Rev/FTE)'),               getBM('Sales Productivity (Rev/FTE)')?.note||'',               '')}
+    ${metricCard('Labor Productivity (Rev/BEE/mo)', m.priorLaborRevBEE, m.currLaborRevBEE, fmtDollar,           getBM('Direct Labor Productivity (Labor Rev/BEE)'),  getBM('Direct Labor Productivity (Labor Rev/BEE)')?.note||'',  '')}
   </div>
 
   <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Major Operating Costs</div>
   <div class="metrics-grid">
-    ${metricCard('Admin % of Revenue', m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct,
-      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
-    ${metricCard('Occupancy % of Revenue', m.priorRev>0?m.priorOcc/m.priorRev:null, m.currRev>0?m.currOcc/m.currRev:null, fmtPct,
-      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
-    ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null, m.currRev>0?m.currSX/m.currRev:null, fmtPct,
-      {notOKThresh:0.08, okThresh:0.08, goodThresh:0.06, veryGoodThresh:0.04, higher:false}, '4–8% benchmark','')}
-    ${metricCard('Total MOC % of Revenue', m.priorRev>0?m.priorMOC/m.priorRev:null, m.currRev>0?m.currMOC/m.currRev:null, fmtPct,
-      {notOKThresh:0.175, okThresh:0.175, goodThresh:0.15, veryGoodThresh:0.12, higher:false}, '<16% benchmark','')}
+    ${metricCard('Admin % of Revenue',         m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct, getBM('Admin % of Revenue'),       getBM('Admin % of Revenue')?.note||'',       '')}
+    ${metricCard('Occupancy % of Revenue',     m.priorRev>0?m.priorOcc/m.priorRev:null,   m.currRev>0?m.currOcc/m.currRev:null,   fmtPct, getBM('Occupancy % of Revenue'),   getBM('Occupancy % of Revenue')?.note||'',   '')}
+    ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null,    m.currRev>0?m.currSX/m.currRev:null,    fmtPct, getBM('Sales Expense % of Rev'),   getBM('Sales Expense % of Rev')?.note||'',   '')}
+    ${metricCard('Total MOC % of Revenue',     m.priorRev>0?m.priorMOC/m.priorRev:null,   m.currRev>0?m.currMOC/m.currRev:null,   fmtPct, getBM('Total MOC % of Revenue'),   getBM('Total MOC % of Revenue')?.note||'',   '')}
   </div>`;
 
   document.getElementById('benchmarksContent').innerHTML = html;
 }
-
 function gmPct(rev, cogs) { return (rev && rev > 0) ? (rev - (cogs||0)) / rev : null; }
 
 // ═══════════════════════════════════════════════════════
@@ -1919,16 +1896,30 @@ function renderLookupTables() {
       <td><button class="btn btn-sm btn-danger" onclick="state.payrollLookup.splice(${i},1);renderLookupTables()">✕</button></td>
     </tr>`).join('');
 
-  // Benchmark Ranges
+  // Benchmark Ranges — editable
   const bmBody = document.getElementById('benchmarkRangesBody');
+  const fields = ['notOK','ok','good','veryGood'];
+  const fColors = ['var(--red)','var(--gold)','var(--green)','var(--primary)'];
   bmBody.innerHTML = state.benchmarkRanges.map((r,i) => `
     <tr>
-      <td class="bold">${r.metric}</td>
-      <td class="mono" style="color:var(--red)">${r.notOK||'—'}</td>
-      <td class="mono" style="color:var(--gold)">${r.ok||'—'}</td>
-      <td class="mono" style="color:var(--green)">${r.good||'—'}</td>
-      <td class="mono" style="color:var(--primary)">${r.veryGood||'—'}</td>
+      <td class="bold" style="font-size:13px">${r.metric}</td>
+      ${fields.map((f,fi) => `
+      <td style="padding:4px 8px">
+        <input
+          type="text"
+          value="${r[f]||'—'}"
+          data-bm-idx="${i}"
+          data-bm-field="${f}"
+          data-bm-orig="${r[f]||'—'}"
+          style="width:90px;padding:3px 7px;font-size:12px;font-family:var(--mono);
+                 color:${fColors[fi]};border:1px solid var(--border);border-radius:4px;
+                 background:${r[f]!==BENCHMARK_RANGES[i]?.[f]?'var(--primary-faint)':'var(--bg2)'}"
+          onblur="validateBenchmarkInput(this)"
+          onfocus="this.dataset.bmPrev=this.value"
+        >
+      </td>`).join('')}
     </tr>`).join('');
+  updateBenchmarkModifiedBadge();
 }
 
 function addPLLookupRow() { state.plLookup.push(['New Account','SKIP']); renderLookupTables(); }
@@ -1969,6 +1960,86 @@ function uploadPayrollLookup(e) {
 // ═══════════════════════════════════════════════════════
 // MODAL
 // ═══════════════════════════════════════════════════════
+// ── BENCHMARK RANGE EDITING ──
+function parseBenchmarkValue(val, metric) {
+  if (!val || val.trim() === '—') return null;
+  let s = val.trim();
+  s = s.replace(/^[≥≤<>$\s]+/, '');
+  // take lower bound of ranges
+  s = s.split(/[–\-]/)[0].trim();
+  s = s.replace(/^[≥≤<>$\s]+/, '');
+  let mult = 1;
+  if (/[Kk]\/mo$/i.test(s)) { mult = 1000; s = s.replace(/[Kk]\/mo$/i, ''); }
+  else if (/[Kk]$/i.test(s)) { mult = 1000; s = s.slice(0,-1); }
+  else if (/[Mm]$/i.test(s)) { mult = 1000000; s = s.slice(0,-1); }
+  if (s.endsWith('%')) {
+    const n = parseFloat(s.slice(0,-1));
+    return isNaN(n) ? null : n / 100;
+  }
+  if (s.endsWith('x')) s = s.slice(0,-1);
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n * mult;
+}
+
+function validateBenchmarkInput(input) {
+  const val   = input.value.trim();
+  const idx   = parseInt(input.dataset.bmIdx);
+  const field = input.dataset.bmField;
+  const prev  = input.dataset.bmPrev || input.dataset.bmOrig;
+  const metric = state.benchmarkRanges[idx].metric;
+
+  // '—' is always valid (null threshold)
+  if (val === '—' || val === '') {
+    state.benchmarkRanges[idx][field] = '—';
+    const threshField = field + 'Thresh';
+    state.benchmarkRanges[idx][threshField] = null;
+    input.value = '—';
+    input.style.borderColor = 'var(--border)';
+    input.style.background = BENCHMARK_RANGES[idx]?.[field] !== '—' ? 'var(--primary-faint)' : 'var(--bg2)';
+    updateBenchmarkModifiedBadge();
+    return;
+  }
+
+  const parsed = parseBenchmarkValue(val, metric);
+  if (parsed === null) {
+    // Invalid — revert and highlight red
+    input.value = prev;
+    input.style.borderColor = 'var(--red)';
+    input.style.background = 'var(--red-bg)';
+    setTimeout(() => {
+      input.style.borderColor = 'var(--border)';
+      input.style.background = state.benchmarkRanges[idx][field] !== BENCHMARK_RANGES[idx]?.[field]
+        ? 'var(--primary-faint)' : 'var(--bg2)';
+    }, 1500);
+    return;
+  }
+
+  // Valid — update state
+  state.benchmarkRanges[idx][field] = val;
+  const threshField = field + 'Thresh';
+  state.benchmarkRanges[idx][threshField] = parsed;
+  input.style.borderColor = 'var(--border)';
+  const isModified = val !== (BENCHMARK_RANGES[idx]?.[field] || '—');
+  input.style.background = isModified ? 'var(--primary-faint)' : 'var(--bg2)';
+  updateBenchmarkModifiedBadge();
+}
+
+function resetBenchmarkRanges() {
+  if (!confirm('Reset all benchmark ranges to defaults? This cannot be undone.')) return;
+  state.benchmarkRanges = BENCHMARK_RANGES.map(r => Object.assign({}, r));
+  renderLookupTables();
+}
+
+function updateBenchmarkModifiedBadge() {
+  const badge = document.getElementById('bmModifiedBadge');
+  if (!badge) return;
+  const modified = state.benchmarkRanges.some((r, i) => {
+    const def = BENCHMARK_RANGES[i];
+    return !def || r.notOK !== def.notOK || r.ok !== def.ok || r.good !== def.good || r.veryGood !== def.veryGood;
+  });
+  badge.classList.toggle('hidden', !modified);
+}
+
 function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
 
 // ═══════════════════════════════════════════════════════
