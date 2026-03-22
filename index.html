@@ -1324,30 +1324,99 @@ function setPLStep(n) {
 // PAYROLL PROCESSING
 // ═══════════════════════════════════════════════════════
 function processPayrollFileData(rows, filename) {
-  let dataRows = rows;
-  const firstRow = rows[0] || [];
-  // Detect header
-  if (firstRow.some(c => /name|title|wage/i.test(c))) dataRows = rows.slice(1);
+  if (!rows || rows.length < 2) return;
 
+  // ── Step 1: Detect header row and map columns by name ──
+  const firstRow = (rows[0] || []).map(c => (c||'').toString().trim().toLowerCase());
+  const hasHeader = firstRow.some(c => /name|title|role|wage|salary|rate|position/i.test(c));
+  const dataRows  = hasHeader ? rows.slice(1) : rows;
+  const hdr       = hasHeader ? firstRow : [];
+
+  // Column alias maps
+  const findCol = (aliases) => {
+    for (const a of aliases) {
+      const i = hdr.findIndex(h => h === a || h.includes(a));
+      if (i >= 0) return i;
+    }
+    return -1;
+  };
+
+  const iLastName  = findCol(['last name','lastname','last']);
+  const iFirstName = findCol(['first name','firstname','first']);
+  const iFullName  = findCol(['name','full name','employee name','employee']);
+  const iTitle     = findCol(['title','role','position','job title','job']);
+  const iWages     = findCol(['annual wages','annual_wages','salary','wages','annual salary']);
+  const iRate      = findCol(['pay rate','payrate','hourly rate','rate','hourly']);
+  const iHours     = findCol(['hours per week','hours/week','hours','hrs/wk','hrs']);
+  const iBillRate  = findCol(['billing rate','bill rate','billrate']);
+  const iBillPct   = findCol(['billable pct','billable %','billable_pct','billable']);
+
+  // Determine name column strategy
+  const getNameFromRow = (row) => {
+    if (iFirstName >= 0 && iLastName >= 0)
+      return `${(row[iFirstName]||'').toString().trim()} ${(row[iLastName]||'').toString().trim()}`.trim();
+    if (iFullName >= 0) return (row[iFullName]||'').toString().trim();
+    // No header — fall back to col 0
+    return (row[0]||'').toString().trim();
+  };
+
+  // Determine title column strategy
+  const getTitleFromRow = (row) => {
+    if (iTitle >= 0) return (row[iTitle]||'').toString().trim();
+    // No header — fall back to col 1
+    return (row[1]||'').toString().trim();
+  };
+
+  // Determine wages — prefer annual, fall back to hourly × 40 × 52
+  const getWagesFromRow = (row) => {
+    if (iWages >= 0) {
+      const v = parseFloat((row[iWages]||'').toString().replace(/[$,\s]/g,''));
+      if (!isNaN(v) && v > 0) return v;
+    }
+    if (iRate >= 0) {
+      const rate = parseFloat((row[iRate]||'').toString().replace(/[$,\s]/g,''));
+      if (!isNaN(rate) && rate > 0) return rate * 40 * 52;
+    }
+    // No header — scan from col 2 for first numeric
+    for (let i = 2; i < row.length; i++) {
+      const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+      if (!isNaN(v) && v > 0) return v < 500 ? v * 40 * 52 : v; // <500 = hourly
+    }
+    return 0;
+  };
+
+  const getHoursFromRow  = (row) => iHours    >= 0 ? parseFloat(row[iHours])    || 40  : 40;
+  const getBillRate      = (row) => iBillRate  >= 0 ? parseFloat(row[iBillRate]) || parseFloat(document.getElementById('billingRate').value) || 130
+                                                    : parseFloat(document.getElementById('billingRate').value) || 130;
+  const getBillPct       = (row) => iBillPct   >= 0 ? parseFloat(row[iBillPct]) / 100 || 1 : 1;
+
+  // ── Step 2: Build lookup map ──
   const payrollMap = {};
   state.payrollLookup.forEach(([title, comp, isOwner, isBillable]) => {
-    payrollMap[title.toLowerCase()] = {comp, isOwner: isOwner==='Yes'||isOwner==='yes', isBillable: isBillable==='Yes'||isBillable==='yes'};
+    payrollMap[title.toLowerCase().trim()] = {
+      comp,
+      isOwner:    isOwner    === 'Yes' || isOwner    === 'yes',
+      isBillable: isBillable === 'Yes' || isBillable === 'yes'
+    };
   });
 
+  // ── Step 3: Process each row ──
   const employees = [], unmatched = [];
 
   dataRows.forEach(row => {
-    if (row.length < 2) return;
-    const name = row[0] || '';
-    const title = row[1] || '';
-    const wages = parseFloat((row[2]||'').replace(/[$,]/g,'')) || 0;
-    const hoursPerWeek = parseFloat(row[3]) || 40;
-    const billingRate = parseFloat(row[4]) || parseFloat(document.getElementById('billingRate').value) || 130;
-    const billablePct = parseFloat(row[5]) || 1;
+    if (!row || row.every(c => !(c||'').toString().trim())) return; // skip blank rows
+    const name        = getNameFromRow(row);
+    const title       = getTitleFromRow(row);
+    const wages       = getWagesFromRow(row);
+    const hoursPerWeek= getHoursFromRow(row);
+    const billingRate = getBillRate(row);
+    const billablePct = getBillPct(row);
+    if (!title) return;
 
-    const match = payrollMap[title.toLowerCase()];
-    if (match) {
-      employees.push({name, title, comp:match.comp, isOwner:match.isOwner, isBillable:match.isBillable, wages, hoursPerWeek, billingRate, billablePct});
+    const lookupMatch = payrollMap[title.toLowerCase().trim()];
+    if (lookupMatch) {
+      employees.push({name, title, comp: lookupMatch.comp, isOwner: lookupMatch.isOwner,
+                      isBillable: lookupMatch.isBillable, wages, hoursPerWeek, billingRate, billablePct});
     } else {
       unmatched.push({name, title, wages, hoursPerWeek, billingRate, billablePct});
     }
@@ -1355,15 +1424,13 @@ function processPayrollFileData(rows, filename) {
 
   state.payrollData = employees;
   renderPayrollTable();
+  if (unmatched.length > 0) renderPayrollUnmatched(unmatched);
 
-  if (unmatched.length > 0) {
-    renderPayrollUnmatched(unmatched);
-  }
-
-  document.getElementById('payrollUploadZone').classList.add('done');
-  document.getElementById('payrollUploadZone').querySelector('.upload-icon').textContent = '✅';
-  document.getElementById('payrollUploadZone').querySelector('.upload-title').textContent = filename;
-  document.getElementById('payrollUploadZone').querySelector('.upload-sub').textContent = `${employees.length} matched · ${unmatched.length} unmatched`;
+  const zone = document.getElementById('payrollUploadZone');
+  zone.classList.add('done');
+  zone.querySelector('.upload-icon').textContent  = '✅';
+  zone.querySelector('.upload-title').textContent = filename;
+  zone.querySelector('.upload-sub').textContent   = `${employees.length} matched · ${unmatched.length} unmatched`;
 }
 
 function renderPayrollTable() {
