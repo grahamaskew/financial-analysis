@@ -267,33 +267,33 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   font-weight: 600;
   font-family: var(--mono);
 }
-.badge-s1 { background: #eff6ff; color: #2563eb; }
-.badge-s2 { background: #f0fdf4; color: #16a34a; }
-.badge-s3 { background: #fff7ed; color: #c2410c; }
-.badge-s4 { background: #fdf4ff; color: #9333ea; }
-.badge-s5 { background: #ecfdf5; color: #059669; }
-.badge-g1 { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.badge-g2 { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-g3 { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-.badge-g4 { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-.badge-g5 { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-.badge-g6 { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
-.badge-c1 { background: #fef3c7; color: #92400e; }
-.badge-c2e { background: #e0f2fe; color: #0369a1; }
-.badge-c2o { background: #fce7f3; color: #9d174d; }
-.badge-c3 { background: #f3e8ff; color: #6d28d9; }
-.badge-c4 { background: #f1f5f9; color: #475569; }
+.badge-equ { background: #eff6ff; color: #2563eb; }
+.badge-par { background: #f0fdf4; color: #16a34a; }
+.badge-lfix { background: #fff7ed; color: #c2410c; }
+.badge-manser { background: #fdf4ff; color: #9333ea; }
+.badge-lab { background: #ecfdf5; color: #059669; }
+.badge-cequ { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-cpar { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-clfix { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.badge-cmanser { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+.badge-invadj { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-vdisc { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+.badge-prod { background: #fef3c7; color: #92400e; }
+.badge-adme { background: #e0f2fe; color: #0369a1; }
+.badge-own { background: #fce7f3; color: #9d174d; }
+.badge-salc { background: #f3e8ff; color: #6d28d9; }
+.badge-payx { background: #f1f5f9; color: #475569; }
 .badge-sub { background: #fff1f2; color: #be123c; }
-.badge-o { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
-.badge-a { background: #f8fafc; color: #374151; border: 1px solid #e2e8f0; }
-.badge-sx { background: #fffbeb; color: #b45309; }
-.badge-i { background: #fef2f2; color: #b91c1c; }
-.badge-d { background: #f1f5f9; color: #64748b; }
-.badge-m { background: #f1f5f9; color: #6b7280; }
-.badge-oi { background: #ecfdf5; color: #065f46; }
-.badge-oe { background: #fef2f2; color: #991b1b; }
-.badge-b { background: #fdf4ff; color: #86198f; }
-.badge-t { background: #f8fafc; color: #1e3a5f; }
+.badge-occ { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.badge-admexp { background: #f8fafc; color: #374151; border: 1px solid #e2e8f0; }
+.badge-sexp { background: #fffbeb; color: #b45309; }
+.badge-int { background: #fef2f2; color: #b91c1c; }
+.badge-dep { background: #f1f5f9; color: #64748b; }
+.badge-misc { background: #f1f5f9; color: #6b7280; }
+.badge-oinc { background: #ecfdf5; color: #065f46; }
+.badge-oexp { background: #fef2f2; color: #991b1b; }
+.badge-bon { background: #fdf4ff; color: #86198f; }
+.badge-tax { background: #f8fafc; color: #1e3a5f; }
 .badge-ni { background: #f0fdf4; color: #14532d; }
 .badge-skip { background: #f1f5f9; color: #94a3b8; }
 .badge-unmatch { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
@@ -489,6 +489,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     <span class="chip" id="chipPL">P&L</span>
     <span class="chip" id="chipPayroll">Payroll</span>
     <span class="chip" id="chipAnalysis">Analysis</span>
+    <button class="btn btn-sm btn-danger" onclick="newClientReset()" style="margin-left:8px">↺ New Client - Reset</button>
   </div>
 </div>
 
@@ -774,11 +775,11 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     </div>
     <div class="card-body">
       <div class="cross-check-grid" id="crossCheckGrid">
-        <div class="cross-check-item"><div class="cross-check-label">COMP 1</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
-        <div class="cross-check-item"><div class="cross-check-label">COMP 2E</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
-        <div class="cross-check-item"><div class="cross-check-label">COMP 2O</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
-        <div class="cross-check-item"><div class="cross-check-label">COMP 3</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
-        <div class="cross-check-item"><div class="cross-check-label">COMP 4</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">PRODUCTION</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">ADMIN EMP</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">OWNER</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">SALES & COMM</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
+        <div class="cross-check-item"><div class="cross-check-label">PAYROLLX</div><div class="cross-check-val">—</div><div class="cross-check-sub">No data</div></div>
       </div>
     </div>
   </div>
@@ -792,6 +793,10 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
      TAB 4 — BENCHMARKS
 ══════════════════════════════════════════════ -->
 <div class="page" id="page-benchmarks">
+  <div id="dirtyBannerBenchmarks" class="alert alert-warn hidden" style="margin-bottom:16px">
+    <span class="alert-icon">⚠</span>
+    <div>Changes detected since last analysis — click <strong>Run Analysis</strong> on the Payroll Census page to update results. Note: any manual code assignments not saved to the lookup table will be auto-saved before re-processing.</div>
+  </div>
   <div class="section-header">
     <div>
       <div class="section-title">Financial Benchmarks</div>
@@ -808,6 +813,10 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
      TAB 5 — YEAR-OVER-YEAR
 ══════════════════════════════════════════════ -->
 <div class="page" id="page-yoy">
+  <div id="dirtyBannerYOY" class="alert alert-warn hidden" style="margin-bottom:16px">
+    <span class="alert-icon">⚠</span>
+    <div>Changes detected since last analysis — click <strong>Run Analysis</strong> on the Payroll Census page to update results. Note: any manual code assignments not saved to the lookup table will be auto-saved before re-processing.</div>
+  </div>
   <div class="section-header">
     <div>
       <div class="section-title">Year-over-Year P&L Comparison</div>
@@ -919,9 +928,9 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
 // ═══════════════════════════════════════════════════════
 // EMBEDDED LOOKUP TABLES
 // ═══════════════════════════════════════════════════════
-const DEFAULT_PL_LOOKUP = [["401(k) Company Match","C4"],["Accounting","A"],["Accounting Fees","A"],["ADMIN EXPENSE","SKIP"],["Advertising / Promotion","SX"],["Advertising and Promotion","SX"],["AMORTIZATION *","D"],["Ask My Accountant","SKIP"],["Auto & Truck - Gas,Repair,Maint","SX"],["Auto & Truck - Insurance","SX"],["Auto & Truck - Leases","SX"],["Auto Repairs & Maintenance","SX"],["Automobile Expense","SX"],["Bank Service Charges","A"],["Benefit Admin Fees","C4"],["Bonuses","C2E"],["BONUSES","B"],["Business Licenses & Fees","A"],["Business Licenses and Permits","A"],["Business/ Liability Insurance","A"],["Capital Stock","SKIP"],["CHARITABLE CONTRIBUTIONS","OE"],["CI Equipment","S1"],["CI Install Parts","S2"],["CI Labor","S5"],["COGS E (Equipment)","SKIP"],["COGS F (Lighting Fixtures)","G1"],["COGS M (Managed Services)","G4"],["COGS O (Other Revenue Streams)","SKIP"],["COGS P (Install Parts)","SKIP"],["COGS V (Vendor Disc/Rebates)","SKIP"],["COGS Z (Inventory Adjusts)","G5"],["Comm/Bonus","C3"],["Commissions & Bonuses","C3"],["COMP 1 - Direct Labor Wages","SKIP"],["COMP 2E - Admin Wages, Employee","SKIP"],["COMP 2O - Admin Wages, Owners","C2O"],["COMP 3 - Sales Wages & Comm","SKIP"],["COMP 4 - Pay Taxes & Benefits","SKIP"],["Compensation","SKIP"],["Component Sales","S2"],["Computer and Internet Expenses","A"],["Consulting Fees","A"],["Consulting/Coaching","A"],["Cost of Goods Sold","SKIP"],["Credit Card Merchant Fees","SX"],["Credit Card Processing Fees","SX"],["DEPRECIATION *","D"],["Dues and Subscriptions","A"],["Education & Training","C4"],["Education/Training","C4"],["Electrical Equipment","S1"],["Electrical Install Parts","S2"],["Electrical Labor","S5"],["Equipment Discounts","S1"],["Equipment Sales","S1"],["Expense","SKIP"],["Expenses","OE"],["Freight and Shipping","SX"],["Freight Costs","SX"],["Fringe Benefits - Other","C4"],["Fuel","SX"],["Gain/Loss on Asset Sale","OI"],["Gross Profit","SKIP"],["Health Insurance","C4"],["Income","SKIP"],["INCOME TAXES","T"],["Installation Labor","S5"],["Insurance - Health, Dental, Vis","C4"],["Insurance - Work Comp","C4"],["Insurance Expense","A"],["INTEREST","I"],["INTEREST *","I"],["Interest Income","OI"],["Internet","O"],["IT Services","A"],["Job Permits","SX"],["Labor - Discounts","S5"],["Labor - Warranty","S5"],["Labor (Over) / Under","S5"],["Legal","A"],["Legal Fees","A"],["Life/Disability Insurance","C4"],["Managed Services","S4"],["Meals and Entertainment","SX"],["Member 1 Draws","SKIP"],["Member 1 Equity","SKIP"],["Member 2 Draws","SKIP"],["Member 2 Equity","SKIP"],["Mileage Reimbursement","SX"],["MISCELLANEOUS","M"],["Net Income","SKIP"],["Net Ordinary Income","SKIP"],["Net Other Income","SKIP"],["OCCUPANCY EXPENSE","SKIP"],["Office Equipment","A"],["Office Supplies","A"],["Opening Balance Equity","SKIP"],["Ordinary Income/Expense","SKIP"],["Other Expense","SKIP"],["OTHER EXPENSE","OE"],["Other Income","SKIP"],["OTHER INCOME","SKIP"],["Other Income/Expense","SKIP"],["OUTSIDE SERVICES","SKIP"],["OUTSIDE SERVICES (3rd Party Services)","SKIP"],["Owners BONUSES","B"],["Payroll Processing Fees","C4"],["Payroll Taxes and Expenses","C4"],["Professional Fees","A"],["Professional Memberships","A"],["Prompt Pay Discount","G6"],["Property Taxes","O"],["Rebates","G6"],["Recruiting Expense","C4"],["Recruiting Expenses","C4"],["Reimbursed Mileage *","SX"],["Rent Expense","O"],["Rental Income","OI"],["Repairs and Maint-Bldg","O"],["Repairs and Maintenance","O"],["Retained Earnings","SKIP"],["Retirement Contribution","C4"],["Revenues","OI"],["Sales Discounts","S1"],["SALES E (Equipment)","SKIP"],["SALES EXPENSE","SKIP"],["SALES F (Lighting Fixtures)","S1"],["SALES M (Managed Services)","SKIP"],["SALES O (Other Revenue Streams)","SKIP"],["SALES P (Install Parts)","SKIP"],["SALES S (Electrical Services & Labor)","SKIP"],["SALES S (Services & Labor)","SKIP"],["Sales Tax","SX"],["Security & Janitorial","O"],["Security Gear","S1"],["SECURITY MONITORING","SKIP"],["Service Labor","S5"],["Shareholder Distribution","SKIP"],["Small Tools","SX"],["Small Tools and Equipment","SX"],["Software Licenses & Fees","A"],["Software Licenses and Fees","A"],["Sponorships and Donations","SX"],["Sponsorships / Donations","SX"],["SUBCONTRACTORS","SUB"],["SUBCONTRACTORS *","SUB"],["Tariffs","G6"],["Taxes - Payroll","C4"],["Taxes - Real Estate / Pers Prop","O"],["Tech Bonuses","C1"],["Tech Wages / Salaries","C1"],["Telephone Expense","A"],["Tolls, Parking","SX"],["Total ADMIN EXPENSE","SKIP"],["Total Automobile Expense","SKIP"],["Total COGS","SKIP"],["Total COGS E (Equipment)","SKIP"],["Total COGS O (Other Revenue Streams)","SKIP"],["Total COGS P (Install Parts)","SKIP"],["Total COGS V (Vendor Disc/Rebates)","SKIP"],["Total COMP 1 - Direct Labor Wages","SKIP"],["Total COMP 2E - Admin Wages, Employee","SKIP"],["Total COMP 3 - Sales Wages & Comm","SKIP"],["Total COMP 4 - Pay Taxes & Benefits","SKIP"],["Total Expense","SKIP"],["Total Income","SKIP"],["Total Insurance Expense","SKIP"],["Total OCCUPANCY EXPENSE","SKIP"],["Total Other Expense","SKIP"],["Total Other Income","SKIP"],["Total OUTSIDE SERVICES","SKIP"],["Total SALES E (Equipment)","SKIP"],["Total SALES EXPENSE","SKIP"],["Total SALES M (Managed Services)","SKIP"],["Total SALES O (Other Revenue Streams)","SKIP"],["Total SALES P (Install Parts)","SKIP"],["Total SALES S (CI Services & Labor)","SKIP"],["Total SALES S (Services & Labor)","SKIP"],["Total SECURITY MONITORING","SKIP"],["Travel","SX"],["Travel & Lodging","SX"],["Uniforms","SX"],["Utilities","O"],["Wages / Salaries","C2E"],["Wages / Salaries / Draws","C3"],["Wages/Salaries","C3"],["Warranty Discounts","S5"],["Website","SX"],["Workers Comp Insurance","C4"]];
+const DEFAULT_PL_LOOKUP = [["401(k) Company Match","PAYX"],["Accounting","ADMEXP"],["Accounting Fees","ADMEXP"],["ADMIN EXPENSE","SKIP"],["Advertising / Promotion","SEXP"],["Advertising and Promotion","SEXP"],["AMORTIZATION *","DEP"],["Ask My Accountant","SKIP"],["Auto & Truck - Gas,Repair,Maint","SEXP"],["Auto & Truck - Insurance","SEXP"],["Auto & Truck - Leases","SEXP"],["Auto Repairs & Maintenance","SEXP"],["Automobile Expense","SEXP"],["Bank Service Charges","ADMEXP"],["Benefit Admin Fees","PAYX"],["Bonuses","ADME"],["BONUSES","BON"],["Business Licenses & Fees","ADMEXP"],["Business Licenses and Permits","ADMEXP"],["Business/ Liability Insurance","ADMEXP"],["Capital Stock","SKIP"],["CHARITABLE CONTRIBUTIONS","OEXP"],["CI Equipment","EQU"],["CI Install Parts","PAR"],["CI Labor","LAB"],["COGS E (Equipment)","SKIP"],["COGS F (Lighting Fixtures)","CEQU"],["COGS M (Managed Services)","CMANSER"],["COGS O (Other Revenue Streams)","SKIP"],["COGS P (Install Parts)","SKIP"],["COGS V (Vendor Disc/Rebates)","SKIP"],["COGS Z (Inventory Adjusts)","INVADJ"],["Comm/Bonus","SALC"],["Commissions & Bonuses","SALC"],["COMP 1 - Direct Labor Wages","SKIP"],["COMP 2E - Admin Wages, Employee","SKIP"],["COMP 2O - Admin Wages, Owners","OWN"],["COMP 3 - Sales Wages & Comm","SKIP"],["COMP 4 - Pay Taxes & Benefits","SKIP"],["Compensation","SKIP"],["Component Sales","PAR"],["Computer and Internet Expenses","ADMEXP"],["Consulting Fees","ADMEXP"],["Consulting/Coaching","ADMEXP"],["Cost of Goods Sold","SKIP"],["Credit Card Merchant Fees","SEXP"],["Credit Card Processing Fees","SEXP"],["DEPRECIATION *","DEP"],["Dues and Subscriptions","ADMEXP"],["Education & Training","PAYX"],["Education/Training","PAYX"],["Electrical Equipment","EQU"],["Electrical Install Parts","PAR"],["Electrical Labor","LAB"],["Equipment Discounts","EQU"],["Equipment Sales","EQU"],["Expense","SKIP"],["Expenses","OEXP"],["Freight and Shipping","SEXP"],["Freight Costs","SEXP"],["Fringe Benefits - Other","PAYX"],["Fuel","SEXP"],["Gain/Loss on Asset Sale","OINC"],["Gross Profit","SKIP"],["Health Insurance","PAYX"],["Income","SKIP"],["INCOME TAXES","TAX"],["Installation Labor","LAB"],["Insurance - Health, Dental, Vis","PAYX"],["Insurance - Work Comp","PAYX"],["Insurance Expense","ADMEXP"],["INTEREST","INT"],["INTEREST *","INT"],["Interest Income","OINC"],["Internet","OCC"],["IT Services","ADMEXP"],["Job Permits","SEXP"],["Labor - Discounts","LAB"],["Labor - Warranty","LAB"],["Labor (Over) / Under","LAB"],["Legal","ADMEXP"],["Legal Fees","ADMEXP"],["Life/Disability Insurance","PAYX"],["Managed Services","MANSER"],["Meals and Entertainment","SEXP"],["Member 1 Draws","SKIP"],["Member 1 Equity","SKIP"],["Member 2 Draws","SKIP"],["Member 2 Equity","SKIP"],["Mileage Reimbursement","SEXP"],["MISCELLANEOUS","MISC"],["Net Income","SKIP"],["Net Ordinary Income","SKIP"],["Net Other Income","SKIP"],["OCCUPANCY EXPENSE","SKIP"],["Office Equipment","ADMEXP"],["Office Supplies","ADMEXP"],["Opening Balance Equity","SKIP"],["Ordinary Income/Expense","SKIP"],["Other Expense","SKIP"],["OTHER EXPENSE","OEXP"],["Other Income","SKIP"],["OTHER INCOME","SKIP"],["Other Income/Expense","SKIP"],["OUTSIDE SERVICES","SKIP"],["OUTSIDE SERVICES (3rd Party Services)","SKIP"],["Owners BONUSES","BON"],["Payroll Processing Fees","PAYX"],["Payroll Taxes and Expenses","PAYX"],["Professional Fees","ADMEXP"],["Professional Memberships","ADMEXP"],["Prompt Pay Discount","VDISC"],["Property Taxes","OCC"],["Rebates","VDISC"],["Recruiting Expense","PAYX"],["Recruiting Expenses","PAYX"],["Reimbursed Mileage *","SEXP"],["Rent Expense","OCC"],["Rental Income","OINC"],["Repairs and Maint-Bldg","OCC"],["Repairs and Maintenance","OCC"],["Retained Earnings","SKIP"],["Retirement Contribution","PAYX"],["Revenues","OINC"],["Sales Discounts","EQU"],["SALES E (Equipment)","SKIP"],["SALES EXPENSE","SKIP"],["SALES F (Lighting Fixtures)","EQU"],["SALES M (Managed Services)","SKIP"],["SALES O (Other Revenue Streams)","SKIP"],["SALES P (Install Parts)","SKIP"],["SALES S (Electrical Services & Labor)","SKIP"],["SALES S (Services & Labor)","SKIP"],["Sales Tax","SEXP"],["Security & Janitorial","OCC"],["Security Gear","EQU"],["SECURITY MONITORING","SKIP"],["Service Labor","LAB"],["Shareholder Distribution","SKIP"],["Small Tools","SEXP"],["Small Tools and Equipment","SEXP"],["Software Licenses & Fees","ADMEXP"],["Software Licenses and Fees","ADMEXP"],["Sponorships and Donations","SEXP"],["Sponsorships / Donations","SEXP"],["SUBCONTRACTORS","SUB"],["SUBCONTRACTORS *","SUB"],["Tariffs","VDISC"],["Taxes - Payroll","PAYX"],["Taxes - Real Estate / Pers Prop","OCC"],["Tech Bonuses","PROD"],["Tech Wages / Salaries","PROD"],["Telephone Expense","ADMEXP"],["Tolls, Parking","SEXP"],["Total ADMIN EXPENSE","SKIP"],["Total Automobile Expense","SKIP"],["Total COGS","SKIP"],["Total COGS E (Equipment)","SKIP"],["Total COGS O (Other Revenue Streams)","SKIP"],["Total COGS P (Install Parts)","SKIP"],["Total COGS V (Vendor Disc/Rebates)","SKIP"],["Total COMP 1 - Direct Labor Wages","SKIP"],["Total COMP 2E - Admin Wages, Employee","SKIP"],["Total COMP 3 - Sales Wages & Comm","SKIP"],["Total COMP 4 - Pay Taxes & Benefits","SKIP"],["Total Expense","SKIP"],["Total Income","SKIP"],["Total Insurance Expense","SKIP"],["Total OCCUPANCY EXPENSE","SKIP"],["Total Other Expense","SKIP"],["Total Other Income","SKIP"],["Total OUTSIDE SERVICES","SKIP"],["Total SALES E (Equipment)","SKIP"],["Total SALES EXPENSE","SKIP"],["Total SALES M (Managed Services)","SKIP"],["Total SALES O (Other Revenue Streams)","SKIP"],["Total SALES P (Install Parts)","SKIP"],["Total SALES S (CI Services & Labor)","SKIP"],["Total SALES S (Services & Labor)","SKIP"],["Total SECURITY MONITORING","SKIP"],["Travel","SEXP"],["Travel & Lodging","SEXP"],["Uniforms","SEXP"],["Utilities","OCC"],["Wages / Salaries","ADME"],["Wages / Salaries / Draws","SALC"],["Wages/Salaries","SALC"],["Warranty Discounts","LAB"],["Website","SEXP"],["Workers Comp Insurance","PAYX"]];
 
-const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","COMP2E","No","No"],["Access Control Technician","COMP1","No","Yes"],["Account Executive","COMP3","No","No"],["Account Manager","COMP3","No","No"],["Accounts Payable","COMP2E","No","No"],["Accounts Receivable","COMP2E","No","No"],["Acoustical Consultant","COMP1","No","Yes"],["Admin ","COMP2E","No","No"],["Administrative Assistant","COMP2E","No","No"],["Alarm Technician","COMP1","No","Yes"],["AP","COMP2E","No","No"],["AP Specialist","COMP2E","No","No"],["Application Engineer","COMP1","No","Yes"],["Apprentice Tech","COMP1","No","Yes"],["Apprentice Technician","COMP1","No","Yes"],["AR","COMP2E","No","No"],["Associate Project Manager","COMP2E","No","No"],["Install","COMP1","No","Yes"],["Service","COMP1","No","Yes"],["Audio Video Installer","COMP1","No","Yes"],["Audio Visual Engineer","COMP1","No","Yes"],["Audio Visual Programmer","COMP1","No","Yes"],["Audio Visual Technician","COMP1","No","Yes"],["Automation Programmer","COMP1","No","Yes"],["AV Designer","COMP2E","No","No"],["AV Engineer","COMP2E","No","No"],["AV Install Tech","COMP1","No","Yes"],["AV Installer","COMP1","No","Yes"],["AV Programmer","COMP1","No","Yes"],["AV Sales Consultant","COMP3","No","No"],["AV System Designer","COMP2E","No","No"],["AV Tech","COMP1","No","Yes"],["AV Technician","COMP1","No","Yes"],["Bench","COMP1","No","Yes"],["Bench Technician","COMP1","No","Yes"],["Bid Coordinator","COMP3","No","No"],["Billing Specialist","COMP2E","No","No"],["Bookkeeper","COMP2E","No","No"],["Branch Manager","COMP2E","No","No"],["Brand Manager","COMP2E","No","No"],["Business Development","COMP3","No","No"],["Business Development Manager","COMP3","No","No"],["Business Development Rep","COMP3","No","No"],["Business Owner","COMP2O","Yes","No"],["Cable Guy","COMP1","No","Yes"],["Cable Tech","COMP1","No","Yes"],["Cable Technician","COMP1","No","Yes"],["CAD Designer","COMP2E","No","No"],["CAD Technician","COMP2E","No","No"],["CCTV Technician","COMP1","No","Yes"],["CEO","COMP2O","Yes","No"],["CFO","COMP2E","No","No"],["Client Advisor","COMP2E","No","No"],["Client Care Coordinator","COMP2E","No","No"],["Client Relationship Manager","COMP2E","No","No"],["Client Service Manager","COMP2E","No","No"],["Client Service Tech ","COMP1","No","Yes"],["Client Service Technician","COMP1","No","Yes"],["Client Success Manager","COMP2E","No","No"],["Co-Founder","COMP2O","Yes","No"],["Commercial AV Technician","COMP1","No","Yes"],["Commissioning Engineer","COMP1","No","Yes"],["Commissioning Specialist","COMP1","No","Yes"],["Commissioning Technician","COMP1","No","Yes"],["Concierge","COMP2E","No","No"],["Construction Coordinator","COMP2E","No","No"],["Content Manager","COMP2E","No","No"],["Contract Admin","COMP2E","No","No"],["Control System Programmer","COMP1","No","Yes"],["Controller","COMP2E","No","No"],["Controls Engineer","COMP1","No","Yes"],["COO","COMP2E","No","No"],["Custom Integrator","COMP1","No","Yes"],["Customer Care Specialist","COMP2E","No","No"],["Customer Success Manager","COMP2E","No","No"],["Cybersecurity Technician","COMP1","No","Yes"],["Deployment Manager","COMP2E","No","No"],["Deployment Technician","COMP1","No","Yes"],["Design Engineer","COMP2E","No","No"],["Design Manager","COMP2E","No","No"],["Designer","COMP2E","No","No"],["Device Deployment Technician","COMP1","No","Yes"],["Director of Operations","COMP2E","No","No"],["Director of Sales","COMP3","No","No"],["Dispatch","COMP2E","No","No"],["Dispatcher","COMP2E","No","No"],["Door Entry Technician","COMP1","No","Yes"],["Draftsperson","COMP2E","No","No"],["DSP Programmer","COMP1","No","Yes"],["Electronics Technician","COMP1","No","Yes"],["Engineer","COMP2E","No","No"],["Estimating","COMP2E","No","No"],["Estimator","COMP2E","No","No"],["Executive Assistant","COMP2E","No","No"],["Fabrication","COMP1","No","Yes"],["Fabrication Technician","COMP1","No","Yes"],["Field Engineer","COMP1","No","Yes"],["Field Service Technician","COMP1","No","Yes"],["Field Tech","COMP1","No","Yes"],["Field Technician","COMP1","No","Yes"],["Founder","COMP2O","Yes","No"],["General Manager","COMP2E","No","No"],["GM","COMP2E","No","No"],["Golf Simulator Technician","COMP1","No","Yes"],["Help Desk","COMP2E","No","No"],["Help Desk Technician","COMP1","No","Yes"],["Home Automation Engineer","COMP1","No","Yes"],["Home Automation Programmer","COMP1","No","Yes"],["Home Technology Advisor","COMP2E","No","No"],["Home Technology Professional","COMP1","No","Yes"],["Home Theater Installer","COMP1","No","Yes"],["Home Theater Specialist","COMP1","No","Yes"],["HR Manager","COMP2E","No","No"],["Implementation Manager","COMP2E","No","No"],["Infrastructure Technician","COMP1","No","Yes"],["Install Tech","COMP1","No","Yes"],["Install Technician","COMP1","No","Yes"],["Installation Manager","COMP2E","No","No"],["Installation Technician","COMP1","No","Yes"],["Installer","COMP1","No","Yes"],["Integration Developer","COMP2E","No","No"],["Integration Technician","COMP1","No","Yes"],["Inventory Manager","COMP2E","No","No"],["Inventory Specialist","COMP2E","No","No"],["IT Specialist","COMP2E","No","No"],["IT Support Specialist","COMP1","No","Yes"],["IT Technician","COMP1","No","Yes"],["Junior Installer","COMP1","No","Yes"],["Junior Tech","COMP1","No","Yes"],["Lead Installer","COMP1","No","Yes"],["Lead Tech","COMP1","No","Yes"],["Lead Technician","COMP1","No","Yes"],["Lighting Control Designer","COMP2E","No","No"],["Lighting Control Programmer","COMP1","No","Yes"],["Lighting Control Technician","COMP1","No","Yes"],["Lighting Systems Designer","COMP2E","No","No"],["Linked Install","COMP1","No","Yes"],["Logistics Coordinator","COMP2E","No","No"],["Low Voltage Installer","COMP1","No","Yes"],["Low Voltage Technician","COMP1","No","Yes"],["Low-Volt Tech","COMP1","No","Yes"],["Maintenance Technician","COMP1","No","Yes"],["Managing Director","COMP2E","No","No"],["Managing Partner","COMP2E","No","No"],["Marketing Coordinator","COMP2E","No","No"],["Marketing Manager","COMP2E","No","No"],["Media Room Specialist","COMP1","No","Yes"],["Motorized Shade Technician","COMP1","No","Yes"],["Network Administrator","COMP1","No","Yes"],["Network Engineer","COMP1","No","Yes"],["Network Tech","COMP1","No","Yes"],["Network Technician","COMP1","No","Yes"],["NOC Engineer","COMP1","No","Yes"],["NOC Technician","COMP1","No","Yes"],["Office","COMP2E","No","No"],["Office Administrator","COMP2E","No","No"],["Office Manager","COMP2E","No","No"],["Operations Manager","COMP2E","No","No"],["Ops","COMP2E","No","No"],["Outdoor Systems Technician","COMP1","No","Yes"],["Owner","COMP2O","Yes","No"],["Partner","COMP2E","No","No"],["Payroll Specialist","COMP2E","No","No"],["PM","COMP2E","No","No"],["PMO","COMP2E","No","No"],["Pre-Sales Engineer","COMP2E","No","No"],["Pre-Wire Guy","COMP1","No","Yes"],["Pre-Wire Tech","COMP1","No","Yes"],["Pre-Wire Technician","COMP1","No","Yes"],["President","COMP2O","Yes","No"],["Prewire Tech","COMP1","No","Yes"],["Prewire Technician","COMP1","No","Yes"],["Procurement Specialist","COMP2E","No","No"],["Production Manager","COMP2E","No","No"],["Programmer","COMP1","No","Yes"],["Project Administrator","COMP2E","No","No"],["Project Coordinator","COMP2E","No","No"],["Project Engineer","COMP2E","No","No"],["Project Manager","COMP2E","No","No"],["Project Scheduler","COMP2E","No","No"],["Proposal Manager","COMP2E","No","No"],["Purchaser","COMP2E","No","No"],["Purchasing","COMP2E","No","No"],["Purchasing Agent","COMP2E","No","No"],["Purchasing Manager","COMP2E","No","No"],["QA Bench Technician","COMP1","No","Yes"],["QA Technician","COMP1","No","Yes"],["Quality Control Technician","COMP1","No","Yes"],["Rack Build Tech","COMP1","No","Yes"],["Rack Builder","COMP1","No","Yes"],["Rack Fabrication Technician","COMP1","No","Yes"],["Rack Guy","COMP1","No","Yes"],["Rack Tech","COMP1","No","Yes"],["Receptionist","COMP2E","No","No"],["Recruiter","COMP2E","No","No"],["Regional Manager","COMP2E","No","No"],["Remote Support Technician","COMP1","No","Yes"],["Repair Technician","COMP1","No","Yes"],["Residential AV Technician","COMP1","No","Yes"],["Retrofit Technician","COMP1","No","Yes"],["Sales","COMP3","No","No"],["Sales Consultant","COMP3","No","No"],["Sales Director","COMP3","No","No"],["Sales Engineer","COMP3","No","No"],["Sales Guy","COMP3","No","No"],["Sales Manager","COMP3","No","No"],["Sales Rep","COMP3","No","No"],["Salesman","COMP3","No","No"],["Salesperson","COMP3","No","No"],["Scope Writer","COMP2E","No","No"],["Security Tech","COMP1","No","Yes"],["Security Technician","COMP1","No","Yes"],["Senior Installer","COMP1","No","Yes"],["Senior Project Manager","COMP2E","No","No"],["Senior Tech","COMP1","No","Yes"],["Service Coordinator","COMP2E","No","No"],["Service Dispatcher","COMP2E","No","No"],["Service Manager","COMP2E","No","No"],["Service Tech","COMP1","No","Yes"],["Service Technician","COMP1","No","Yes"],["Shade Designer","COMP2E","No","No"],["Shade Programmer","COMP1","No","Yes"],["Shade Tech","COMP1","No","Yes"],["Shade Technician","COMP1","No","Yes"],["Shop Technician","COMP1","No","Yes"],["Showroom Consultant","COMP2E","No","No"],["Showroom Manager","COMP2E","No","No"],["Site Coordinator","COMP2E","No","No"],["Smart Home Consultant","COMP2E","No","No"],["Smart Home Designer","COMP2E","No","No"],["Smart Home Installer","COMP1","No","Yes"],["Smart Home Integrator","COMP1","No","Yes"],["Social Media Manager","COMP2E","No","No"],["Software Developer","COMP2E","No","No"],["Solutions Consultant","COMP2E","No","No"],["Solutions Engineer","COMP2E","No","No"],["Specification Writer","COMP2E","No","No"],["Staff Accountant","COMP2E","No","No"],["Staging Technician","COMP1","No","Yes"],["Startup Technician","COMP1","No","Yes"],["Structured Cabling Technician","COMP1","No","Yes"],["Support","COMP1","No","Yes"],["Support Specialist","COMP1","No","Yes"],["Surveillance Technician","COMP1","No","Yes"],["Systems Administrator","COMP2E","No","No"],["Systems Designer","COMP2E","No","No"],["Systems Engineer","COMP2E","No","No"],["Systems Integration Specialist","COMP1","No","Yes"],["Systems Integrator","COMP1","No","Yes"],["Systems Technician","COMP1","No","Yes"],["Tech","COMP1","No","Yes"],["Technical Support Specialist","COMP1","No","Yes"],["Technician","COMP1","No","Yes"],["Technology Consultant","COMP2E","No","No"],["Technology Designer","COMP2E","No","No"],["Technology Integrator","COMP1","No","Yes"],["Termination Technician","COMP1","No","Yes"],["Trim Guy","COMP1","No","Yes"],["Trim Tech","COMP1","No","Yes"],["Trim-Out Technician","COMP1","No","Yes"],["UI Programmer","COMP1","No","Yes"],["VP of Engineering","COMP2E","No","No"],["VP of Operations","COMP2E","No","No"],["VP of Sales","COMP3","No","No"],["Warehouse","COMP2E","No","No"],["Warehouse Associate","COMP2E","No","No"],["Warehouse Manager","COMP2E","No","No"],["Warranty Technician","COMP1","No","Yes"],["Wi-Fi Engineer","COMP1","No","Yes"],["Wiring Technician","COMP1","No","Yes"]];
+const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","ADME","No","No"],["Access Control Technician","PROD","No","Yes"],["Account Executive","SALC","No","No"],["Account Manager","SALC","No","No"],["Accounts Payable","ADME","No","No"],["Accounts Receivable","ADME","No","No"],["Acoustical Consultant","PROD","No","Yes"],["Admin ","ADME","No","No"],["Administrative Assistant","ADME","No","No"],["Alarm Technician","PROD","No","Yes"],["AP","ADME","No","No"],["AP Specialist","ADME","No","No"],["Application Engineer","PROD","No","Yes"],["Apprentice Tech","PROD","No","Yes"],["Apprentice Technician","PROD","No","Yes"],["AR","ADME","No","No"],["Associate Project Manager","ADME","No","No"],["Install","PROD","No","Yes"],["Service","PROD","No","Yes"],["Audio Video Installer","PROD","No","Yes"],["Audio Visual Engineer","PROD","No","Yes"],["Audio Visual Programmer","PROD","No","Yes"],["Audio Visual Technician","PROD","No","Yes"],["Automation Programmer","PROD","No","Yes"],["AV Designer","ADME","No","No"],["AV Engineer","ADME","No","No"],["AV Install Tech","PROD","No","Yes"],["AV Installer","PROD","No","Yes"],["AV Programmer","PROD","No","Yes"],["AV Sales Consultant","SALC","No","No"],["AV System Designer","ADME","No","No"],["AV Tech","PROD","No","Yes"],["AV Technician","PROD","No","Yes"],["Bench","PROD","No","Yes"],["Bench Technician","PROD","No","Yes"],["Bid Coordinator","SALC","No","No"],["Billing Specialist","ADME","No","No"],["Bookkeeper","ADME","No","No"],["Branch Manager","ADME","No","No"],["Brand Manager","ADME","No","No"],["Business Development","SALC","No","No"],["Business Development Manager","SALC","No","No"],["Business Development Rep","SALC","No","No"],["Business Owner","OWN","Yes","No"],["Cable Guy","PROD","No","Yes"],["Cable Tech","PROD","No","Yes"],["Cable Technician","PROD","No","Yes"],["CAD Designer","ADME","No","No"],["CAD Technician","ADME","No","No"],["CCTV Technician","PROD","No","Yes"],["CEO","OWN","Yes","No"],["CFO","ADME","No","No"],["Client Advisor","ADME","No","No"],["Client Care Coordinator","ADME","No","No"],["Client Relationship Manager","ADME","No","No"],["Client Service Manager","ADME","No","No"],["Client Service Tech ","PROD","No","Yes"],["Client Service Technician","PROD","No","Yes"],["Client Success Manager","ADME","No","No"],["Co-Founder","OWN","Yes","No"],["Commercial AV Technician","PROD","No","Yes"],["Commissioning Engineer","PROD","No","Yes"],["Commissioning Specialist","PROD","No","Yes"],["Commissioning Technician","PROD","No","Yes"],["Concierge","ADME","No","No"],["Construction Coordinator","ADME","No","No"],["Content Manager","ADME","No","No"],["Contract Admin","ADME","No","No"],["Control System Programmer","PROD","No","Yes"],["Controller","ADME","No","No"],["Controls Engineer","PROD","No","Yes"],["COO","ADME","No","No"],["Custom Integrator","PROD","No","Yes"],["Customer Care Specialist","ADME","No","No"],["Customer Success Manager","ADME","No","No"],["Cybersecurity Technician","PROD","No","Yes"],["Deployment Manager","ADME","No","No"],["Deployment Technician","PROD","No","Yes"],["Design Engineer","ADME","No","No"],["Design Manager","ADME","No","No"],["Designer","ADME","No","No"],["Device Deployment Technician","PROD","No","Yes"],["Director of Operations","ADME","No","No"],["Director of Sales","SALC","No","No"],["Dispatch","ADME","No","No"],["Dispatcher","ADME","No","No"],["Door Entry Technician","PROD","No","Yes"],["Draftsperson","ADME","No","No"],["DSP Programmer","PROD","No","Yes"],["Electronics Technician","PROD","No","Yes"],["Engineer","ADME","No","No"],["Estimating","ADME","No","No"],["Estimator","ADME","No","No"],["Executive Assistant","ADME","No","No"],["Fabrication","PROD","No","Yes"],["Fabrication Technician","PROD","No","Yes"],["Field Engineer","PROD","No","Yes"],["Field Service Technician","PROD","No","Yes"],["Field Tech","PROD","No","Yes"],["Field Technician","PROD","No","Yes"],["Founder","OWN","Yes","No"],["General Manager","ADME","No","No"],["GM","ADME","No","No"],["Golf Simulator Technician","PROD","No","Yes"],["Help Desk","ADME","No","No"],["Help Desk Technician","PROD","No","Yes"],["Home Automation Engineer","PROD","No","Yes"],["Home Automation Programmer","PROD","No","Yes"],["Home Technology Advisor","ADME","No","No"],["Home Technology Professional","PROD","No","Yes"],["Home Theater Installer","PROD","No","Yes"],["Home Theater Specialist","PROD","No","Yes"],["HR Manager","ADME","No","No"],["Implementation Manager","ADME","No","No"],["Infrastructure Technician","PROD","No","Yes"],["Install Tech","PROD","No","Yes"],["Install Technician","PROD","No","Yes"],["Installation Manager","ADME","No","No"],["Installation Technician","PROD","No","Yes"],["Installer","PROD","No","Yes"],["Integration Developer","ADME","No","No"],["Integration Technician","PROD","No","Yes"],["Inventory Manager","ADME","No","No"],["Inventory Specialist","ADME","No","No"],["IT Specialist","ADME","No","No"],["IT Support Specialist","PROD","No","Yes"],["IT Technician","PROD","No","Yes"],["Junior Installer","PROD","No","Yes"],["Junior Tech","PROD","No","Yes"],["Lead Installer","PROD","No","Yes"],["Lead Tech","PROD","No","Yes"],["Lead Technician","PROD","No","Yes"],["Lighting Control Designer","ADME","No","No"],["Lighting Control Programmer","PROD","No","Yes"],["Lighting Control Technician","PROD","No","Yes"],["Lighting Systems Designer","ADME","No","No"],["Linked Install","PROD","No","Yes"],["Logistics Coordinator","ADME","No","No"],["Low Voltage Installer","PROD","No","Yes"],["Low Voltage Technician","PROD","No","Yes"],["Low-Volt Tech","PROD","No","Yes"],["Maintenance Technician","PROD","No","Yes"],["Managing Director","ADME","No","No"],["Managing Partner","ADME","No","No"],["Marketing Coordinator","ADME","No","No"],["Marketing Manager","ADME","No","No"],["Media Room Specialist","PROD","No","Yes"],["Motorized Shade Technician","PROD","No","Yes"],["Network Administrator","PROD","No","Yes"],["Network Engineer","PROD","No","Yes"],["Network Tech","PROD","No","Yes"],["Network Technician","PROD","No","Yes"],["NOC Engineer","PROD","No","Yes"],["NOC Technician","PROD","No","Yes"],["Office","ADME","No","No"],["Office Administrator","ADME","No","No"],["Office Manager","ADME","No","No"],["Operations Manager","ADME","No","No"],["Ops","ADME","No","No"],["Outdoor Systems Technician","PROD","No","Yes"],["Owner","OWN","Yes","No"],["Partner","ADME","No","No"],["Payroll Specialist","ADME","No","No"],["PM","ADME","No","No"],["PMO","ADME","No","No"],["Pre-Sales Engineer","ADME","No","No"],["Pre-Wire Guy","PROD","No","Yes"],["Pre-Wire Tech","PROD","No","Yes"],["Pre-Wire Technician","PROD","No","Yes"],["President","OWN","Yes","No"],["Prewire Tech","PROD","No","Yes"],["Prewire Technician","PROD","No","Yes"],["Procurement Specialist","ADME","No","No"],["Production Manager","ADME","No","No"],["Programmer","PROD","No","Yes"],["Project Administrator","ADME","No","No"],["Project Coordinator","ADME","No","No"],["Project Engineer","ADME","No","No"],["Project Manager","ADME","No","No"],["Project Scheduler","ADME","No","No"],["Proposal Manager","ADME","No","No"],["Purchaser","ADME","No","No"],["Purchasing","ADME","No","No"],["Purchasing Agent","ADME","No","No"],["Purchasing Manager","ADME","No","No"],["QA Bench Technician","PROD","No","Yes"],["QA Technician","PROD","No","Yes"],["Quality Control Technician","PROD","No","Yes"],["Rack Build Tech","PROD","No","Yes"],["Rack Builder","PROD","No","Yes"],["Rack Fabrication Technician","PROD","No","Yes"],["Rack Guy","PROD","No","Yes"],["Rack Tech","PROD","No","Yes"],["Receptionist","ADME","No","No"],["Recruiter","ADME","No","No"],["Regional Manager","ADME","No","No"],["Remote Support Technician","PROD","No","Yes"],["Repair Technician","PROD","No","Yes"],["Residential AV Technician","PROD","No","Yes"],["Retrofit Technician","PROD","No","Yes"],["Sales","SALC","No","No"],["Sales Consultant","SALC","No","No"],["Sales Director","SALC","No","No"],["Sales Engineer","SALC","No","No"],["Sales Guy","SALC","No","No"],["Sales Manager","SALC","No","No"],["Sales Rep","SALC","No","No"],["Salesman","SALC","No","No"],["Salesperson","SALC","No","No"],["Scope Writer","ADME","No","No"],["Security Tech","PROD","No","Yes"],["Security Technician","PROD","No","Yes"],["Senior Installer","PROD","No","Yes"],["Senior Project Manager","ADME","No","No"],["Senior Tech","PROD","No","Yes"],["Service Coordinator","ADME","No","No"],["Service Dispatcher","ADME","No","No"],["Service Manager","ADME","No","No"],["Service Tech","PROD","No","Yes"],["Service Technician","PROD","No","Yes"],["Shade Designer","ADME","No","No"],["Shade Programmer","PROD","No","Yes"],["Shade Tech","PROD","No","Yes"],["Shade Technician","PROD","No","Yes"],["Shop Technician","PROD","No","Yes"],["Showroom Consultant","ADME","No","No"],["Showroom Manager","ADME","No","No"],["Site Coordinator","ADME","No","No"],["Smart Home Consultant","ADME","No","No"],["Smart Home Designer","ADME","No","No"],["Smart Home Installer","PROD","No","Yes"],["Smart Home Integrator","PROD","No","Yes"],["Social Media Manager","ADME","No","No"],["Software Developer","ADME","No","No"],["Solutions Consultant","ADME","No","No"],["Solutions Engineer","ADME","No","No"],["Specification Writer","ADME","No","No"],["Staff Accountant","ADME","No","No"],["Staging Technician","PROD","No","Yes"],["Startup Technician","PROD","No","Yes"],["Structured Cabling Technician","PROD","No","Yes"],["Support","PROD","No","Yes"],["Support Specialist","PROD","No","Yes"],["Surveillance Technician","PROD","No","Yes"],["Systems Administrator","ADME","No","No"],["Systems Designer","ADME","No","No"],["Systems Engineer","ADME","No","No"],["Systems Integration Specialist","PROD","No","Yes"],["Systems Integrator","PROD","No","Yes"],["Systems Technician","PROD","No","Yes"],["Tech","PROD","No","Yes"],["Technical Support Specialist","PROD","No","Yes"],["Technician","PROD","No","Yes"],["Technology Consultant","ADME","No","No"],["Technology Designer","ADME","No","No"],["Technology Integrator","PROD","No","Yes"],["Termination Technician","PROD","No","Yes"],["Trim Guy","PROD","No","Yes"],["Trim Tech","PROD","No","Yes"],["Trim-Out Technician","PROD","No","Yes"],["UI Programmer","PROD","No","Yes"],["VP of Engineering","ADME","No","No"],["VP of Operations","ADME","No","No"],["VP of Sales","SALC","No","No"],["Warehouse","ADME","No","No"],["Warehouse Associate","ADME","No","No"],["Warehouse Manager","ADME","No","No"],["Warranty Technician","PROD","No","Yes"],["Wi-Fi Engineer","PROD","No","Yes"],["Wiring Technician","PROD","No","Yes"]];
 
 const BENCHMARK_RANGES = [{metric:"Sales Productivity (Rev/FTE)",notOK:"<$175K",ok:"$175K–$200K",good:">$200K-$250K",veryGood:">$250K",note:"Annual revenue per FTE",notOKThresh:175000.0,okThresh:175000.0,goodThresh:200000.0,veryGoodThresh:250000.0,higher:true},{metric:"Direct Labor Productivity (Labor Rev/BEE)",notOK:"<$10K/mo",ok:"≥$10K/mo-$13K/mo",good:">$13K/mo-$15K/mo",veryGood:">$15K/mo",note:"Monthly labor revenue per BEE",notOKThresh:10000.0,okThresh:10000.0,goodThresh:13000.0,veryGoodThresh:15000.0,higher:true},{metric:"Direct Labor Utilization",notOK:"<50%",ok:"≥50%",good:"≥55%",veryGood:"≥60%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.55,veryGoodThresh:0.6,higher:true},{metric:"Equipment GM%",notOK:"<30%",ok:"≥30%",good:"≥38%",veryGood:"≥43%",note:"35-40% benchmark",notOKThresh:0.3,okThresh:0.3,goodThresh:0.38,veryGoodThresh:0.43,higher:true},{metric:"Parts GM%",notOK:"<50%",ok:"≥50%",good:"≥60%",veryGood:"≥70%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.6,veryGoodThresh:0.7,higher:true},{metric:"Lighting Fixtures GM%",notOK:"<20%",ok:"≥20%",good:"≥30%",veryGood:"≥35%",note:"25-30% benchmark",notOKThresh:0.2,okThresh:0.2,goodThresh:0.3,veryGoodThresh:0.35,higher:true},{metric:"Managed Services GM%",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:"No fixed benchmark",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"Overall Gross Margin",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:">=60% target",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"COMP % of Revenue",notOK:">37.5%",ok:"≤37.5%",good:"≤34%",veryGood:"≤30%",note:"<=30% target",notOKThresh:0.375,okThresh:0.375,goodThresh:0.34,veryGoodThresh:0.3,higher:false},{metric:"GP per Payroll Dollar",notOK:"<1.5",ok:"≥1.5",good:"≥1.7",veryGood:"≥1.9",note:">1.9x target",notOKThresh:1.5,okThresh:1.5,goodThresh:1.7,veryGoodThresh:1.9,higher:true},{metric:"Admin % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Occupancy % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Sales Expense % of Rev",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Total MOC % of Revenue",notOK:">17.5%",ok:"≤17.5%",good:"≤15%",veryGood:"≤12%",note:"<16% benchmark",notOKThresh:0.175,okThresh:0.175,goodThresh:0.15,veryGoodThresh:0.12,higher:false},{metric:"Net Operating Profit %",notOK:"<8%",ok:"≥8%",good:"≥15%",veryGood:"≥25%",note:"10-20% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.15,veryGoodThresh:0.25,higher:true}];
 
@@ -939,6 +948,12 @@ const state = {
   priorUploaded: false,
   currentUploaded: false,
   analysisRun: false,
+  analysisDirty: false,
+  rawPriorPL: null,
+  rawCurrentPL: null,
+  rawPayroll: null,
+  rawPayrollFilename: '',
+  manualPayrollRows: [],
 };
 
 // ═══════════════════════════════════════════════════════
@@ -959,7 +974,7 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════════════════
 function initSetup() {
   const defaults = ['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'];
-  const codes = ['S1/G1','S2/G2','S3/G3','S4/G4','S5/COMP1'];
+  const codes = ['EQU/CEQU','PAR/CPAR','LFIX/CLFIX','MANSER/CMANSER','LAB/PROD'];
   const html = defaults.map((d,i) => `
     <div class="form-group">
       <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
@@ -995,6 +1010,7 @@ function completeSetup() {
     state.setup.categories[i] = document.getElementById(`cat${i}`).value.trim() || state.setup.categories[i];
   }
   document.querySelector('[data-tab="setup"]').innerHTML = '① Setup <span class="done-tab"><span class="tab-check">✓</span></span>';
+  setDirty();
   switchTab('pl');
 }
 
@@ -1114,6 +1130,7 @@ function processPLFile(rows, type, filename) {
 
   if (type === 'prior') {
     state.priorPL = {raw: dataRows, mapped, unmatched, filename};
+    state.rawPriorPL = rows; // retain original raw rows for re-processing
     state.priorUploaded = true;
     const zone = document.getElementById('priorUploadZone');
     zone.classList.add('done');
@@ -1123,6 +1140,7 @@ function processPLFile(rows, type, filename) {
     document.getElementById('priorFileInfo').textContent = '';
   } else {
     state.currentPL = {raw: dataRows, mapped, unmatched, filename};
+    state.rawCurrentPL = rows; // retain original raw rows for re-processing
     state.currentUploaded = true;
     const zone = document.getElementById('currentUploadZone');
     zone.classList.add('done');
@@ -1189,7 +1207,7 @@ function processPL() {
 
   setPLStep(2);
 
-  const codes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T','NI','SKIP'];
+  const codes = ['EQU','PAR','LFIX','MANSER','LAB','CEQU','CPAR','CLFIX','CMANSER','INVADJ','VDISC','SUB','PROD','ADME','OWN','SALC','PAYX','OCC','ADMEXP','SEXP','INT','DEP','MISC','OINC','OEXP','BON','TAX','NI','SKIP'];
   const tbody = document.getElementById('unmatchedTableBody');
   tbody.innerHTML = unmatchedList.map((u,i) => `
     <tr>
@@ -1214,6 +1232,7 @@ function savePLToLookup(idx, name) {
   state.plLookup.push([name, code]);
   const btn = document.querySelector(`#unmatchedTableBody tr:nth-child(${idx+1}) td:last-child button`);
   if(btn) { btn.textContent = '✓ Saved'; btn.disabled = true; btn.className = 'btn btn-sm btn-ghost'; }
+  setDirty();
 }
 
 function skipAllUnmatched() {
@@ -1258,21 +1277,21 @@ function showPLReview() {
   setPLStep(3);
 
   // Build summary
-  const allCodes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T'];
+  const allCodes = ['EQU','PAR','LFIX','MANSER','LAB','CEQU','CPAR','CLFIX','CMANSER','INVADJ','VDISC','SUB','PROD','ADME','OWN','SALC','PAYX','OCC','ADMEXP','SEXP','INT','DEP','MISC','OINC','OEXP','BON','TAX'];
   const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
   const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
 
   const labelMap = {
-    S1:`Revenue — ${state.setup.categories[0]}`, S2:`Revenue — ${state.setup.categories[1]}`,
-    S3:`Revenue — ${state.setup.categories[2]}`, S4:`Revenue — ${state.setup.categories[3]}`,
-    S5:`Revenue — ${state.setup.categories[4]}`,
-    G1:`COGS — ${state.setup.categories[0]}`, G2:`COGS — ${state.setup.categories[1]}`,
-    G3:`COGS — ${state.setup.categories[2]}`, G4:`COGS — ${state.setup.categories[3]}`,
-    G5:'COGS — Inventory Adj', G6:'COGS — Vendor Disc/Rebates',
-    SUB:'Subcontractors', C1:'COMP 1 — Direct Labor', C2E:'COMP 2E — Admin (Emp)',
-    C2O:'COMP 2O — Admin (Owner)', C3:'COMP 3 — Sales', C4:'COMP 4 — Benefits/Taxes',
-    O:'Occupancy', A:'Admin', SX:'Sales Expense', I:'Interest', D:'Depreciation',
-    M:'Miscellaneous', OI:'Other Income', OE:'Other Expense', B:'Bonuses', T:'Taxes'
+    EQU:`Revenue — ${state.setup.categories[0]}`, PAR:`Revenue — ${state.setup.categories[1]}`,
+    LFIX:`Revenue — ${state.setup.categories[2]}`, MANSER:`Revenue — ${state.setup.categories[3]}`,
+    LAB:`Revenue — ${state.setup.categories[4]}`,
+    CEQU:`COGS — ${state.setup.categories[0]}`, CPAR:`COGS — ${state.setup.categories[1]}`,
+    CLFIX:`COGS — ${state.setup.categories[2]}`, CMANSER:`COGS — ${state.setup.categories[3]}`,
+    INVADJ:'COGS — Inventory Adj', VDISC:'COGS — Vendor Disc/Rebates',
+    SUB:'Subcontractors', PROD:'PRODUCTION — Direct Labor', ADME:'ADMIN EMP — Admin (Emp)',
+    OWN:'OWNER — Admin (Owner)', SALC:'SALES & COMM — Sales', PAYX:'PAYROLLX — Benefits/Taxes',
+    OCC:'Occupancy', ADMEXP:'Admin Expense', SEXP:'Sales Expense', INT:'Interest', DEP:'Depreciation',
+    MISC:'Miscellaneous', OINC:'Other Income', OEXP:'Other Expense', BON:'Bonuses', TAX:'Taxes'
   };
 
   const tbody = document.getElementById('plSummaryBody');
@@ -1311,6 +1330,7 @@ function backToUpload() {
 
 function resetPL() {
   state.priorPL = null; state.currentPL = null;
+  state.rawPriorPL = null; state.rawCurrentPL = null;
   state.priorUploaded = false; state.currentUploaded = false;
   document.getElementById('plReviewSection').classList.add('hidden');
   document.getElementById('plUploadSection').classList.remove('hidden');
@@ -1434,6 +1454,9 @@ function processPayrollFileData(rows, filename) {
     }
   });
 
+  state.rawPayroll = rows;         // retain for re-processing
+  state.rawPayrollFilename = filename;
+  state.manualPayrollRows = [];    // clear manual rows on new file upload
   state.payrollData = employees;
   renderPayrollTable();
   if (unmatched.length > 0) renderPayrollUnmatched(unmatched);
@@ -1457,7 +1480,7 @@ function renderPayrollTable() {
       <td><input type="text" value="${escHtml(emp.title)}" onchange="updatePayrollRow(${i},'title',this.value)" style="width:120px;padding:3px 6px;font-size:12px"></td>
       <td>
         <select onchange="updatePayrollRow(${i},'comp',this.value)" style="padding:3px 6px;font-size:12px">
-          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}" ${emp.comp===c?'selected':''}>${c}</option>`).join('')}
+          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}" ${emp.comp===c?'selected':''}>${c}</option>`).join('')}
         </select>
       </td>
       <td><input type="checkbox" ${emp.isOwner?'checked':''} onchange="updatePayrollRow(${i},'isOwner',this.checked)"></td>
@@ -1483,7 +1506,7 @@ function renderPayrollUnmatched(unmatched) {
       <td class="mono text-right">${fmtDollar(emp.wages)}</td>
       <td>
         <select id="pu_comp_${i}" style="padding:4px 6px;font-size:12px">
-          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}">${c}</option>`).join('')}
+          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}">${c}</option>`).join('')}
         </select>
       </td>
       <td><input type="checkbox" id="pu_owner_${i}"></td>
@@ -1503,12 +1526,16 @@ function resolvePayrollUnmatched(i, name, title, wages, hours) {
   state.payrollData.push({name, title, comp, isOwner, isBillable, wages, hoursPerWeek:hours, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1});
   state.payrollLookup.push([title, comp, isOwner?'Yes':'No', isBillable?'Yes':'No']);
   renderPayrollTable();
+  setDirty();
   const row = document.querySelector(`#payrollUnmatchedBody tr:nth-child(${i+1})`);
   if (row) { row.style.opacity = '0.4'; row.querySelector('button').textContent = '✓ Added'; row.querySelector('button').disabled = true; }
 }
 
 function addPayrollRow() {
-  state.payrollData.push({name:'', title:'', comp:'COMP1', isOwner:false, isBillable:true, wages:0, hoursPerWeek:40, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1});
+  const row = {name:'', title:'', comp:'PROD', isOwner:false, isBillable:true, wages:0, hoursPerWeek:40, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1};
+  state.payrollData.push(row);
+  state.manualPayrollRows.push(row);
+  setDirty();
   renderPayrollTable();
 }
 
@@ -1532,7 +1559,7 @@ function runCrossCheck() {
   censusTotals.C4 = totalWages * comp4Rate;
 
   const grid = document.getElementById('crossCheckGrid');
-  const buckets = [{key:'C1',label:'COMP 1'},{key:'C2E',label:'COMP 2E'},{key:'C2O',label:'COMP 2O'},{key:'C3',label:'COMP 3'},{key:'C4',label:'COMP 4'}];
+  const buckets = [{key:'PROD',label:'PRODUCTION'},{key:'ADME',label:'ADMIN EMP'},{key:'OWN',label:'OWNER'},{key:'SALC',label:'SALES & COMM'},{key:'PAYX',label:'PAYROLLX'}];
 
   grid.innerHTML = buckets.map(({key,label}) => {
     const census = censusTotals[key] || 0;
@@ -1553,7 +1580,84 @@ function runCrossCheck() {
 // ═══════════════════════════════════════════════════════
 // ANALYSIS ENGINE
 // ═══════════════════════════════════════════════════════
+function autoSaveUnmatched() {
+  // Auto-save all assigned unmatched P&L accounts to lookup
+  const plRows = document.querySelectorAll('#unmatchedTableBody tr');
+  plRows.forEach((row, i) => {
+    const sel = document.getElementById(`unmatch_${i}`);
+    if (sel && sel.value) {
+      const name = row.querySelector('td.bold')?.textContent;
+      if (name && !state.plLookup.find(e => e[0] === name)) {
+        state.plLookup.push([name, sel.value]);
+      }
+    }
+  });
+  // Auto-save all assigned unmatched payroll titles to lookup
+  const payRows = document.querySelectorAll('#payrollUnmatchedBody tr');
+  payRows.forEach((row, i) => {
+    const comp  = document.getElementById(`pu_comp_${i}`)?.value;
+    const owner = document.getElementById(`pu_owner_${i}`)?.checked;
+    const bill  = document.getElementById(`pu_bill_${i}`)?.checked;
+    if (comp) {
+      const titleCell = row.cells?.[1]?.textContent?.trim();
+      if (titleCell && !state.payrollLookup.find(e => e[0] === titleCell)) {
+        state.payrollLookup.push([titleCell, comp, owner?'Yes':'No', bill?'Yes':'No']);
+      }
+    }
+  });
+}
+
+function reprocessFromRaw() {
+  // Re-run P&L mapping from raw files using current lookup tables
+  if (state.rawPriorPL) {
+    processPLFile(state.rawPriorPL, 'prior', state.priorPL?.filename || '');
+  }
+  if (state.rawCurrentPL) {
+    processPLFile(state.rawCurrentPL, 'current', state.currentPL?.filename || '');
+  }
+  // Re-run payroll matching from raw file using current lookup
+  if (state.rawPayroll) {
+    processPayrollFileData(state.rawPayroll, state.rawPayrollFilename);
+  }
+  // Re-merge manual payroll rows (not from file)
+  if (state.manualPayrollRows && state.manualPayrollRows.length > 0) {
+    state.manualPayrollRows.forEach(r => {
+      if (!state.payrollData.find(e => e.name === r.name && e.title === r.title)) {
+        state.payrollData.push(r);
+      }
+    });
+    renderPayrollTable();
+  }
+  // Re-run processPL to handle threshold filter and unmatched panel
+  if (state.rawPriorPL && state.rawCurrentPL) processPL();
+}
+
+function setDirty() {
+  if (!state.analysisRun) return; // only flag dirty after first analysis
+  state.analysisDirty = true;
+  ['dirtyBannerBenchmarks','dirtyBannerYOY'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+  });
+}
+
+function clearDirty() {
+  state.analysisDirty = false;
+  ['dirtyBannerBenchmarks','dirtyBannerYOY'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+}
+
 function runAnalysis() {
+  // Auto-save any open unmatched assignments before re-processing
+  autoSaveUnmatched();
+
+  // Re-process from raw files if available
+  if (state.rawPriorPL || state.rawCurrentPL || state.rawPayroll) {
+    reprocessFromRaw();
+  }
+
   if (!state.priorPL || !state.currentPL) {
     alert('Please complete P&L upload before running analysis.'); return;
   }
@@ -1565,13 +1669,13 @@ function runAnalysis() {
   const cats = state.setup.categories;
 
   // Revenue totals
-  const priorRev = (prior.S1||0)+(prior.S2||0)+(prior.S3||0)+(prior.S4||0)+(prior.S5||0);
-  const currRev  = (curr.S1||0)+(curr.S2||0)+(curr.S3||0)+(curr.S4||0)+(curr.S5||0);
+  const priorRev = (prior.EQU||0)+(prior.PAR||0)+(prior.LFIX||0)+(prior.MANSER||0)+(prior.LAB||0);
+  const currRev  = (curr.EQU||0)+(curr.PAR||0)+(curr.LFIX||0)+(curr.MANSER||0)+(curr.LAB||0);
   const currRevAnn = currRev * annFactor;
 
   // COGS
-  const priorCOGS = (prior.G1||0)+(prior.G2||0)+(prior.G3||0)+(prior.G4||0)+(prior.G5||0)+(prior.G6||0);
-  const currCOGS  = (curr.G1||0)+(curr.G2||0)+(curr.G3||0)+(curr.G4||0)+(curr.G5||0)+(curr.G6||0);
+  const priorCOGS = (prior.CEQU||0)+(prior.CPAR||0)+(prior.CLFIX||0)+(prior.CMANSER||0)+(prior.INVADJ||0)+(prior.VDISC||0);
+  const currCOGS  = (curr.CEQU||0)+(curr.CPAR||0)+(curr.CLFIX||0)+(curr.CMANSER||0)+(curr.INVADJ||0)+(curr.VDISC||0);
 
   // GP before labor
   const priorGP = priorRev - priorCOGS;
@@ -1579,27 +1683,27 @@ function runAnalysis() {
 
   // Compensation
   const comp4Rate = (parseFloat(document.getElementById('comp4Rate').value)||3.45)/100;
-  const payrollTotals = {C1:0,C2E:0,C2O:0,C3:0};
+  const payrollTotals = {PROD:0,ADME:0,OWN:0,SALC:0};
   state.payrollData.forEach(emp => {
-    const key = emp.comp.replace('COMP','C');
+    const key = emp.comp; // comp values are now PROD/ADME/OWN/SALC directly
     if (payrollTotals[key]!==undefined) payrollTotals[key] += emp.wages;
   });
   const totalWages = Object.values(payrollTotals).reduce((a,b)=>a+b,0);
   const usePayroll = state.payrollData.length > 0;
 
-  const priorC1  = usePayroll ? payrollTotals.C1 : (prior.C1||0);
-  const currC1   = usePayroll ? payrollTotals.C1 : (curr.C1||0);
-  const priorComp = (prior.C1||0)+(prior.C2E||0)+(prior.C2O||0)+(prior.C3||0)+(prior.C4||0);
-  const currComp  = (curr.C1||0)+(curr.C2E||0)+(curr.C2O||0)+(curr.C3||0)+(curr.C4||0);
+  const priorC1  = usePayroll ? payrollTotals.PROD : (prior.PROD||0);
+  const currC1   = usePayroll ? payrollTotals.PROD : (curr.PROD||0);
+  const priorComp = (prior.PROD||0)+(prior.ADME||0)+(prior.OWN||0)+(prior.SALC||0)+(prior.PAYX||0);
+  const currComp  = (curr.PROD||0)+(curr.ADME||0)+(curr.OWN||0)+(curr.SALC||0)+(curr.PAYX||0);
 
   // FTE / BEE from payroll
   const ftes = state.payrollData.reduce((a,e)=>a+(e.hoursPerWeek/40),0) || 7.5;
   const bees = state.payrollData.filter(e=>e.isBillable).reduce((a,e)=>a+(e.hoursPerWeek/40),0) || 5;
 
   // Expenses
-  const priorAdmin = prior.A||0, currAdmin = curr.A||0;
-  const priorOcc   = prior.O||0, currOcc   = curr.O||0;
-  const priorSX    = prior.SX||0, currSX   = curr.SX||0;
+  const priorAdmin = prior.ADMEXP||0, currAdmin = curr.ADMEXP||0;
+  const priorOcc   = prior.OCC||0, currOcc   = curr.OCC||0;
+  const priorSX    = prior.SEXP||0, currSX   = curr.SEXP||0;
   const priorMOC   = priorAdmin+priorOcc+priorSX;
   const currMOC    = currAdmin+currOcc+currSX;
 
@@ -1630,8 +1734,8 @@ function runAnalysis() {
     currGPP:  currComp  > 0 ? currGP/currComp   : null,
     priorRevFTE: ftes > 0 ? priorRev/ftes : null,
     currRevFTE:  ftes > 0 ? currRev/ftes  : null,
-    priorLaborRevBEE: bees > 0 ? (prior.S5||0)/bees/12 : null,
-    currLaborRevBEE:  bees > 0 ? (curr.S5||0)/bees/12  : null,
+    priorLaborRevBEE: bees > 0 ? (prior.LAB||0)/bees/12 : null,
+    currLaborRevBEE:  bees > 0 ? (curr.LAB||0)/bees/12  : null,
     ftes, bees, prior, curr, cats,
   };
 
@@ -1640,6 +1744,7 @@ function runAnalysis() {
 
   renderBenchmarks(metrics);
   renderYOY(metrics);
+  clearDirty();
 
   // Unlock tabs
   document.querySelectorAll('.nav-tab.locked').forEach(t => t.classList.remove('locked'));
@@ -1701,12 +1806,12 @@ function renderBenchmarks(m) {
   const cats = m.cats;
   const pY = state.setup.priorYear, cY = state.setup.currentYear;
   const priorGMBycat = {
-    S1: gmPct(m.prior.S1, m.prior.G1), S2: gmPct(m.prior.S2, m.prior.G2),
-    S3: gmPct(m.prior.S3, m.prior.G3), S4: gmPct(m.prior.S4, m.prior.G4),
+    S1: gmPct(m.prior.EQU, m.prior.CEQU), S2: gmPct(m.prior.PAR, m.prior.CPAR),
+    S3: gmPct(m.prior.LFIX, m.prior.CLFIX), S4: gmPct(m.prior.MANSER, m.prior.CMANSER),
   };
   const currGMBycat = {
-    S1: gmPct(m.curr.S1, m.curr.G1), S2: gmPct(m.curr.S2, m.curr.G2),
-    S3: gmPct(m.curr.S3, m.curr.G3), S4: gmPct(m.curr.S4, m.curr.G4),
+    S1: gmPct(m.curr.EQU, m.curr.CEQU), S2: gmPct(m.curr.PAR, m.curr.CPAR),
+    S3: gmPct(m.curr.LFIX, m.curr.CLFIX), S4: gmPct(m.curr.MANSER, m.curr.CMANSER),
   };
 
   let html = `
@@ -1733,10 +1838,10 @@ function renderBenchmarks(m) {
 
   <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Gross Margin by Category</div>
   <div class="metrics-grid">
-    ${metricCard(cats[0]+' GM%', priorGMBycat.S1, currGMBycat.S1, fmtPct, getBM('Equipment GM%'),         getBM('Equipment GM%')?.note||'',         '')}
-    ${metricCard(cats[1]+' GM%', priorGMBycat.S2, currGMBycat.S2, fmtPct, getBM('Parts GM%'),             getBM('Parts GM%')?.note||'',             '')}
-    ${metricCard(cats[2]+' GM%', priorGMBycat.S3, currGMBycat.S3, fmtPct, getBM('Lighting Fixtures GM%'), getBM('Lighting Fixtures GM%')?.note||'', '')}
-    ${metricCard(cats[3]+' GM%', priorGMBycat.S4, currGMBycat.S4, fmtPct, getBM('Managed Services GM%'),  getBM('Managed Services GM%')?.note||'',  '')}
+    ${metricCard(cats[0]+' GM%', priorGMBycat.EQU, currGMBycat.EQU, fmtPct, getBM('Equipment GM%'),         getBM('Equipment GM%')?.note||'',         '')}
+    ${metricCard(cats[1]+' GM%', priorGMBycat.PAR, currGMBycat.PAR, fmtPct, getBM('Parts GM%'),             getBM('Parts GM%')?.note||'',             '')}
+    ${metricCard(cats[2]+' GM%', priorGMBycat.LFIX, currGMBycat.LFIX, fmtPct, getBM('Lighting Fixtures GM%'), getBM('Lighting Fixtures GM%')?.note||'', '')}
+    ${metricCard(cats[3]+' GM%', priorGMBycat.MANSER, currGMBycat.MANSER, fmtPct, getBM('Managed Services GM%'),  getBM('Managed Services GM%')?.note||'',  '')}
   </div>
 
   <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Compensation</div>
@@ -1785,15 +1890,15 @@ function renderYOY(m) {
 
   const secRow = (label) => `<tr><td colspan="7" class="yoy-section">${label}</td></tr>`;
 
-  const priorRev = (p.S1||0)+(p.S2||0)+(p.S3||0)+(p.S4||0)+(p.S5||0);
-  const currRev  = (c.S1||0)+(c.S2||0)+(c.S3||0)+(c.S4||0)+(c.S5||0);
-  const priorCOGS= (p.G1||0)+(p.G2||0)+(p.G3||0)+(p.G4||0)+(p.G5||0)+(p.G6||0);
-  const currCOGS = (c.G1||0)+(c.G2||0)+(c.G3||0)+(c.G4||0)+(c.G5||0)+(c.G6||0);
+  const priorRev = (p.EQU||0)+(p.PAR||0)+(p.LFIX||0)+(p.MANSER||0)+(p.LAB||0);
+  const currRev  = (c.EQU||0)+(c.PAR||0)+(c.LFIX||0)+(c.MANSER||0)+(c.LAB||0);
+  const priorCOGS= (p.CEQU||0)+(p.CPAR||0)+(p.CLFIX||0)+(p.CMANSER||0)+(p.INVADJ||0)+(p.VDISC||0);
+  const currCOGS = (c.CEQU||0)+(c.CPAR||0)+(c.CLFIX||0)+(c.CMANSER||0)+(c.INVADJ||0)+(c.VDISC||0);
   const priorGP  = priorRev-priorCOGS, currGP=currRev-currCOGS;
-  const priorComp= (p.C1||0)+(p.C2E||0)+(p.C2O||0)+(p.C3||0)+(p.C4||0);
-  const currComp = (c.C1||0)+(c.C2E||0)+(c.C2O||0)+(c.C3||0)+(c.C4||0);
-  const priorMOC = (p.A||0)+(p.O||0)+(p.SX||0);
-  const currMOC  = (c.A||0)+(c.O||0)+(c.SX||0);
+  const priorComp= (p.PROD||0)+(p.ADME||0)+(p.OWN||0)+(p.SALC||0)+(p.PAYX||0);
+  const currComp = (c.PROD||0)+(c.ADME||0)+(c.OWN||0)+(c.SALC||0)+(c.PAYX||0);
+  const priorMOC = (p.ADMEXP||0)+(p.OCC||0)+(p.SEXP||0);
+  const currMOC  = (c.ADMEXP||0)+(c.OCC||0)+(c.SEXP||0);
   const priorNOI = priorGP-priorComp-priorMOC;
   const currNOI  = currGP-currComp-currMOC;
 
@@ -1815,42 +1920,42 @@ function renderYOY(m) {
           </thead>
           <tbody>
             ${secRow('REVENUE')}
-            ${yoyRow(cats[0], p.S1||0, c.S1||0)}
-            ${yoyRow(cats[1], p.S2||0, c.S2||0)}
-            ${yoyRow(cats[2], p.S3||0, c.S3||0)}
-            ${yoyRow(cats[3], p.S4||0, c.S4||0)}
-            ${yoyRow(cats[4], p.S5||0, c.S5||0)}
+            ${yoyRow(cats[0], p.EQU||0, c.EQU||0)}
+            ${yoyRow(cats[1], p.PAR||0, c.PAR||0)}
+            ${yoyRow(cats[2], p.LFIX||0, c.LFIX||0)}
+            ${yoyRow(cats[3], p.MANSER||0, c.MANSER||0)}
+            ${yoyRow(cats[4], p.LAB||0, c.LAB||0)}
             ${yoyRow('TOTAL REVENUE', priorRev, currRev, true)}
             ${secRow('COST OF GOODS SOLD')}
-            ${yoyRow(`COGS — ${cats[0]}`, p.G1||0, c.G1||0)}
-            ${yoyRow(`COGS — ${cats[1]}`, p.G2||0, c.G2||0)}
-            ${yoyRow(`COGS — ${cats[2]}`, p.G3||0, c.G3||0)}
-            ${yoyRow(`COGS — ${cats[3]}`, p.G4||0, c.G4||0)}
-            ${yoyRow('Inventory Adjustments', p.G5||0, c.G5||0)}
-            ${yoyRow('Vendor Disc / Rebates', p.G6||0, c.G6||0)}
+            ${yoyRow(`COGS — ${cats[0]}`, p.CEQU||0, c.CEQU||0)}
+            ${yoyRow(`COGS — ${cats[1]}`, p.CPAR||0, c.CPAR||0)}
+            ${yoyRow(`COGS — ${cats[2]}`, p.CLFIX||0, c.CLFIX||0)}
+            ${yoyRow(`COGS — ${cats[3]}`, p.CMANSER||0, c.CMANSER||0)}
+            ${yoyRow('Inventory Adjustments', p.INVADJ||0, c.INVADJ||0)}
+            ${yoyRow('Vendor Disc / Rebates', p.VDISC||0, c.VDISC||0)}
             ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
             ${yoyRow('GROSS PROFIT', priorGP, currGP, true)}
             ${secRow('COMPENSATION')}
-            ${yoyRow('COMP 1 — Direct Labor', p.C1||0, c.C1||0)}
-            ${yoyRow('COMP 2E — Admin (Employees)', p.C2E||0, c.C2E||0)}
-            ${yoyRow('COMP 2O — Admin (Owners)', p.C2O||0, c.C2O||0)}
-            ${yoyRow('COMP 3 — Sales', p.C3||0, c.C3||0)}
-            ${yoyRow('COMP 4 — Benefits & Taxes', p.C4||0, c.C4||0)}
+            ${yoyRow('PRODUCTION — Direct Labor', p.PROD||0, c.PROD||0)}
+            ${yoyRow('ADMIN EMP — Admin (Employees)', p.ADME||0, c.ADME||0)}
+            ${yoyRow('OWNER — Admin (Owners)', p.OWN||0, c.OWN||0)}
+            ${yoyRow('SALES & COMM — Sales', p.SALC||0, c.SALC||0)}
+            ${yoyRow('PAYROLLX — Benefits & Taxes', p.PAYX||0, c.PAYX||0)}
             ${yoyRow('Subcontractors', p.SUB||0, c.SUB||0)}
             ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
             ${secRow('MAJOR OPERATING COSTS')}
-            ${yoyRow('Admin Expense', p.A||0, c.A||0)}
-            ${yoyRow('Occupancy Expense', p.O||0, c.O||0)}
-            ${yoyRow('Sales Expense', p.SX||0, c.SX||0)}
+            ${yoyRow('Admin Expense', p.ADMEXP||0, c.ADMEXP||0)}
+            ${yoyRow('Occupancy Expense', p.OCC||0, c.OCC||0)}
+            ${yoyRow('Sales Expense', p.SEXP||0, c.SEXP||0)}
             ${yoyRow('TOTAL MOC', priorMOC, currMOC, true)}
             ${secRow('OTHER')}
-            ${yoyRow('Interest', p.I||0, c.I||0)}
-            ${yoyRow('Depreciation', p.D||0, c.D||0)}
-            ${yoyRow('Miscellaneous', p.M||0, c.M||0)}
-            ${yoyRow('Other Income', p.OI||0, c.OI||0)}
-            ${yoyRow('Other Expense', p.OE||0, c.OE||0)}
-            ${yoyRow('Bonuses', p.B||0, c.B||0)}
-            ${yoyRow('Taxes', p.T||0, c.T||0)}
+            ${yoyRow('Interest', p.INT||0, c.INT||0)}
+            ${yoyRow('Depreciation', p.DEP||0, c.DEP||0)}
+            ${yoyRow('Miscellaneous', p.MISC||0, c.MISC||0)}
+            ${yoyRow('Other Income', p.OINC||0, c.OINC||0)}
+            ${yoyRow('Other Expense', p.OEXP||0, c.OEXP||0)}
+            ${yoyRow('Bonuses', p.BON||0, c.BON||0)}
+            ${yoyRow('Taxes', p.TAX||0, c.TAX||0)}
             ${yoyRow('NET OPERATING PROFIT', priorNOI, currNOI, true)}
           </tbody>
         </table>
@@ -1867,7 +1972,7 @@ function renderYOY(m) {
 function renderLookupTables() {
   // P&L Lookup
   document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
-  const codes = ['S1','S2','S3','S4','S5','G1','G2','G3','G4','G5','G6','SUB','C1','C2E','C2O','C3','C4','O','A','SX','I','D','M','OI','OE','B','T','NI','SKIP'];
+  const codes = ['EQU','PAR','LFIX','MANSER','LAB','CEQU','CPAR','CLFIX','CMANSER','INVADJ','VDISC','SUB','PROD','ADME','OWN','SALC','PAYX','OCC','ADMEXP','SEXP','INT','DEP','MISC','OINC','OEXP','BON','TAX','NI','SKIP'];
   const plBody = document.getElementById('plLookupBody');
   plBody.innerHTML = state.plLookup.map(([name, code], i) => `
     <tr>
@@ -1888,7 +1993,7 @@ function renderLookupTables() {
       <td><input type="text" value="${escHtml(title)}" onchange="state.payrollLookup[${i}][0]=this.value" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
       <td>
         <select onchange="state.payrollLookup[${i}][1]=this.value" style="padding:3px 6px;font-size:12px">
-          ${['COMP1','COMP2E','COMP2O','COMP3'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
+          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
         </select>
       </td>
       <td style="text-align:center"><input type="checkbox" ${(owner==='Yes'||owner===true)?'checked':''} onchange="state.payrollLookup[${i}][2]=this.checked?'Yes':'No'"></td>
@@ -1923,7 +2028,7 @@ function renderLookupTables() {
 }
 
 function addPLLookupRow() { state.plLookup.push(['New Account','SKIP']); renderLookupTables(); }
-function addPayrollLookupRow() { state.payrollLookup.push(['New Title','COMP1','No','Yes']); renderLookupTables(); }
+function addPayrollLookupRow() { state.payrollLookup.push(['New Title','PROD','No','Yes']); renderLookupTables(); }
 
 function exportPLLookup() {
   const csv = 'account_name,category_code\n' + state.plLookup.map(([n,c])=>`"${n}","${c}"`).join('\n');
@@ -1941,7 +2046,7 @@ function uploadPLLookup(e) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     const rows = parseCSV(ev.target.result).slice(1);
-    if (rows.length > 0) { state.plLookup = rows.filter(r=>r.length>=2); renderLookupTables(); }
+    if (rows.length > 0) { state.plLookup = rows.filter(r=>r.length>=2); renderLookupTables(); setDirty(); }
   };
   reader.readAsText(file);
 }
@@ -1952,7 +2057,7 @@ function uploadPayrollLookup(e) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     const rows = parseCSV(ev.target.result).slice(1);
-    if (rows.length > 0) { state.payrollLookup = rows.filter(r=>r.length>=4); renderLookupTables(); }
+    if (rows.length > 0) { state.payrollLookup = rows.filter(r=>r.length>=4); renderLookupTables(); setDirty(); }
   };
   reader.readAsText(file);
 }
@@ -1960,6 +2065,90 @@ function uploadPayrollLookup(e) {
 // ═══════════════════════════════════════════════════════
 // MODAL
 // ═══════════════════════════════════════════════════════
+function newClientReset() {
+  if (!confirm('Reset session for a new client? All uploaded data and analysis results will be cleared. Lookup table updates and benchmark range edits made this session will be retained.')) return;
+
+  // ── Reset setup ──
+  state.setup = { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'] };
+
+  // ── Reset P&L ──
+  state.priorPL      = null;
+  state.currentPL    = null;
+  state.rawPriorPL   = null;
+  state.rawCurrentPL = null;
+  state.priorUploaded   = false;
+  state.currentUploaded = false;
+
+  // ── Reset payroll ──
+  state.payrollData        = [];
+  state.rawPayroll         = null;
+  state.rawPayrollFilename = '';
+  state.manualPayrollRows  = [];
+
+  // ── Reset analysis flags ──
+  state.analysisRun   = false;
+  state.analysisDirty = false;
+
+  // ── Reset Setup form fields ──
+  document.getElementById('companyName').value = '';
+  document.getElementById('priorYear').value   = '';
+  document.getElementById('currentYear').value = '';
+  document.getElementById('throughMonth').value = '12';
+  initSetup();
+  updateTopbar();
+
+  // ── Reset upload zones ──
+  ['prior','current'].forEach(t => {
+    const zone = document.getElementById(`${t}UploadZone`);
+    zone.classList.remove('done');
+    zone.querySelector('.upload-icon').textContent  = '📄';
+    zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
+    zone.querySelector('.upload-sub').textContent   = 'CSV export from QuickBooks • Two columns: Account Name, Amount';
+  });
+  const pzone = document.getElementById('payrollUploadZone');
+  pzone.classList.remove('done');
+  pzone.querySelector('.upload-icon').textContent  = '👥';
+  pzone.querySelector('.upload-title').textContent = 'Click or drag to upload';
+  pzone.querySelector('.upload-sub').textContent   = 'QuickBooks payroll export • Columns: Employee Name, Title, Annual Wages';
+  document.getElementById('processPLBtn').disabled = true;
+
+  // ── Reset payroll census table ──
+  renderPayrollTable();
+
+  // ── Reset P&L page sections ──
+  document.getElementById('plReviewSection').classList.add('hidden');
+  document.getElementById('plUnmatchedSection').classList.add('hidden');
+  document.getElementById('plUploadSection').classList.remove('hidden');
+  setPLStep(1);
+
+  // ── Reset payroll unmatched panel ──
+  document.getElementById('payrollUnmatchedSection').classList.add('hidden');
+
+  // ── Reset benchmarks & YOY pages ──
+  document.getElementById('benchmarksContent').innerHTML = '<div class="alert alert-info"><span class="alert-icon">ℹ</span>Complete Setup, P&L Upload, and Payroll Census to generate benchmarks.</div>';
+  document.getElementById('yoyContent').innerHTML        = '<div class="alert alert-info"><span class="alert-icon">ℹ</span>Complete P&L Upload to generate the year-over-year comparison.</div>';
+  clearDirty();
+
+  // ── Reset status chips ──
+  document.getElementById('chipPL').className      = 'chip';
+  document.getElementById('chipPL').textContent    = 'P&L';
+  document.getElementById('chipPayroll').className = 'chip';
+  document.getElementById('chipPayroll').textContent = 'Payroll';
+  document.getElementById('chipAnalysis').className = 'chip';
+  document.getElementById('chipAnalysis').textContent = 'Analysis';
+
+  // ── Reset nav tab labels ──
+  document.querySelector('[data-tab="setup"]').innerHTML      = '① Setup';
+  document.querySelector('[data-tab="pl"]').innerHTML         = '② P&L Upload <span id="plBadge" class="tab-badge hidden">!</span>';
+  document.querySelector('[data-tab="payroll"]').innerHTML    = '③ Payroll Census <span id="payrollBadge" class="tab-badge hidden">!</span>';
+
+  // ── Re-lock analysis tabs ──
+  document.querySelector('[data-tab="benchmarks"]').classList.add('locked');
+  document.querySelector('[data-tab="yoy"]').classList.add('locked');
+
+  switchTab('setup');
+}
+
 // ── BENCHMARK RANGE EDITING ──
 function parseBenchmarkValue(val, metric) {
   if (!val || val.trim() === '—') return null;
@@ -2022,6 +2211,7 @@ function validateBenchmarkInput(input) {
   const isModified = val !== (BENCHMARK_RANGES[idx]?.[field] || '—');
   input.style.background = isModified ? 'var(--primary-faint)' : 'var(--bg2)';
   updateBenchmarkModifiedBadge();
+  setDirty();
 }
 
 function resetBenchmarkRanges() {
