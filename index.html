@@ -1293,10 +1293,15 @@ function processPLFile(rows, type, filename) {
 
   if (format === 'worksheet') {
     // Benchmarking worksheet format: name in cols 0-6, translate code in col 9, amount in col 10
+    let debugSampled = 0;
     rows.forEach(row => {
-      if (!row || row.length < 11) return;
+      if (!row || row.length < 11) {
+        if (debugSampled < 3) { console.log(`[DEBUG] worksheet row skipped: length=${row ? row.length : 'null'}`); debugSampled++; }
+        return;
+      }
       const codeRaw = (row[9] || '').toString().trim().toLowerCase();
       const amount = parseFloat((row[10] || '').toString().replace(/[$,\s]/g,''));
+      if (debugSampled < 5) { console.log(`[DEBUG] worksheet row: col9=${JSON.stringify(row[9])}, col10=${JSON.stringify(row[10])}, codeRaw=${codeRaw}, amount=${amount}`); debugSampled++; }
       if (!codeRaw || isNaN(amount)) return;
       const newCode = TRANSLATE_CODE_MAP[codeRaw];
       if (!newCode || newCode === 'NETIN') return;
