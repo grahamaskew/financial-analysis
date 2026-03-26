@@ -1109,34 +1109,84 @@ function buildLookupMap() {
   return map;
 }
 
-function processPLFile(rows, type, filename) {
-  // Skip header row if present
-  let dataRows = rows;
-  if (rows.length > 0 && isNaN(parseFloat(rows[0][rows[0].length-1]))) dataRows = rows.slice(1);
+// Old translate codes (from benchmarking worksheets) to new P&L codes
+const TRANSLATE_CODE_MAP = {
+  's1':'REVEQ','s2':'REVPT','s3':'REVLF','s4':'REVMS','s5':'REVLB',
+  'g1':'CGSEQ','g2':'CGSPT','g3':'CGSLF','g4':'CGSMS','g5':'CGSIA','g6':'CGSVD',
+  'sub':'SUBC','c1':'CMP1','c2':'CMP2','c2e':'C2EM','c2o':'C2OW',
+  'c3':'CMP3','c4':'CMP4','o':'OCCP','a':'ADMN','i':'INTR',
+  'sx':'SLSX','m':'MISC','d':'DEPR','mi':'MONI','me':'MONE',
+  'oi':'OTHI','oe':'OTHE','b':'BONUS','t':'TAX','ni':'NETIN'
+};
 
-  const lookupMap = buildLookupMap();
+function detectPLFormat(rows) {
+  // Benchmarking worksheet format:
+  //   - Many columns (>4)
+  //   - Col 9 (index 9) contains short translate codes like s1, g1, c1, sx, etc.
+  //   - Col 10 (index 10) contains amounts
+  // QuickBooks CSV format:
+  //   - 2 columns: account name, amount
+  const sampleRows = rows.slice(0, 30).filter(r => r && r.length > 9);
+  const translateCodePattern = /^(s[1-5]|g[1-6]|c[1-4]|c2[eo]|sub|sx|[adimot]|mi|me|oi|oe|ni|b)$/i;
+  const worksheetHits = sampleRows.filter(r => {
+    const col9 = (r[9] || '').toString().trim();
+    return translateCodePattern.test(col9);
+  }).length;
+  return worksheetHits >= 2 ? 'worksheet' : 'quickbooks';
+}
+
+function processPLFile(rows, type, filename) {
+  const format = detectPLFormat(rows);
+  console.log(`[DEBUG] processPLFile(${type}): detected format=${format}, total rows=${rows.length}`);
+
   const mapped = [], unmatched = [];
 
-  dataRows.forEach(row => {
-    if (row.length < 2) return;
-    const raw = row[0];
-    const amount = (() => {
-      for (let i = 1; i < row.length; i++) {
-        const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
-        if (!isNaN(v) && (row[i]||'').toString().trim() !== '') return v;
+  if (format === 'worksheet') {
+    // Benchmarking worksheet format: name in cols 0-6, translate code in col 9, amount in col 10
+    rows.forEach(row => {
+      if (!row || row.length < 11) return;
+      const codeRaw = (row[9] || '').toString().trim().toLowerCase();
+      const amount = parseFloat((row[10] || '').toString().replace(/[$,\s]/g,''));
+      if (!codeRaw || isNaN(amount)) return;
+      const newCode = TRANSLATE_CODE_MAP[codeRaw];
+      if (!newCode || newCode === 'NETIN') return;
+      // Get rightmost non-empty name from cols 0-6
+      const nameArr = [];
+      for (let i = 0; i <= 6; i++) {
+        const v = (row[i] || '').toString().trim();
+        if (v) nameArr.push(v);
       }
-      return 0;
-    })();
-    const clean = stripAccountNumber(raw);
-    const code = lookupMap[clean];
-    if (!code) { unmatched.push({raw, clean, amount}); }
-    else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
-  });
+      const name = nameArr.length ? nameArr[nameArr.length - 1] : '';
+      mapped.push({raw: name, clean: name, code: newCode, amount});
+    });
+  } else {
+    // QuickBooks CSV format: col 0 = name, col 1+ = amount
+    let dataRows = rows;
+    if (rows.length > 0 && isNaN(parseFloat((rows[0][rows[0].length-1]||'').toString()))) {
+      dataRows = rows.slice(1);
+    }
+    const lookupMap = buildLookupMap();
+    dataRows.forEach(row => {
+      if (!row || row.length < 2) return;
+      const raw = (row[0] || '').toString();
+      if (!raw.trim()) return;
+      const amount = (() => {
+        for (let i = 1; i < row.length; i++) {
+          const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+          if (!isNaN(v) && (row[i]||'').toString().trim() !== '') return v;
+        }
+        return 0;
+      })();
+      const clean = stripAccountNumber(raw.trim());
+      const code = lookupMap[clean];
+      if (!code) { unmatched.push({raw, clean, amount}); }
+      else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
+    });
+  }
 
-  console.log(`[DEBUG] processPLFile(${type}): ${dataRows.length} rows → ${mapped.length} mapped, ${unmatched.length} unmatched`);
-  console.log(`[DEBUG] processPLFile(${type}): lookupMap size=${Object.keys(lookupMap).length}`);
+  console.log(`[DEBUG] processPLFile(${type}): ${mapped.length} mapped, ${unmatched.length} unmatched`);
   if (mapped.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 mapped=`, mapped.slice(0,3));
-  if (mapped.length === 0 && unmatched.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 unmatched=`, unmatched.slice(0,3).map(u=>({clean:u.clean, amount:u.amount})));
+  if (mapped.length === 0 && unmatched.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 unmatched=`, unmatched.slice(0,3).map(u=>({clean:u.clean,amount:u.amount})));
 
   if (type === 'prior') {
     state.priorPL = {raw: dataRows, mapped, unmatched, filename};
