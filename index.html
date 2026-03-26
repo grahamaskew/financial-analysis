@@ -1216,8 +1216,10 @@ function confirmSheetSelection(filename, type) {
   const sheetName = document.querySelector('input[name="sheetSelect"]:checked')?.value || recommended.name;
   const formatSel = document.querySelector('input[name="formatSelect"]:checked')?.value;
   const format = formatSel || getFormat(sheetScores.find(s => s.name === sheetName) || recommended);
+  console.log(`[DEBUG] confirmSheetSelection: sheetName=${JSON.stringify(sheetName)}, format=${format}, recommended=${recommended?.name}`);
   closeModal();
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval:''});
+  console.log(`[DEBUG] confirmSheetSelection: rows.length=${rows.length}, rows[0]?.length=${rows[0]?.length}`);
   rows._confirmedFormat = format;
   dispatch(rows);
   state._sheetModalData = null;
