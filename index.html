@@ -1133,6 +1133,11 @@ function processPLFile(rows, type, filename) {
     else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
   });
 
+  console.log(`[DEBUG] processPLFile(${type}): ${dataRows.length} rows → ${mapped.length} mapped, ${unmatched.length} unmatched`);
+  console.log(`[DEBUG] processPLFile(${type}): lookupMap size=${Object.keys(lookupMap).length}`);
+  if (mapped.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 mapped=`, mapped.slice(0,3));
+  if (mapped.length === 0 && unmatched.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 unmatched=`, unmatched.slice(0,3).map(u=>({clean:u.clean, amount:u.amount})));
+
   if (type === 'prior') {
     state.priorPL = {raw: dataRows, mapped, unmatched, filename};
     state.rawPriorPL = rows; // retain original raw rows for re-processing
@@ -1266,6 +1271,7 @@ function confirmPLMapping() {
       if (existing) existing[1] = code;
     }
   });
+  console.log(`[DEBUG] confirmPLMapping: saved ${Object.keys(newMap).length} entries to plLookup. plLookup size now=${state.plLookup.length}`);
 
   // Re-map with new codes
   const remapPL = (plData) => {
@@ -1807,6 +1813,9 @@ function runAnalysis() {
 
   const prior = aggregateByCode(state.priorPL.mapped);
   const curr  = aggregateByCode(state.currentPL.mapped);
+  console.log(`[DEBUG] runAnalysis: priorPL.mapped.length=${state.priorPL.mapped.length}, currentPL.mapped.length=${state.currentPL.mapped.length}`);
+  console.log(`[DEBUG] runAnalysis: prior aggregated codes=`, Object.keys(prior));
+  console.log(`[DEBUG] runAnalysis: prior.REVEQ=${prior.REVEQ}, prior.REVLB=${prior.REVLB}, prior.CGSEQ=${prior.CGSEQ}`);
 
   // Build census comp breakdown
   const censusComp = buildCensusCompTotals();
@@ -1853,6 +1862,7 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompPrior, plComp
   const priorRev = (prior.REVEQ||0)+(prior.REVPT||0)+(prior.REVLF||0)+(prior.REVMS||0)+(prior.REVLB||0);
   const currRev  = (curr.REVEQ||0)+(curr.REVPT||0)+(curr.REVLF||0)+(curr.REVMS||0)+(curr.REVLB||0);
   const currRevAnn = currRev * annFactor;
+  console.log(`[DEBUG] _runAnalysis: priorRev=${priorRev}, currRev=${currRev}`);
 
   // COGS
   const priorCOGS = (prior.CGSEQ||0)+(prior.CGSPT||0)+(prior.CGSLF||0)+(prior.CGSMS||0)+(prior.CGSIA||0)+(prior.CGSVD||0);
