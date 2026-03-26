@@ -1552,23 +1552,30 @@ function runCrossCheck() {
   const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
   const comp4Rate = state.comp4Rate/100;
 
-  const censusTotals = {CMP1:0, C2EM:0, C2OW:0, CMP3:0, CMP4:0};
+  const censusTotals = {PROD:0, ADME:0, OWN:0, SALC:0, PAYX:0};
   state.payrollData.forEach(emp => {
     if (censusTotals[emp.comp] !== undefined) censusTotals[emp.comp] += emp.wages;
   });
-  const totalWages = Object.values(censusTotals).reduce((a,b)=>a+b,0);
-  censusTotals.CMP4 = totalWages * comp4Rate;
+  const totalWages = censusTotals.PROD + censusTotals.ADME + censusTotals.OWN + censusTotals.SALC;
+  censusTotals.PAYX = totalWages * comp4Rate;
 
   const grid = document.getElementById('crossCheckGrid');
-  const buckets = [{key:'CMP1',label:'COMP 1'},{key:'C2EM',label:'COMP 2 EMP'},{key:'C2OW',label:'COMP 2 OWN'},{key:'CMP3',label:'COMP 3'},{key:'CMP4',label:'COMP 4'}];
+  const buckets = [
+    {key:'PROD', label:'PROD'},
+    {key:'ADME', label:'ADME'},
+    {key:'OWN',  label:'OWN'},
+    {key:'SALC', label:'SALC'},
+    {key:'PAYX', label:'PAYX'}
+  ];
 
   grid.innerHTML = buckets.map(({key,label}) => {
     const census = censusTotals[key] || 0;
-    const pl = priorTotals[key] || 0;
+    // Map census PROD/ADME/OWN/SALC/PAYX to their P&L code equivalents for comparison
+    const plKeyMap = {PROD:'CMP1', ADME:'C2EM', OWN:'C2OW', SALC:'CMP3', PAYX:'CMP4'};
+    const pl = priorTotals[plKeyMap[key]] || 0;
     const hasPL = state.priorPL !== null;
     const pct = pl > 0 ? Math.abs(census-pl)/pl : 0;
     const isMatch = hasPL && pct <= 0.01;
-    const isMismatch = hasPL && pct > 0.01;
     const cls = !hasPL ? '' : isMatch ? 'match' : 'mismatch';
     return `<div class="cross-check-item ${cls}">
       <div class="cross-check-label">${label}</div>
