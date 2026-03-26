@@ -1256,6 +1256,17 @@ function confirmPLMapping() {
     }
   });
 
+  // Save ALL manual assignments to state.plLookup so they survive reprocessFromRaw
+  Object.entries(newMap).forEach(([name, code]) => {
+    if (!state.plLookup.find(e => e[0] === name)) {
+      state.plLookup.push([name, code]);
+    } else {
+      // Update existing entry if already present
+      const existing = state.plLookup.find(e => e[0] === name);
+      if (existing) existing[1] = code;
+    }
+  });
+
   // Re-map with new codes
   const remapPL = (plData) => {
     if (!plData) return;
