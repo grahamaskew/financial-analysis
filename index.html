@@ -1093,7 +1093,11 @@ function parseCSV(text) {
 }
 
 function stripAccountNumber(name) {
-  return name.replace(/^\d+\s+/, '').trim();
+  // Strip leading number codes with · or - separators (e.g. "4000 · Name", "8001 · 8001- Name")
+  let result = name.replace(/^\d+\s*[·\-]\s*/, '').trim();
+  // Second pass catches double-prefixed names like "7000 · 7000- Cost of Goods Sold"
+  result = result.replace(/^\d+\s*[·\-]\s*/, '').trim();
+  return result;
 }
 
 // ═══════════════════════════════════════════════════════
