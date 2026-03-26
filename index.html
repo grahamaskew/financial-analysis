@@ -608,7 +608,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
           <div class="upload-zone" id="priorUploadZone" onclick="document.getElementById('priorFileInput').click()" ondragover="handleDragOver(event,'priorUploadZone')" ondragleave="handleDragLeave(event,'priorUploadZone')" ondrop="handleDrop(event,'prior')">
             <div class="upload-icon">📄</div>
             <div class="upload-title">Click or drag to upload</div>
-            <div class="upload-sub">CSV export from QuickBooks • Two columns: Account Name, Amount</div>
+            <div class="upload-sub">VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV</div>
             <div class="upload-file-info" id="priorFileInfo"></div>
           </div>
           <input type="file" id="priorFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'prior')">
@@ -620,7 +620,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
           <div class="upload-zone" id="currentUploadZone" onclick="document.getElementById('currentFileInput').click()" ondragover="handleDragOver(event,'currentUploadZone')" ondragleave="handleDragLeave(event,'currentUploadZone')" ondrop="handleDrop(event,'current')">
             <div class="upload-icon">📄</div>
             <div class="upload-title">Click or drag to upload</div>
-            <div class="upload-sub">CSV export from QuickBooks • Two columns: Account Name, Amount</div>
+            <div class="upload-sub">VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV</div>
             <div class="upload-file-info" id="currentFileInfo"></div>
           </div>
           <input type="file" id="currentFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'current')">
@@ -943,6 +943,8 @@ const state = {
   payrollLookup: [...DEFAULT_PAYROLL_LOOKUP],
   benchmarkRanges: BENCHMARK_RANGES.map(r => Object.assign({}, r)),
   comp4Rate: 3.45,
+  _sheetModalData: null,
+  _pendingCompConfirm: null,
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1046,21 +1048,25 @@ function processUploadedFile(file, type) {
   }
   const ext = file.name.split('.').pop().toLowerCase();
   if (ext === 'xlsx' || ext === 'xls') {
-    // Parse binary Excel file using SheetJS
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const wb = XLSX.read(e.target.result, {type: 'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
-        dispatch(rows);
+        if (type === 'payroll') {
+          // Payroll: just use first sheet, no selection needed
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:''});
+          dispatch(rows);
+        } else {
+          // P&L: show sheet + format selection modal
+          showSheetSelectionModal(wb, file.name, type, dispatch);
+        }
       } catch(err) {
         alert('Could not parse Excel file: ' + err.message);
       }
     };
     reader.readAsArrayBuffer(file);
   } else {
-    // Parse CSV — try UTF-8 first, fall back to Windows-1252
+    // CSV — no sheet selection needed, go straight to dispatch
     function decodeText(text) { dispatch(parseCSV(text)); }
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -1075,6 +1081,160 @@ function processUploadedFile(file, type) {
     };
     reader.readAsText(file, 'UTF-8');
   }
+}
+
+// ── Sheet & format selection modal ──────────────────────
+function showSheetSelectionModal(wb, filename, type, dispatch) {
+  const translateCodePattern = /^(s[1-5]|g[1-6]|c[1-4]|c2[eo]|sub|sx|[adimot]|mi|me|oi|oe|ni|b)$/i;
+  const typeLabel = type === 'prior' ? 'Prior Year' : 'Current Year';
+
+  // Score each sheet: count translate code hits in col 9 and numeric hits in col 10
+  const sheetScores = wb.SheetNames.map(name => {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:'', range:0});
+    const sample = rows.slice(0, 40);
+    const codeHits   = sample.filter(r => r.length > 9  && translateCodePattern.test((r[9]||'').toString().trim())).length;
+    const amountHits = sample.filter(r => r.length > 10 && !isNaN(parseFloat((r[10]||'').toString().replace(/[$,\s]/g,'')))).length;
+    const isLikelyPL = codeHits >= 2;
+    // Recommended: best scoring sheet whose name loosely matches prior/current
+    const nameMatch = type === 'prior'
+      ? /prior|p&l prior|p\.l.*prior|prior.*p/i.test(name)
+      : /current|p&l current|p\.l.*current|current.*p/i.test(name);
+    return { name, codeHits, amountHits, isLikelyPL, nameMatch, rows };
+  });
+
+  // Pick recommended sheet: name match + code hits, else best code hits, else first
+  const recommended =
+    sheetScores.find(s => s.nameMatch && s.isLikelyPL) ||
+    sheetScores.find(s => s.isLikelyPL) ||
+    sheetScores[0];
+
+  // Build preview of recommended sheet (first 5 data rows)
+  function getPreview(score) {
+    const format = score.codeHits >= 2 ? 'worksheet' : 'quickbooks';
+    const previewRows = format === 'worksheet'
+      ? score.rows.filter(r => r.length > 10 && translateCodePattern.test((r[9]||'').toString().trim()) && !isNaN(parseFloat((r[10]||'').toString().replace(/[$,\s]/g,'')))).slice(0,5)
+      : score.rows.filter(r => r.length >= 2 && r[0] && !isNaN(parseFloat((r[1]||'').toString().replace(/[$,\s]/g,'')))).slice(0,5);
+    if (!previewRows.length) return '<em style="color:var(--text3);font-size:12px">No data rows detected in this sheet.</em>';
+    return `<table style="font-size:11px;width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--bg)"><th style="padding:4px 8px;text-align:left;border-bottom:1px solid var(--border)">Account Name</th><th style="padding:4px 8px;text-align:right;border-bottom:1px solid var(--border)">Amount</th>${format==='worksheet'?'<th style="padding:4px 8px;text-align:center;border-bottom:1px solid var(--border)">Code</th>':''}</tr></thead>
+      <tbody>${previewRows.map(r => {
+        if (format === 'worksheet') {
+          const nameArr = [0,1,2,3,4,5,6].map(i=>(r[i]||'').toString().trim()).filter(Boolean);
+          return `<tr><td style="padding:3px 8px;border-bottom:1px solid var(--border)">${escHtml(nameArr[nameArr.length-1]||'')}</td><td style="padding:3px 8px;text-align:right;border-bottom:1px solid var(--border);font-family:var(--mono)">${fmtDollar(parseFloat((r[10]||'').toString().replace(/[$,\s]/g,'')))}</td><td style="padding:3px 8px;text-align:center;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px">${escHtml((r[9]||'').toString())}</td></tr>`;
+        } else {
+          return `<tr><td style="padding:3px 8px;border-bottom:1px solid var(--border)">${escHtml((r[0]||'').toString().trim())}</td><td style="padding:3px 8px;text-align:right;border-bottom:1px solid var(--border);font-family:var(--mono)">${fmtDollar(parseFloat((r[1]||'').toString().replace(/[$,\s]/g,'')))}</td></tr>`;
+        }
+      }).join('')}</tbody></table>`;
+  }
+
+  function renderModal(selectedName, selectedFormat) {
+    const sel = sheetScores.find(s => s.name === selectedName) || recommended;
+    const fmt = selectedFormat || (sel.codeHits >= 2 ? 'worksheet' : 'quickbooks');
+
+    document.getElementById('modalTitle').textContent = `${typeLabel} P&L — Confirm File`;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="alert alert-info" style="margin-bottom:16px">
+        <span class="alert-icon">ℹ</span>
+        <div><strong>File:</strong> ${escHtml(filename)}<br>
+        Confirm which sheet contains your ${typeLabel} P&L data and what format it uses.</div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">SELECT SHEET</label>
+        <div style="display:flex;flex-direction:column;gap:6px" id="sheetList">
+          ${sheetScores.map(s => {
+            const isSelected = s.name === sel.name;
+            const badge = s.isLikelyPL
+              ? `<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:var(--green-bg);color:#15803d;font-weight:600;margin-left:6px">P&L data detected</span>`
+              : `<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:var(--bg);color:var(--text3);font-weight:500;margin-left:6px">no P&L data</span>`;
+            const rec = (s.name === recommended.name)
+              ? `<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:var(--primary-faint);color:var(--primary);font-weight:600;margin-left:4px">recommended</span>` : '';
+            return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:7px 10px;border-radius:6px;border:1px solid ${isSelected?'var(--primary)':'var(--border)'};background:${isSelected?'var(--primary-faint)':'var(--bg2)'}">
+              <input type="radio" name="sheetSelect" value="${escHtml(s.name)}" ${isSelected?'checked':''} onchange="refreshSheetModal('${escHtml(s.name)}',null)">
+              <span style="font-size:13px;font-weight:${isSelected?'600':'400'}">${escHtml(s.name)}</span>${badge}${rec}
+            </label>`;
+          }).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">
+          ✅ Select the sheet containing your income statement line items and amounts.<br>
+          ❌ Do not select Setup, Payroll Census, Prep, Financials, or summary sheets.
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">FILE FORMAT</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:8px 10px;border-radius:6px;border:1px solid ${fmt==='worksheet'?'var(--primary)':'var(--border)'};background:${fmt==='worksheet'?'var(--primary-faint)':'var(--bg2)'}">
+            <input type="radio" name="formatSelect" value="worksheet" ${fmt==='worksheet'?'checked':''} onchange="refreshSheetModal(null,'worksheet')" style="margin-top:2px">
+            <div>
+              <div style="font-size:13px;font-weight:600">VITAL Financial Benchmarking Worksheet</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Multi-column Excel template with translate codes in column J and amounts in column K. Account names are in columns A–G.</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:8px 10px;border-radius:6px;border:1px solid ${fmt==='quickbooks'?'var(--primary)':'var(--border)'};background:${fmt==='quickbooks'?'var(--primary-faint)':'var(--bg2)'}">
+            <input type="radio" name="formatSelect" value="quickbooks" ${fmt==='quickbooks'?'checked':''} onchange="refreshSheetModal(null,'quickbooks')" style="margin-top:2px">
+            <div>
+              <div style="font-size:13px;font-weight:600">QuickBooks P&L Summary Export</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Two-column export: account name in column A, amount in column B. Account names are matched against the lookup table.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">DATA PREVIEW <span style="font-weight:400;color:var(--text3)">(first 5 data rows from selected sheet)</span></label>
+        <div id="sheetPreview" style="border:1px solid var(--border);border-radius:6px;overflow:hidden">
+          ${getPreview(sel)}
+        </div>
+      </div>`;
+
+    document.getElementById('modalFooter').innerHTML = `
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSheetSelection('${escHtml(filename)}','${type}')">Use This Sheet & Format →</button>`;
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+
+  // Store state needed by confirm handler
+  state._sheetModalData = { wb, dispatch, sheetScores, getPreview };
+  renderModal(recommended.name, null);
+
+  // Expose re-render function globally for radio onchange handlers
+  window.refreshSheetModal = function(newSheet, newFormat) {
+    const currentSheet = document.querySelector('input[name="sheetSelect"]:checked')?.value || recommended.name;
+    const currentFormat = document.querySelector('input[name="formatSelect"]:checked')?.value || null;
+    const sheet = newSheet || currentSheet;
+    const format = newFormat || currentFormat;
+    const sel = sheetScores.find(s => s.name === sheet) || recommended;
+    // Update preview
+    document.getElementById('sheetPreview').innerHTML = state._sheetModalData.getPreview(sel);
+    // Update border highlights on sheet labels
+    document.querySelectorAll('#sheetList label').forEach(lbl => {
+      const inp = lbl.querySelector('input[type=radio]');
+      const isSelected = inp && inp.checked;
+      lbl.style.borderColor = isSelected ? 'var(--primary)' : 'var(--border)';
+      lbl.style.background  = isSelected ? 'var(--primary-faint)' : 'var(--bg2)';
+    });
+    // Update format label borders
+    document.querySelectorAll('input[name="formatSelect"]').forEach(inp => {
+      const lbl = inp.closest('label');
+      if (!lbl) return;
+      lbl.style.borderColor = inp.checked ? 'var(--primary)' : 'var(--border)';
+      lbl.style.background  = inp.checked ? 'var(--primary-faint)' : 'var(--bg2)';
+    });
+  };
+}
+
+function confirmSheetSelection(filename, type) {
+  const sheetName = document.querySelector('input[name="sheetSelect"]:checked')?.value;
+  const format    = document.querySelector('input[name="formatSelect"]:checked')?.value;
+  if (!sheetName || !format) { alert('Please select a sheet and format.'); return; }
+  closeModal();
+  const { wb, dispatch, sheetScores } = state._sheetModalData;
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval:''});
+  // Override format detection for this dispatch by tagging the rows
+  rows._confirmedFormat = format;
+  dispatch(rows);
+  state._sheetModalData = null;
 }
 
 function parseCSV(text) {
@@ -1136,10 +1296,13 @@ function detectPLFormat(rows) {
 }
 
 function processPLFile(rows, type, filename) {
-  const format = detectPLFormat(rows);
-  console.log(`[DEBUG] processPLFile(${type}): detected format=${format}, total rows=${rows.length}`);
+  // Use format confirmed by user in modal if present, otherwise auto-detect
+  const format = rows._confirmedFormat || detectPLFormat(rows);
+  console.log(`[DEBUG] processPLFile(${type}): format=${format} (${rows._confirmedFormat ? 'user-confirmed' : 'auto-detected'}), total rows=${rows.length}`);
 
   const mapped = [], unmatched = [];
+
+  let dataRows = rows; // used for state.rawPriorPL/rawCurrentPL storage
 
   if (format === 'worksheet') {
     // Benchmarking worksheet format: name in cols 0-6, translate code in col 9, amount in col 10
@@ -1161,7 +1324,6 @@ function processPLFile(rows, type, filename) {
     });
   } else {
     // QuickBooks CSV format: col 0 = name, col 1+ = amount
-    let dataRows = rows;
     if (rows.length > 0 && isNaN(parseFloat((rows[0][rows[0].length-1]||'').toString()))) {
       dataRows = rows.slice(1);
     }
@@ -1412,7 +1574,7 @@ function resetPL() {
     zone.classList.remove('done');
     zone.querySelector('.upload-icon').textContent = '📄';
     zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
-    zone.querySelector('.upload-sub').textContent = 'CSV export from QuickBooks • Two columns: Account Name, Amount';
+    zone.querySelector('.upload-sub').textContent = 'VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV';
   });
   document.getElementById('processPLBtn').disabled = true;
   setPLStep(1);
@@ -2389,7 +2551,7 @@ function newClientReset() {
     zone.classList.remove('done');
     zone.querySelector('.upload-icon').textContent  = '📄';
     zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
-    zone.querySelector('.upload-sub').textContent   = 'CSV export from QuickBooks • Two columns: Account Name, Amount';
+    zone.querySelector('.upload-sub').textContent   = 'VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV';
   });
   const pzone = document.getElementById('payrollUploadZone');
   pzone.classList.remove('done');
