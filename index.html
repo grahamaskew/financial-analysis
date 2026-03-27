@@ -472,6 +472,166 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   .cross-check-grid { grid-template-columns: repeat(3, 1fr); }
   .metrics-grid { grid-template-columns: 1fr; }
 }
+
+/* ── HEALTH HERO ── */
+.health-hero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.hero-tile {
+  background: var(--bg2);
+  padding: 20px 24px;
+  position: relative;
+}
+.hero-tile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--border);
+}
+.hero-tile.bad::before  { background: var(--red); }
+.hero-tile.warn::before { background: var(--gold); }
+.hero-tile.ok::before   { background: var(--green); }
+.hero-tile.great::before { background: var(--primary); }
+.hero-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.hero-value { font-size: 30px; font-weight: 700; font-family: var(--mono); color: var(--text); line-height: 1.1; margin-bottom: 4px; }
+.hero-tile.bad .hero-value  { color: var(--red); }
+.hero-tile.warn .hero-value { color: var(--gold); }
+.hero-tile.ok .hero-value   { color: var(--green); }
+.hero-tile.great .hero-value { color: var(--primary); }
+.hero-prior { font-size: 12px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+.hero-status { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 8px; }
+.hero-status.bad   { background: var(--red-bg);      color: var(--red); }
+.hero-status.warn  { background: var(--gold-bg);     color: #854d0e; }
+.hero-status.ok    { background: var(--green-bg);    color: #16a34a; }
+.hero-status.great { background: var(--primary-faint); color: var(--primary-dark); }
+
+/* ── SCORECARD STRIP ── */
+.scorecard-strip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.scorecard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.scorecard-title  { font-size: 12px; font-weight: 600; color: var(--text2); }
+.scorecard-hint   { font-size: 11px; color: var(--text3); }
+.scorecard-groups { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.scorecard-group  { display: flex; flex-direction: column; gap: 6px; }
+.scorecard-group-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.scorecard-dots   { display: flex; gap: 6px; align-items: center; }
+.scorecard-dot {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; letter-spacing: -0.3px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  background: var(--bg);
+  color: var(--text3);
+  border: 2px solid var(--border);
+  user-select: none;
+}
+.scorecard-dot:hover { transform: scale(1.18); box-shadow: var(--shadow2); z-index: 1; }
+.scorecard-dot.bad   { background: var(--red-bg);      color: var(--red);       border-color: var(--red-border); }
+.scorecard-dot.warn  { background: var(--gold-bg);     color: #92400e;          border-color: #fde68a; }
+.scorecard-dot.ok    { background: var(--green-bg);    color: #16a34a;          border-color: var(--green-border); }
+.scorecard-dot.great { background: var(--primary-faint); color: var(--primary-dark); border-color: var(--primary-subtle); }
+.scorecard-dot::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 20;
+}
+.scorecard-dot:hover::after { opacity: 1; }
+
+/* ── YOY SUMMARY STRIP ── */
+.yoy-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.yoy-summary-card { background: var(--bg2); padding: 16px 18px; }
+.yoy-summary-label  { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.yoy-summary-value  { font-size: 22px; font-weight: 700; font-family: var(--mono); color: var(--text); line-height: 1.15; margin-bottom: 3px; }
+.yoy-summary-prior  { font-size: 12px; color: var(--text3); font-family: var(--mono); margin-bottom: 5px; }
+.yoy-summary-change { font-size: 12px; font-weight: 600; font-family: var(--mono); }
+.yoy-summary-change.pos { color: var(--green); }
+.yoy-summary-change.neg { color: var(--red); }
+
+/* ── YOY TABLE ── */
+.yoy-section { font-size: 11px; font-weight: 700; color: var(--text2); background: var(--bg) !important; padding: 9px 12px; text-transform: uppercase; letter-spacing: 0.6px; border-top: 2px solid var(--border2) !important; }
+.yoy-pos { color: var(--green); font-weight: 600; }
+.yoy-neg { color: var(--red); font-weight: 600; }
+.yoy-total td { font-weight: 700; color: var(--text); background: var(--primary-faint) !important; }
+
+/* ── PRINT-ONLY ── */
+.print-only { display: none; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  .topbar,
+  .nav-bar,
+  #page-setup,
+  #page-pl,
+  #page-payroll,
+  #page-lookups,
+  #dirtyBannerBenchmarks,
+  #dirtyBannerYOY,
+  .scorecard-strip,
+  .section-header { display: none !important; }
+
+  .page { display: none !important; }
+  #page-benchmarks,
+  #page-yoy { display: block !important; }
+
+  #page-yoy { page-break-before: always; break-before: page; margin-top: 0; }
+
+  .print-only { display: block !important; }
+
+  body { background: #fff; font-size: 12px; }
+  .main { padding: 8px 12px; max-width: 100%; }
+
+  .card, .metric-card { box-shadow: none !important; }
+  .health-hero { margin-bottom: 12px; }
+  .hero-value { font-size: 22px; }
+  .hero-tile { padding: 14px 16px; }
+
+  .metrics-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px; }
+  .card-body { padding: 12px; }
+
+  .yoy-summary-grid { margin-bottom: 12px; }
+  .yoy-summary-value { font-size: 18px; }
+}
 </style>
 </head>
 <body>
@@ -2145,14 +2305,14 @@ function getBM(metricName) {
   return state.benchmarkRanges.find(r => r.metric === metricName) || null;
 }
 
-function metricCard(name, prior, curr, fmt, ranges, benchmark, note) {
+function metricCard(name, prior, curr, fmt, ranges, benchmark, cardId) {
   const status = ranges ? benchStatus(curr, ranges) : {cls:'', label:''};
   const yoyDelta = (prior !== null && curr !== null && prior !== 0) ? (curr-prior)/Math.abs(prior) : null;
   const yoyClass = yoyDelta === null ? '' : (yoyDelta >= 0 ? 'up' : 'down');
   const yoyText  = yoyDelta === null ? '' : `${yoyDelta>=0?'▲':'▼'} ${Math.abs(yoyDelta*100).toFixed(1)}% YOY`;
   const barPct = ranges ? Math.min(100, Math.max(0, curr/(ranges.veryGoodThresh*1.2)*100)) : 0;
 
-  return `<div class="metric-card ${status.cls}">
+  return `<div class="metric-card ${status.cls}"${cardId ? ` id="${cardId}"` : ''}>
     <div class="metric-name">${name}</div>
     <div class="metric-vals">
       ${prior !== null ? `<div class="metric-prior">${fmt(prior)}</div><div class="metric-arrow">→</div>` : ''}
@@ -2177,63 +2337,141 @@ function renderBenchmarks(m) {
     S3: gmPct(m.curr.REVLF, m.curr.CGSLF), S4: gmPct(m.curr.REVMS, m.curr.CGSMS),
   };
 
-  // Item 1: only render category GM cards where at least one year has data
+  // Category GM cards — only where at least one year has data
   const catGMCards = [
-    {label: cats[0]+' GM%', prior: priorGMBycat.S1, curr: currGMBycat.S1, bm: getBM('Equipment GM%')},
-    {label: cats[1]+' GM%', prior: priorGMBycat.S2, curr: currGMBycat.S2, bm: getBM('Parts GM%')},
-    {label: cats[2]+' GM%', prior: priorGMBycat.S3, curr: currGMBycat.S3, bm: getBM('Lighting Fixtures GM%')},
-    {label: cats[3]+' GM%', prior: priorGMBycat.S4, curr: currGMBycat.S4, bm: getBM('Managed Services GM%')},
+    {label: cats[0]+' GM%', prior: priorGMBycat.S1, curr: currGMBycat.S1, bm: getBM('Equipment GM%'),        abbr: 'EQ', id: 'metric-eq-gm'},
+    {label: cats[1]+' GM%', prior: priorGMBycat.S2, curr: currGMBycat.S2, bm: getBM('Parts GM%'),             abbr: 'PT', id: 'metric-pt-gm'},
+    {label: cats[2]+' GM%', prior: priorGMBycat.S3, curr: currGMBycat.S3, bm: getBM('Lighting Fixtures GM%'), abbr: 'LF', id: 'metric-lf-gm'},
+    {label: cats[3]+' GM%', prior: priorGMBycat.S4, curr: currGMBycat.S4, bm: getBM('Managed Services GM%'),  abbr: 'MS', id: 'metric-ms-gm'},
   ].filter(c => c.prior !== null || c.curr !== null);
 
-  // Item 4: comp table status badge — pull rating from benchmark engine
-  const compPct = m.currRev > 0 ? m.currComp / m.currRev : null;
-  const compStatus = benchStatus(compPct, getBM('COMP % of Revenue'));
+  // Benchmark statuses for hero tiles
+  const gmStatus   = benchStatus(m.currGM,      getBM('Overall Gross Margin'));
+  const noiStatus  = benchStatus(m.currNOIPct,   getBM('Net Operating Profit %'));
+  const compStatus = benchStatus(m.currCompPct,  getBM('COMP % of Revenue'));
+
+  // Comp detail badge
   const compBadge = compStatus.label
     ? `<span class="metric-status ${compStatus.cls}" style="margin-left:8px;font-size:11px;padding:2px 7px;border-radius:4px;vertical-align:middle">${compStatus.label}</span>`
     : '';
 
-  // Section wrapper for visual grouping
-  const section = (title, content, extraStyle='') =>
-    `<div style="margin-bottom:24px;padding:20px;background:var(--bg2);border-radius:10px;border:1px solid var(--border)${extraStyle}">
+  // Section wrapper
+  const section = (title, content) =>
+    `<div style="margin-bottom:24px;padding:20px;background:var(--bg2);border-radius:10px;border:1px solid var(--border)">
       <div class="section-title mb8" style="margin-bottom:14px;margin-top:0">${title}</div>
       ${content}
     </div>`;
 
+  // Scorecard dot helper
+  const dot = (label, abbr, status, targetId) =>
+    `<div class="scorecard-dot ${status.cls}" data-tip="${label}" onclick="document.getElementById('${targetId}').scrollIntoView({behavior:'smooth',block:'center'})">${abbr}</div>`;
+
+  // Scorecard groups
+  const scGroups = [
+    {
+      label: 'Revenue & Profitability',
+      dots: [
+        dot('Overall GM%',           'OGM', benchStatus(m.currGM,     getBM('Overall Gross Margin')),   'metric-overall-gm'),
+        dot('Net Operating Profit %','NOP', benchStatus(m.currNOIPct,  getBM('Net Operating Profit %')), 'metric-noi-pct'),
+      ]
+    },
+    ...(catGMCards.length ? [{
+      label: 'Gross Margin by Category',
+      dots: catGMCards.map(c => dot(c.label, c.abbr, benchStatus(c.curr, c.bm), c.id))
+    }] : []),
+    {
+      label: 'Compensation',
+      dots: [
+        dot('COMP % of Revenue',     'CP',  benchStatus(m.currCompPct,    getBM('COMP % of Revenue')),                         'metric-comp-pct'),
+        dot('GP per Payroll Dollar', 'GPP', benchStatus(m.currGPP,        getBM('GP per Payroll Dollar')),                      'metric-gpp'),
+        dot('Sales Productivity',    'SP',  benchStatus(m.currRevFTE,     getBM('Sales Productivity (Rev/FTE)')),                'metric-rev-fte'),
+        dot('Labor Productivity',    'LP',  benchStatus(m.currLaborRevBEE,getBM('Direct Labor Productivity (Labor Rev/BEE)')),   'metric-labor-prod'),
+      ]
+    },
+    {
+      label: 'Major Operating Costs',
+      dots: [
+        dot('Admin % of Revenue',          'AD', benchStatus(m.currRev>0?m.currAdmin/m.currRev:null, getBM('Admin % of Revenue')),     'metric-admin-pct'),
+        dot('Occupancy % of Revenue',      'OC', benchStatus(m.currRev>0?m.currOcc/m.currRev:null,   getBM('Occupancy % of Revenue')), 'metric-occ-pct'),
+        dot('Sales Expense % of Revenue',  'SX', benchStatus(m.currRev>0?m.currSX/m.currRev:null,    getBM('Sales Expense % of Rev')), 'metric-sx-pct'),
+        dot('Total MOC % of Revenue',      'MC', benchStatus(m.currRev>0?m.currMOC/m.currRev:null,   getBM('Total MOC % of Revenue')), 'metric-moc-pct'),
+      ]
+    },
+  ];
+
+  const scorecardHtml = `
+  <div class="scorecard-strip">
+    <div class="scorecard-header">
+      <div class="scorecard-title">Benchmark Scorecard</div>
+      <div class="scorecard-hint">Click a dot to jump to that metric</div>
+    </div>
+    <div class="scorecard-groups">
+      ${scGroups.map(g => `
+        <div class="scorecard-group">
+          <div class="scorecard-group-label">${g.label}</div>
+          <div class="scorecard-dots">${g.dots.join('')}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+
+  // Print header — hidden on screen, shown in print
+  const printHeader = `
+  <div class="print-only" style="margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border)">
+    <div style="font-size:18px;font-weight:700;color:var(--text)">${state.setup.company||'—'}</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:3px">${pY} vs ${cY} · Financial Benchmarks &amp; Year-over-Year · ${new Date().toLocaleDateString()}</div>
+  </div>`;
+
   let html = `
-  <div style="margin-bottom:20px">
-    <div class="card">
-      <div class="card-header"><div class="card-title">Revenue Summary</div></div>
-      <div class="card-body">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-          <div><div class="text-muted text-small">${pY} Revenue</div><div style="font-size:22px;font-weight:700;font-family:var(--mono)">${fmtDollar(m.priorRev)}</div></div>
-          <div><div class="text-muted text-small">${cY} Revenue (YTD)</div><div style="font-size:22px;font-weight:700;font-family:var(--mono)">${fmtDollar(m.currRev)}</div></div>
-          <div><div class="text-muted text-small">${cY} Annualized</div><div style="font-size:22px;font-weight:700;color:var(--primary);font-family:var(--mono)">${fmtDollar(m.currRevAnn)}</div></div>
-        </div>
-      </div>
+  ${printHeader}
+
+  <div class="health-hero">
+    <div class="hero-tile">
+      <div class="hero-label">Current Year Revenue</div>
+      <div class="hero-value">${fmtK(m.currRevAnn)}</div>
+      <div class="hero-prior">Annualized · YTD: ${fmtK(m.currRev)}</div>
+      <div class="hero-prior">Prior ${pY}: ${fmtK(m.priorRev)}</div>
+    </div>
+    <div class="hero-tile ${gmStatus.cls}">
+      <div class="hero-label">Overall Gross Margin</div>
+      <div class="hero-value">${m.currGM !== null ? fmtPct(m.currGM) : '—'}</div>
+      <div class="hero-prior">Prior ${pY}: ${m.priorGM !== null ? fmtPct(m.priorGM) : '—'}</div>
+      ${gmStatus.label ? `<div class="hero-status ${gmStatus.cls}">${gmStatus.label}</div>` : ''}
+    </div>
+    <div class="hero-tile ${noiStatus.cls}">
+      <div class="hero-label">Net Operating Profit</div>
+      <div class="hero-value">${m.currNOIPct !== null ? fmtPct(m.currNOIPct) : '—'}</div>
+      <div class="hero-prior">Prior ${pY}: ${m.priorNOIPct !== null ? fmtPct(m.priorNOIPct) : '—'}</div>
+      ${noiStatus.label ? `<div class="hero-status ${noiStatus.cls}">${noiStatus.label}</div>` : ''}
+    </div>
+    <div class="hero-tile ${compStatus.cls}">
+      <div class="hero-label">COMP % of Revenue</div>
+      <div class="hero-value">${m.currCompPct !== null ? fmtPct(m.currCompPct) : '—'}</div>
+      <div class="hero-prior">Prior ${pY}: ${m.priorCompPct !== null ? fmtPct(m.priorCompPct) : '—'}</div>
+      ${compStatus.label ? `<div class="hero-status ${compStatus.cls}">${compStatus.label}</div>` : ''}
     </div>
   </div>
 
+  ${scorecardHtml}
+
   ${section('Revenue & Profitability', `
     <div class="metrics-grid">
-      ${metricCard('Total Revenue',           m.priorRev,     m.currRev,     fmtDollar, null,                          'YOY comparison — no benchmark',              '')}
-      ${metricCard('Gross Profit',            m.priorGP,      m.currGP,      fmtDollar, null,                          'Revenue minus COGS',                         '')}
-      ${metricCard('Overall Gross Margin',    m.priorGM,      m.currGM,      fmtPct,    getBM('Overall Gross Margin'),  getBM('Overall Gross Margin')?.note||'',      '')}
-      ${metricCard('Net Operating Profit %',  m.priorNOIPct,  m.currNOIPct,  fmtPct,    getBM('Net Operating Profit %'),getBM('Net Operating Profit %')?.note||'',   '')}
-      ${metricCard('Net Operating Profit $',  m.priorNOI,     m.currNOI,     fmtDollar, null,                          'Gross Profit minus Comp and MOC',            '')}
+      ${metricCard('Total Revenue',           m.priorRev,     m.currRev,     fmtDollar, null,                           'YOY comparison — no benchmark',             '')}
+      ${metricCard('Gross Profit',            m.priorGP,      m.currGP,      fmtDollar, null,                           'Revenue minus COGS',                        '')}
+      ${metricCard('Overall Gross Margin',    m.priorGM,      m.currGM,      fmtPct,    getBM('Overall Gross Margin'),   getBM('Overall Gross Margin')?.note||'',     'metric-overall-gm')}
+      ${metricCard('Net Operating Profit %',  m.priorNOIPct,  m.currNOIPct,  fmtPct,    getBM('Net Operating Profit %'), getBM('Net Operating Profit %')?.note||'',  'metric-noi-pct')}
+      ${metricCard('Net Operating Profit $',  m.priorNOI,     m.currNOI,     fmtDollar, null,                           'Gross Profit minus Comp and MOC',           '')}
     </div>`)}
 
   ${catGMCards.length ? section('Gross Margin by Category', `
     <div class="metrics-grid">
-      ${catGMCards.map(c => metricCard(c.label, c.prior, c.curr, fmtPct, c.bm, c.bm?.note||'', '')).join('')}
+      ${catGMCards.map(c => metricCard(c.label, c.prior, c.curr, fmtPct, c.bm, c.bm?.note||'', c.id)).join('')}
     </div>`) : ''}
 
   ${section('Compensation', `
     ${m.compSource ? `<div class="alert alert-info" style="margin-bottom:12px"><span class="alert-icon">ℹ</span>Compensation source: <strong>${{census:'Payroll Census (current year)',pl_curr:'Current Year P&L',pl_both:'P&L (each year independently)'}[m.compSource]||m.compSource}</strong></div>` : ''}
     <div class="card" style="margin-bottom:16px">
       <div class="card-header" style="padding:10px 16px">
-        <div class="card-title" style="font-size:13px">
-          Compensation Detail${compBadge}
-        </div>
+        <div class="card-title" style="font-size:13px">Compensation Detail${compBadge}</div>
       </div>
       <div class="card-body" style="padding:0">
         <div class="table-wrap" style="border:none;border-radius:0">
@@ -2253,18 +2491,18 @@ function renderBenchmarks(m) {
       </div>
     </div>
     <div class="metrics-grid">
-      ${metricCard('COMP % of Revenue',              m.priorCompPct,    m.currCompPct,    fmtPct,              getBM('COMP % of Revenue'),                         getBM('COMP % of Revenue')?.note||'',                        '')}
-      ${metricCard('GP per Payroll Dollar',          m.priorGPP,        m.currGPP,        v=>v.toFixed(2)+'x', getBM('GP per Payroll Dollar'),                     getBM('GP per Payroll Dollar')?.note||'',                     '')}
-      ${metricCard('Sales Productivity (Rev/FTE)',   m.priorRevFTE,     m.currRevFTE,     fmtDollar,           getBM('Sales Productivity (Rev/FTE)'),              getBM('Sales Productivity (Rev/FTE)')?.note||'',              '')}
-      ${metricCard('Labor Productivity (Rev/BEE/mo)',m.priorLaborRevBEE,m.currLaborRevBEE,fmtDollar,           getBM('Direct Labor Productivity (Labor Rev/BEE)'), getBM('Direct Labor Productivity (Labor Rev/BEE)')?.note||'', '')}
+      ${metricCard('COMP % of Revenue',               m.priorCompPct,    m.currCompPct,    fmtPct,              getBM('COMP % of Revenue'),                          getBM('COMP % of Revenue')?.note||'',                        'metric-comp-pct')}
+      ${metricCard('GP per Payroll Dollar',           m.priorGPP,        m.currGPP,        v=>v.toFixed(2)+'x', getBM('GP per Payroll Dollar'),                      getBM('GP per Payroll Dollar')?.note||'',                     'metric-gpp')}
+      ${metricCard('Sales Productivity (Rev/FTE)',    m.priorRevFTE,     m.currRevFTE,     fmtDollar,           getBM('Sales Productivity (Rev/FTE)'),               getBM('Sales Productivity (Rev/FTE)')?.note||'',              'metric-rev-fte')}
+      ${metricCard('Labor Productivity (Rev/BEE/mo)', m.priorLaborRevBEE,m.currLaborRevBEE,fmtDollar,           getBM('Direct Labor Productivity (Labor Rev/BEE)'),  getBM('Direct Labor Productivity (Labor Rev/BEE)')?.note||'', 'metric-labor-prod')}
     </div>`)}
 
   ${section('Major Operating Costs', `
     <div class="metrics-grid">
-      ${metricCard('Admin % of Revenue',         m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct, getBM('Admin % of Revenue'),     getBM('Admin % of Revenue')?.note||'',     '')}
-      ${metricCard('Occupancy % of Revenue',     m.priorRev>0?m.priorOcc/m.priorRev:null,   m.currRev>0?m.currOcc/m.currRev:null,   fmtPct, getBM('Occupancy % of Revenue'), getBM('Occupancy % of Revenue')?.note||'', '')}
-      ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null,    m.currRev>0?m.currSX/m.currRev:null,    fmtPct, getBM('Sales Expense % of Rev'), getBM('Sales Expense % of Rev')?.note||'', '')}
-      ${metricCard('Total MOC % of Revenue',     m.priorRev>0?m.priorMOC/m.priorRev:null,   m.currRev>0?m.currMOC/m.currRev:null,   fmtPct, getBM('Total MOC % of Revenue'), getBM('Total MOC % of Revenue')?.note||'', '')}
+      ${metricCard('Admin % of Revenue',         m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct, getBM('Admin % of Revenue'),     getBM('Admin % of Revenue')?.note||'',     'metric-admin-pct')}
+      ${metricCard('Occupancy % of Revenue',     m.priorRev>0?m.priorOcc/m.priorRev:null,   m.currRev>0?m.currOcc/m.currRev:null,   fmtPct, getBM('Occupancy % of Revenue'), getBM('Occupancy % of Revenue')?.note||'', 'metric-occ-pct')}
+      ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null,    m.currRev>0?m.currSX/m.currRev:null,    fmtPct, getBM('Sales Expense % of Rev'), getBM('Sales Expense % of Rev')?.note||'', 'metric-sx-pct')}
+      ${metricCard('Total MOC % of Revenue',     m.priorRev>0?m.priorMOC/m.priorRev:null,   m.currRev>0?m.currMOC/m.currRev:null,   fmtPct, getBM('Total MOC % of Revenue'), getBM('Total MOC % of Revenue')?.note||'', 'metric-moc-pct')}
     </div>`)}`;
 
   document.getElementById('benchmarksContent').innerHTML = html;
@@ -2280,7 +2518,6 @@ function renderYOY(m) {
   const p = m.prior, c = m.curr;
 
   const yoyRow = (label, pVal, cVal, isTotal=false) => {
-    // Item 5: hide rows where both values are zero (non-total rows only)
     if (!isTotal && pVal === 0 && cVal === 0) return '';
     const delta = cVal - pVal;
     const pct = pVal !== 0 ? delta/Math.abs(pVal) : null;
@@ -2297,7 +2534,6 @@ function renderYOY(m) {
     </tr>`;
   };
 
-  // Item 6: key totals get a stronger top border to stand out in the dense table
   const keyTotal = (label, pVal, cVal) => {
     const delta = cVal - pVal;
     const pct = pVal !== 0 ? delta/Math.abs(pVal) : null;
@@ -2315,20 +2551,49 @@ function renderYOY(m) {
 
   const secRow = (label) => `<tr><td colspan="7" class="yoy-section">${label}</td></tr>`;
 
-  const priorRev = (p.REVEQ||0)+(p.REVPT||0)+(p.REVLF||0)+(p.REVMS||0)+(p.REVLB||0);
-  const currRev  = (c.REVEQ||0)+(c.REVPT||0)+(c.REVLF||0)+(c.REVMS||0)+(c.REVLB||0);
-  const priorCOGS= (p.CGSEQ||0)+(p.CGSPT||0)+(p.CGSLF||0)+(p.CGSMS||0)+(p.CGSIA||0)+(p.CGSVD||0);
-  const currCOGS = (c.CGSEQ||0)+(c.CGSPT||0)+(c.CGSLF||0)+(c.CGSMS||0)+(c.CGSIA||0)+(c.CGSVD||0);
-  const priorGP  = priorRev-priorCOGS, currGP=currRev-currCOGS;
-  // Use resolved comp lines from analysis engine
-  const pComp = m.priorCompLines;
-  const cComp = m.currCompLines;
-  const priorComp = pComp.total;
-  const currComp  = cComp.total;
-  const priorMOC = (p.ADMN||0)+(p.OCCP||0)+(p.SLSX||0);
-  const currMOC  = (c.ADMN||0)+(c.OCCP||0)+(c.SLSX||0);
-  const priorNOI = priorGP-priorComp-priorMOC;
-  const currNOI  = currGP-currComp-currMOC;
+  const priorRev  = (p.REVEQ||0)+(p.REVPT||0)+(p.REVLF||0)+(p.REVMS||0)+(p.REVLB||0);
+  const currRev   = (c.REVEQ||0)+(c.REVPT||0)+(c.REVLF||0)+(c.REVMS||0)+(c.REVLB||0);
+  const priorCOGS = (p.CGSEQ||0)+(p.CGSPT||0)+(p.CGSLF||0)+(p.CGSMS||0)+(p.CGSIA||0)+(p.CGSVD||0);
+  const currCOGS  = (c.CGSEQ||0)+(c.CGSPT||0)+(c.CGSLF||0)+(c.CGSMS||0)+(c.CGSIA||0)+(c.CGSVD||0);
+  const priorGP   = priorRev - priorCOGS, currGP = currRev - currCOGS;
+  const pComp     = m.priorCompLines, cComp = m.currCompLines;
+  const priorComp = pComp.total, currComp = cComp.total;
+  const priorMOC  = (p.ADMN||0)+(p.OCCP||0)+(p.SLSX||0);
+  const currMOC   = (c.ADMN||0)+(c.OCCP||0)+(c.SLSX||0);
+  const priorNOI  = priorGP - priorComp - priorMOC;
+  const currNOI   = currGP  - currComp  - currMOC;
+  const priorGM   = priorRev > 0 ? priorGP / priorRev : null;
+  const currGM    = currRev  > 0 ? currGP  / currRev  : null;
+
+  // Summary card helpers
+  const summaryCard = (label, pVal, cVal) => {
+    const delta   = cVal - pVal;
+    const pct     = pVal !== 0 ? delta / Math.abs(pVal) : null;
+    const cls     = delta >= 0 ? 'pos' : 'neg';
+    const arrow   = delta >= 0 ? '▲' : '▼';
+    const dAbs    = Math.abs(delta);
+    const dStr    = (delta >= 0 ? '+' : '−') + (dAbs >= 1e6 ? '$'+(dAbs/1e6).toFixed(1)+'M' : dAbs >= 1000 ? '$'+Math.round(dAbs/1000)+'K' : '$'+Math.round(dAbs));
+    const pctStr  = pct !== null ? ` (${delta>=0?'+':''}${fmtPct(pct)})` : '';
+    return `<div class="yoy-summary-card">
+      <div class="yoy-summary-label">${label}</div>
+      <div class="yoy-summary-value">${fmtK(cVal)}</div>
+      <div class="yoy-summary-prior">${pY}: ${fmtK(pVal)}</div>
+      <div class="yoy-summary-change ${cls}">${arrow} ${dStr}${pctStr}</div>
+    </div>`;
+  };
+
+  const summaryCardPct = (label, pVal, cVal) => {
+    const delta  = (cVal||0) - (pVal||0);
+    const cls    = delta >= 0 ? 'pos' : 'neg';
+    const arrow  = delta >= 0 ? '▲' : '▼';
+    const ppStr  = (delta >= 0 ? '+' : '') + (delta * 100).toFixed(1) + 'pp';
+    return `<div class="yoy-summary-card">
+      <div class="yoy-summary-label">${label}</div>
+      <div class="yoy-summary-value">${cVal !== null ? fmtPct(cVal) : '—'}</div>
+      <div class="yoy-summary-prior">${pY}: ${pVal !== null ? fmtPct(pVal) : '—'}</div>
+      <div class="yoy-summary-change ${cls}">${arrow} ${ppStr}</div>
+    </div>`;
+  };
 
   const compSourceLabels = {
     census:  'Payroll Census (current year)',
@@ -2336,12 +2601,21 @@ function renderYOY(m) {
     pl_both: 'P&L (each year independently)'
   };
   const compSourceNote = m.compSource
-    ? `<div class="alert alert-info" style="margin:12px 20px 0"><span class="alert-icon">ℹ</span>Compensation source: <strong>${compSourceLabels[m.compSource]||m.compSource}</strong></div>`
+    ? `<div class="alert alert-info" style="margin:0 0 16px"><span class="alert-icon">ℹ</span>Compensation source: <strong>${compSourceLabels[m.compSource]||m.compSource}</strong></div>`
     : '';
 
   const html = `
+  <div class="yoy-summary-grid">
+    ${summaryCard('Total Revenue',          priorRev,  currRev)}
+    ${summaryCard('Gross Profit',           priorGP,   currGP)}
+    ${summaryCardPct('Overall GM%',         priorGM,   currGM)}
+    ${summaryCard('Net Operating Profit',   priorNOI,  currNOI)}
+    ${summaryCard('Total Operating Costs',  priorMOC,  currMOC)}
+  </div>
+
+  ${compSourceNote}
+
   <div class="card">
-    ${compSourceNote}
     <div class="card-body" style="padding:0">
       <div class="table-wrap" style="border:none;border-radius:0">
         <table>
@@ -2701,6 +2975,12 @@ function fmtDollar(v) {
   if (v === null || v === undefined) return '—';
   const abs = Math.abs(v);
   const str = abs >= 1000000 ? `$${(abs/1000000).toFixed(2)}M` : `$${Math.round(abs).toLocaleString()}`;
+  return v < 0 ? `(${str})` : str;
+}
+function fmtK(v) {
+  if (v === null || v === undefined) return '—';
+  const abs = Math.abs(v);
+  const str = abs >= 1e6 ? `$${(abs/1e6).toFixed(1)}M` : abs >= 1000 ? `$${Math.round(abs/1000)}K` : `$${Math.round(abs)}`;
   return v < 0 ? `(${str})` : str;
 }
 function fmtPct(v) { return v === null || v === undefined ? '—' : (v*100).toFixed(1)+'%'; }
