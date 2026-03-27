@@ -928,7 +928,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
 // ═══════════════════════════════════════════════════════
 // EMBEDDED LOOKUP TABLES
 // ═══════════════════════════════════════════════════════
-const DEFAULT_PL_LOOKUP = [["2N Subscriptions", "CGSEQ"], ["401K Match", "CMP4"], ["401K/HSA Match", "CMP4"], ["Accounting", "ADMN"], ["Accounting Fees", "ADMN"], ["Admin Wages", "C2EM"], ["Adobe", "ADMN"], ["ADP Payroll Expense", "CMP4"], ["ADP Payroll Fees", "CMP4"], ["Advertising", "SLSX"], ["Advertising & Marketing", "SLSX"], ["Advertising - Other", "SLSX"], ["Advertising/Promotional", "SLSX"], ["Airfare", "ADMN"], ["Airfare - Project", "SLSX"], ["Airlines Fare", "SLSX"], ["AMEX Amazon Interest", "INTR"], ["Amortization", "DEPR"], ["Ask My Accountant", "OTHE"], ["Auto", "SLSX"], ["Auto and Truck Expenses - Other", "SLSX"], ["Auto Expense", "SLSX"], ["Auto Lease", "SLSX"], ["Auto Rental (Auto)", "SLSX"], ["AutoCAD", "ADMN"], ["Automobile", "SLSX"], ["AUTOMOBILE EXPENSE", "SLSX"], ["Bad Debt", "OTHE"], ["Bad Debt (Bad Debt)", "OTHE"], ["Bad Debt Expense", "OTHE"], ["Bad Debts", "OTHE"], ["Bad debts", "OTHE"], ["Bank Charges", "ADMN"], ["Bank Charges & Fees", "ADMN"], ["Bank Service Charge", "ADMN"], ["Bank Service Charges", "ADMN"], ["Barclay Advantage MC Interest", "INTR"], ["Billable Expense Income", "REVEQ"], ["Blueprint", "SLSX"], ["BOA Cash Rewards Interest", "INTR"], ["BOA Travel Rewrds Interest", "INTR"], ["Bonus", "CMP4"], ["Bookkeeping", "ADMN"], ["Brands Training", "SLSX"], ["Building Rent", "OCCP"], ["Business Insurance", "ADMN"], ["Business License", "SLSX"], ["Business License & Fees", "ADMN"], ["Business Licenses", "ADMN"], ["C1 - Subcontractor Labor", "SUBC"], ["Car & Truck", "SLSX"], ["Car Insurance", "SLSX"], ["Car Rental", "ADMN"], ["Car Rental - Project", "SLSX"], ["Cell phone", "SLSX"], ["Cell Phones", "SLSX"], ["Charitable Contributions", "SLSX"], ["Charitable Donations", "SLSX"], ["Charity", "MISC"], ["City & State", "SLSX"], ["Cleaning", "OCCP"], ["Cleaning and Mainteneance", "OCCP"], ["CMS Monitoring COGS", "CGSEQ"], ["COGS M (Merchandise)", "CGSEQ"], ["COGS P (Parts & Materials)", "CGSPT"], ["COGS V (Vendor Disc & Rebates)", "CGSVD"], ["Commission", "CMP3"], ["Commissions & bonuses", "CMP3"], ["Commissions & fees", "SLSX"], ["Common Area Maintenance", "OCCP"], ["Company Events", "SLSX"], ["Component COS", "CGSEQ"], ["Component Revenue", "REVEQ"], ["Component Revenue, Service", "REVLB"], ["Component Shrinkage", "CGSIA"], ["Computer & Internet Expense", "ADMN"], ["Construction Costs", "OCCP"], ["Consulting Subs", "SUBC"], ["Continuing Education", "SLSX"], ["Continuous Education", "SLSX"], ["Contract labor", "SUBC"], ["Contractor Payroll", "SUBC"], ["Contractors", "SUBC"], ["Contribution - Donations", "SLSX"], ["Contributions", "CMP4"], ["Cost of Goods Sold", "CGSEQ"], ["Cost of Goods Sold - Other", "CGSEQ"], ["COVID Expense (testing, supplies)", "ADMN"], ["Credit Card Annual Fee", "SLSX"], ["credits", "OTHI"], ["D-tools", "ADMN"], ["Deprec Exp - Autos & Trucks", "DEPR"], ["Deprec Exp - Lease Improve", "DEPR"], ["Depreciation", "DEPR"], ["Depreciation Expense", "DEPR"], ["Depreciation Expense (Depreciation Expense)", "DEPR"], ["Direct 401K/HSA Match", "CMP4"], ["Direct Commissions/Bonuses", "CMP3"], ["Direct Employee Contributions", "CMP4"], ["Direct Employer Payroll Taxes", "CMP4"], ["Direct Group Benefit Insurance", "CMP4"], ["DIRECT MATERIAL COST", "CGSEQ"], ["Direct PTO", "CMP1"], ["Discount Fees (merchant bank)", "SLSX"], ["Discounts", "REVEQ"], ["Dues & Subscriptions", "ADMN"], ["Dues/Subscriptions/EmpLic", "ADMN"], ["Electricity/Utilities", "OCCP"], ["Employee Benefits", "CMP4"], ["Employee bonus", "CMP4"], ["Employee Computers", "ADMN"], ["Employee Morale", "CMP4"], ["Employee Recognition", "CMP4"], ["Employee Reimbursement", "OTHE"], ["Employee Training", "CMP4"], ["Employer Payroll Taxes", "CMP4"], ["Equipment & Supplies - COGS", "CGSEQ"], ["Equipment Rental", "SLSX"], ["Equipment Repairs", "SLSX"], ["EQUIPMENT SALES", "REVEQ"], ["Events", "SLSX"], ["eWaste Fees", "ADMN"], ["Executive Wages", "C2OW"], ["Expense", "CMP4"], ["Federal", "TAX"], ["Food & Entertainment Expenses", "SLSX"], ["FPL", "OCCP"], ["Fraud expenses - BOA", "SLSX"], ["Fraud expenses - credit cards", "SLSX"], ["Freight", "SLSX"], ["Freight & delivery - COS", "SLSX"], ["Freight - Outbound", "SLSX"], ["Fuel", "SLSX"], ["Funding Circle Interest Paid", "INTR"], ["Gain on Sale of Assets", "OTHI"], ["Gain/Loss on Vendor Returns", "OTHE"], ["Garbage Collection", "OCCP"], ["Gas/Fuel (Auto)", "SLSX"], ["Gasoline", "SLSX"], ["General Marketing", "SLSX"], ["General Repairs & Maintenance", "OCCP"], ["Gifts", "SLSX"], ["Gross Receipts", "REVEQ"], ["Group Benefits Insurance", "CMP4"], ["Health Insurance - Employees", "CMP4"], ["Health Insurance-Owners", "CMP4"], ["Health Insurrance", "CMP4"], ["Hiring Fees", "CMP4"], ["Hotels", "SLSX"], ["Housecall Pro Tips Account", "OTHI"], ["HR Expenses - Other", "ADMN"], ["HR/recruiting", "ADMN"], ["I-Phone", "ADMN"], ["Indirect Commissions/Bonuses", "CMP3"], ["Indirect Employee Contribution", "CMP4"], ["Indirect PTO", "C2EM"], ["Install Material COGS", "CGSEQ"], ["Insurance", "ADMN"], ["INSURANCE", "ADMN"], ["Insurance - Automobile", "SLSX"], ["Insurance - Dental, employer", "CMP4"], ["Insurance - Disability", "CMP4"], ["Insurance - Employee Share", "CMP4"], ["Insurance - Health, employer", "CMP4"], ["Insurance - Liability", "CMP4"], ["Insurance - Vision, employer", "CMP4"], ["Insurance Expense", "ADMN"], ["Interest & finance charge", "INTR"], ["Interest earned", "OTHI"], ["Interest Expense", "INTR"], ["Interest Income", "OTHI"], ["Interest Paid", "INTR"], ["Internet", "OCCP"], ["Internet Service Provider", "OCCP"], ["Intuit", "ADMN"], ["Inventory Obsolescence", "CGSIA"], ["Inventory Shrinkage", "CGSIA"], ["IT Wages", "C2EM"], ["Janitorial Services", "OCCP"], ["Job Direct Labor", "CMP1"], ["Job Income - Other", "REVEQ"], ["Job Materials", "CGSEQ"], ["Job Materials Purchased", "CGSEQ"], ["Job Supplies", "SLSX"], ["Labor", "REVLB"], ["Labor Costs, Engineering", "CMP1"], ["Labor Costs, Installation", "CMP1"], ["Labor Costs, Programming", "CMP1"], ["Labor Costs, Project Mgt", "CMP1"], ["Labor Costs, Service", "CMP1"], ["LABOR INCOME", "REVLB"], ["Labor Income", "REVLB"], ["Labor Revenue, Engineering", "REVLB"], ["Labor Revenue, Final", "REVLB"], ["Labor Revenue, Prewire", "REVLB"], ["Labor Revenue, Programming", "REVLB"], ["Labor Revenue, Project Mgt", "REVLB"], ["Labor Revenue, Service", "REVLB"], ["Labor Revenue, Service IT", "REVLB"], ["Labor Revenue, Service Program", "REVLB"], ["Labor Revenue, Trimout", "REVLB"], ["LABOR SALES", "REVLB"], ["Landscape Maint.", "OCCP"], ["Late Charges", "ADMN"], ["Leased Office Equipment", "ADMN"], ["Legal & Professional Fees", "ADMN"], ["Legal & Professional Services", "ADMN"], ["Legal Fees", "ADMN"], ["Legal Professional", "ADMN"], ["Liability", "ADMN"], ["Liability Insurance", "ADMN"], ["License & Dues", "ADMN"], ["License & Permits", "SLSX"], ["License & Registration (Auto)", "SLSX"], ["Licenses and taxes", "ADMN"], ["Life Insurance", "CMP4"], ["Line of credit - interest", "INTR"], ["Loan Forgiveness", "OTHI"], ["Loan Interest", "INTR"], ["Loans Fee", "ADMN"], ["Lodging", "ADMN"], ["Lodging - Project", "SLSX"], ["M&T Bank Boat Interest", "INTR"], ["Maintennace", "SLSX"], ["Management Fees", "CMP1"], ["Marketing", "SLSX"], ["Marketing and Advertising", "SLSX"], ["Material cost", "CGSEQ"], ["Material Cost Field", "CGSEQ"], ["Material Cost service", "CGSEQ"], ["MATERIAL INCOME", "REVEQ"], ["Material Income", "REVEQ"], ["Materials COS", "CGSPT"], ["Materials Revenue", "REVPT"], ["Materials Revenue, Service", "REVPT"], ["Meals", "SLSX"], ["Meals & Entertainment", "SLSX"], ["Meals and Entertainment", "SLSX"], ["Meals COGS", "SLSX"], ["Medical Expenses ( Misc )", "CMP4"], ["Medical Insurance", "CMP4"], ["Memberships/Licenses/Subscripts", "ADMN"], ["Merchant deposit fees", "SLSX"], ["Merchant Fee", "ADMN"], ["Microsoft", "ADMN"], ["Mileage", "SLSX"], ["Misc HW COGS", "CGSEQ"], ["Misc. Income", "OTHI"], ["Miscellaneous", "OTHE"], ["Miscellaneous Expense", "MISC"], ["Mobil Services", "SLSX"], ["Net Income", "NETIN"], ["Net Profit (Loss)", "NETIN"], ["Notary", "ADMN"], ["Office & Computer Equipment", "ADMN"], ["Office Expenses", "ADMN"], ["Office Security", "OCCP"], ["Office Supplies", "ADMN"], ["Office Supplies & Expenses", "ADMN"], ["Office Supplies & Software", "ADMN"], ["Officer Health insurance", "CMP4"], ["Officer Salary", "C2OW"], ["Officer Wages", "C2OW"], ["Officers Salaries", "C2OW"], ["On Call Pay", "CMP4"], ["Other Business Expenses", "SLSX"], ["Other Expenses", "OTHE"], ["Other Hardware & Peripherals", "ADMN"], ["Other Income", "OTHI"], ["Other income", "REVEQ"], ["OTHER INDIRECT COST (tools, small equipment)", "SLSX"], ["Other Job Related Costs", "SLSX"], ["Other Taxes", "TAX"], ["Other Transportation", "SLSX"], ["Outsourced Services", "SUBC"], ["Owner Salary", "C2OW"], ["Parking", "SLSX"], ["PayPal Fees", "SLSX"], ["Payroll & Benefit Admin Fees", "CMP4"], ["Payroll Expense - Other", "CMP4"], ["Payroll Expenses", "CMP4"], ["Payroll Expenses - Other", "CMP4"], ["Payroll Fees", "CMP4"], ["Payroll Preparation Fees", "CMP4"], ["Payroll Processing Fees", "CMP4"], ["Payroll Tax", "CMP4"], ["Payroll Tax Expense", "CMP4"], ["Payroll Taxes", "CMP4"], ["Payroll Taxes ER", "CMP4"], ["Penalty / Late Fee", "ADMN"], ["Per Diem", "SLSX"], ["Permits Runner", "ADMN"], ["Personal", "SLSX"], ["Personal Property Tax", "TAX"], ["Pest Control", "OCCP"], ["Postage", "ADMN"], ["Postage and Delivery (courier, postage, handling and deliveries)", "ADMN"], ["Postage Expense", "ADMN"], ["Postage/Courier", "ADMN"], ["PPP grant (CARES ACT PPP)", "OTHI"], ["PreEmployment Screening", "SLSX"], ["Prewire COGS", "CGSEQ"], ["Professional Development", "SLSX"], ["Professional Fees", "ADMN"], ["PROFESSIONAL FEES", "ADMN"], ["Professional Services", "ADMN"], ["Promotional", "SLSX"], ["Property", "SLSX"], ["Propriators Expenses", "OTHE"], ["PTO- Office (Holiday, sick & vacation pay)", "C2EM"], ["PTO-Field (Holiday, sick & vacation pay (FIELD employees))", "CMP1"], ["Public Relations", "SLSX"], ["Qualifier License", "SLSX"], ["QuickBooks Loan - Interest", "INTR"], ["QuickBooks Payments Fees", "ADMN"], ["Real Estate Taxes", "OCCP"], ["Reconciliation Discrepancies", "SLSX"], ["Recurring Monthly Revenue", "REVEQ"], ["Recurring Revenue", "REVMS"], ["Refunds-Allowances", "REVEQ"], ["Reimbursements", "SLSX"], ["Remote Monitoring", "MONI"], ["Rent", "OCCP"], ["Rent & Lease", "OCCP"], ["Rent - Other", "OCCP"], ["Rent Expense", "OCCP"], ["Rent or Lease", "OCCP"], ["Repair & Maintenance", "OCCP"], ["Repairs & Maintenance", "OCCP"], ["Repairs & Maintenance (Auto)", "SLSX"], ["Repairs and Maintenance", "ADMN"], ["RESEARCH AND DEVELOPMENT (innovations and product development)", "SLSX"], ["RMR", "REVMS"], ["Salaries & Wages", "CMP1"], ["Sales", "REVEQ"], ["Sales & Support - Other", "CMP3"], ["Sales & Support - Service", "CMP3"], ["SALES M (Merchandise)", "REVEQ"], ["Sales of Product Income", "REVEQ"], ["SALES P (Parts & Materials)", "REVPT"], ["SALES S (Labor & Services)", "REVLB"], ["Sales Tax", "TAX"], ["Sales Tax Adj Utah Expense", "TAX"], ["Sales Taxes by Vendor", "SLSX"], ["Sales Wages - Primary", "CMP3"], ["SBA Loan Interest", "INTR"], ["SBA Loan Intrest", "OTHE"], ["Security", "OCCP"], ["SEP IRA contribution", "CMP4"], ["Service Calls", "REVLB"], ["Service Dept Cost - Other", "SLSX"], ["Service/Labor Income", "REVLB"], ["Services", "REVLB"], ["Services Income", "REVLB"], ["Shareholder Health Insurance", "CMP4"], ["Shipping", "SLSX"], ["Shipping COGS", "SLSX"], ["Shipping, Freight & Delivery", "SLSX"], ["Shop supplies", "SLSX"], ["Showroom Exp ( Display)", "SLSX"], ["Showroom Expenses-12245 WTD", "SLSX"], ["Simple IRA Employer Match", "CMP4"], ["Small Tools/Shop Supplies", "SLSX"], ["Software Expense", "ADMN"], ["Software Fees", "ADMN"], ["Software Lease", "ADMN"], ["Software Licenses", "ADMN"], ["Software Maint & Support Svc", "ADMN"], ["Software Purchase - Lease", "ADMN"], ["Software Purchase Expense", "ADMN"], ["Square Fees", "SLSX"], ["State Taxes", "TAX"], ["Subcontracted Labor", "SUBC"], ["Subcontracted Materials", "CGSEQ"], ["Subcontractor", "SUBC"], ["Subcontractor  Labor ( Sub )", "SUBC"], ["Subcontractor Labor", "SUBC"], ["Subcontractor labor", "SUBC"], ["Subcontractors Expense", "SUBC"], ["Subcontractors(outside service)", "SUBC"], ["Subscription Expense", "ADMN"], ["Supplies & Materials", "CGSEQ"], ["Tax", "TAX"], ["Taxable Interest Income", "INTR"], ["Taxes", "TAX"], ["TAXES", "TAX"], ["Taxes & Licenses", "ADMN"], ["Telecommunication", "SLSX"], ["TELECOMMUNICATIONS", "ADMN"], ["Telephone", "SLSX"], ["Temporary Help", "CMP1"], ["Temporary Labor", "SUBC"], ["Terms Discounts", "CGSVD"], ["Tesla Interest", "INTR"], ["Tesla Internet", "SLSX"], ["Time Sheets", "CMP4"], ["Tolls", "SLSX"], ["Tools", "SLSX"], ["Tools & Machinery (under $500)", "SLSX"], ["Tools and Small Equipment", "SLSX"], ["Total 4205 · Labor Income service", "REVLB"], ["Total 4215 · Material Income Service", "REVEQ"], ["Total 6100 · Automobile Expenses", "SLSX"], ["Total 6100 · Payroll Burden & Benefit", "CMP4"], ["Total 6200 · Facilities Expense", "OCCP"], ["Total 6300 · Marketing", "SLSX"], ["Total 6400 · General & Admin", "ADMN"], ["Total 6600 · Professional Fees", "ADMN"], ["Total 6800 · Auto Expense/Fleet", "SLSX"], ["Total 6900 · Travel & Entertainment", "SLSX"], ["Total 7030 · Service COGS", "SLSX"], ["Total 8009 · Industry Partnership Expense", "ADMN"], ["Total 8012 · Meals & Enter. Expense", "SLSX"], ["Total 8050 · Vehicle Expenses", "SLSX"], ["Total 8300 · Professional Fees", "ADMN"], ["Total ADMINISTRATIVE", "ADMN"], ["Total Auto and Truck Expenses", "SLSX"], ["Total Car & Truck", "SLSX"], ["Total Dues & subscriptions", "ADMN"], ["Total EMPLOYEES BENEFITS", "CMP4"], ["Total FACILITIES EXPENSE", "OCCP"], ["Total Gasoline", "SLSX"], ["Total Job Supplies", "CGSEQ"], ["Total Labor Income Field", "REVLB"], ["Total Marketing", "SLSX"], ["Total Material Income field", "REVEQ"], ["Total OCCUPANCY", "OCCP"], ["Total Other Expenses", "OTHE"], ["Total Other Income", "OTHI"], ["Total Payroll Taxes", "CMP4"], ["Total SALES EXPENSE", "SLSX"], ["Total TAXES", "TAX"], ["Total TRAVEL AND ENTERTAINMENT", "SLSX"], ["Total Utilities", "OCCP"], ["Training", "SLSX"], ["Training/Consulting Costs", "SLSX"], ["Trainning & development", "SLSX"], ["Transportation", "SLSX"], ["Travel", "SLSX"], ["Travel - Aaron", "SLSX"], ["Travel - Greg", "SLSX"], ["Travel - Pat", "SLSX"], ["Travel - Skytop", "SLSX"], ["Travel - Springhill", "SLSX"], ["Travel COGS", "SLSX"], ["Travel Expense", "SLSX"], ["Travel Expenses", "SLSX"], ["Travel Meals", "SLSX"], ["Travel Reimbursements (contra)", "SLSX"], ["Uncategorized Expense", "OTHE"], ["Uncategorized Expenses", "OTHE"], ["Uncategorized Income", "OTHI"], ["Uniforms", "SLSX"], ["Uniforms & Laundry", "SLSX"], ["Utilities", "OCCP"], ["Utilities - Other", "OCCP"], ["Vehicle Insurance", "SLSX"], ["Vehicle Leases", "ADMN"], ["Vehicle License Fees", "SLSX"], ["Vehicle Repairs & Maint", "SLSX"], ["Vendor Discounts COGS", "CGSVD"], ["Vendor Late Fees", "OTHE"], ["Vendor Marketing Credits", "CGSVD"], ["VOIP Service Clients", "CGSEQ"], ["Wages-Office", "C2EM"], ["Warranty (Labor& Material Cost)", "CGSEQ"], ["Water", "OCCP"], ["Worker's Comp", "CMP4"], ["Workers Comp", "CMP4"], ["Workers Comp Insurance", "SLSX"], ["Workers Compensation", "CMP4"], ["Workers Compensation Ins", "SLSX"], ["Working meals", "SLSX"]];
+const DEFAULT_PL_LOOKUP = [["2N Subscriptions","CGSEQ"],["401K Match","PAYX"],["401K/HSA Match","PAYX"],["Accounting","ADMN"],["Accounting Fees","ADMN"],["Admin Wages","ADME"],["Adobe","ADMN"],["ADP Payroll Expense","PAYX"],["ADP Payroll Fees","PAYX"],["Advertising","SLSX"],["Advertising & Marketing","SLSX"],["Advertising - Other","SLSX"],["Advertising/Promotional","SLSX"],["Airfare","ADMN"],["Airfare - Project","SLSX"],["Airlines Fare","SLSX"],["AMEX Amazon Interest","INTR"],["Amortization","DEPR"],["Ask My Accountant","OTHE"],["Auto","SLSX"],["Auto and Truck Expenses - Other","SLSX"],["Auto Expense","SLSX"],["Auto Lease","SLSX"],["Auto Rental (Auto)","SLSX"],["AutoCAD","ADMN"],["Automobile","SLSX"],["AUTOMOBILE EXPENSE","SLSX"],["Bad Debt","OTHE"],["Bad Debt (Bad Debt)","OTHE"],["Bad Debt Expense","OTHE"],["Bad Debts","OTHE"],["Bad debts","OTHE"],["Bank Charges","ADMN"],["Bank Charges & Fees","ADMN"],["Bank Service Charge","ADMN"],["Bank Service Charges","ADMN"],["Barclay Advantage MC Interest","INTR"],["Billable Expense Income","REVEQ"],["Blueprint","SLSX"],["BOA Cash Rewards Interest","INTR"],["BOA Travel Rewrds Interest","INTR"],["Bonus","PAYX"],["Bookkeeping","ADMN"],["Brands Training","SLSX"],["Building Rent","OCCP"],["Business Insurance","ADMN"],["Business License","SLSX"],["Business License & Fees","ADMN"],["Business Licenses","ADMN"],["C1 - Subcontractor Labor","SUBC"],["Car & Truck","SLSX"],["Car Insurance","SLSX"],["Car Rental","ADMN"],["Car Rental - Project","SLSX"],["Cell phone","SLSX"],["Cell Phones","SLSX"],["Charitable Contributions","SLSX"],["Charitable Donations","SLSX"],["Charity","MISC"],["City & State","SLSX"],["Cleaning","OCCP"],["Cleaning and Mainteneance","OCCP"],["CMS Monitoring COGS","CGSEQ"],["COGS M (Merchandise)","CGSEQ"],["COGS P (Parts & Materials)","CGSPT"],["COGS V (Vendor Disc & Rebates)","CGSVD"],["Commission","SALC"],["Commissions & bonuses","SALC"],["Commissions & fees","SLSX"],["Common Area Maintenance","OCCP"],["Company Events","SLSX"],["Component COS","CGSEQ"],["Component Revenue","REVEQ"],["Component Revenue, Service","REVLB"],["Component Shrinkage","CGSIA"],["Computer & Internet Expense","ADMN"],["Construction Costs","OCCP"],["Consulting Subs","SUBC"],["Continuing Education","SLSX"],["Continuous Education","SLSX"],["Contract labor","SUBC"],["Contractor Payroll","SUBC"],["Contractors","SUBC"],["Contribution - Donations","SLSX"],["Contributions","PAYX"],["Cost of Goods Sold","CGSEQ"],["Cost of Goods Sold - Other","CGSEQ"],["COVID Expense (testing, supplies)","ADMN"],["Credit Card Annual Fee","SLSX"],["credits","OTHI"],["D-tools","ADMN"],["Deprec Exp - Autos & Trucks","DEPR"],["Deprec Exp - Lease Improve","DEPR"],["Depreciation","DEPR"],["Depreciation Expense","DEPR"],["Depreciation Expense (Depreciation Expense)","DEPR"],["Direct 401K/HSA Match","PAYX"],["Direct Commissions/Bonuses","SALC"],["Direct Employee Contributions","PAYX"],["Direct Employer Payroll Taxes","PAYX"],["Direct Group Benefit Insurance","PAYX"],["DIRECT MATERIAL COST","CGSEQ"],["Direct PTO","PROD"],["Discount Fees (merchant bank)","SLSX"],["Discounts","REVEQ"],["Dues & Subscriptions","ADMN"],["Dues/Subscriptions/EmpLic","ADMN"],["Electricity/Utilities","OCCP"],["Employee Benefits","PAYX"],["Employee bonus","PAYX"],["Employee Computers","ADMN"],["Employee Morale","PAYX"],["Employee Recognition","PAYX"],["Employee Reimbursement","OTHE"],["Employee Training","PAYX"],["Employer Payroll Taxes","PAYX"],["Equipment & Supplies - COGS","CGSEQ"],["Equipment Rental","SLSX"],["Equipment Repairs","SLSX"],["EQUIPMENT SALES","REVEQ"],["Events","SLSX"],["eWaste Fees","ADMN"],["Executive Wages","OWN"],["Expense","PAYX"],["Federal","TAX"],["Food & Entertainment Expenses","SLSX"],["FPL","OCCP"],["Fraud expenses - BOA","SLSX"],["Fraud expenses - credit cards","SLSX"],["Freight","SLSX"],["Freight & delivery - COS","SLSX"],["Freight - Outbound","SLSX"],["Fuel","SLSX"],["Funding Circle Interest Paid","INTR"],["Gain on Sale of Assets","OTHI"],["Gain/Loss on Vendor Returns","OTHE"],["Garbage Collection","OCCP"],["Gas/Fuel (Auto)","SLSX"],["Gasoline","SLSX"],["General Marketing","SLSX"],["General Repairs & Maintenance","OCCP"],["Gifts","SLSX"],["Gross Receipts","REVEQ"],["Group Benefits Insurance","PAYX"],["Health Insurance - Employees","PAYX"],["Health Insurance-Owners","PAYX"],["Health Insurrance","PAYX"],["Hiring Fees","PAYX"],["Hotels","SLSX"],["Housecall Pro Tips Account","OTHI"],["HR Expenses - Other","ADMN"],["HR/recruiting","ADMN"],["I-Phone","ADMN"],["Indirect Commissions/Bonuses","SALC"],["Indirect Employee Contribution","PAYX"],["Indirect PTO","ADME"],["Install Material COGS","CGSEQ"],["Insurance","ADMN"],["INSURANCE","ADMN"],["Insurance - Automobile","SLSX"],["Insurance - Dental, employer","PAYX"],["Insurance - Disability","PAYX"],["Insurance - Employee Share","PAYX"],["Insurance - Health, employer","PAYX"],["Insurance - Liability","PAYX"],["Insurance - Vision, employer","PAYX"],["Insurance Expense","ADMN"],["Interest & finance charge","INTR"],["Interest earned","OTHI"],["Interest Expense","INTR"],["Interest Income","OTHI"],["Interest Paid","INTR"],["Internet","OCCP"],["Internet Service Provider","OCCP"],["Intuit","ADMN"],["Inventory Obsolescence","CGSIA"],["Inventory Shrinkage","CGSIA"],["IT Wages","ADME"],["Janitorial Services","OCCP"],["Job Direct Labor","PROD"],["Job Income - Other","REVEQ"],["Job Materials","CGSEQ"],["Job Materials Purchased","CGSEQ"],["Job Supplies","SLSX"],["Labor","REVLB"],["Labor Costs, Engineering","PROD"],["Labor Costs, Installation","PROD"],["Labor Costs, Programming","PROD"],["Labor Costs, Project Mgt","PROD"],["Labor Costs, Service","PROD"],["LABOR INCOME","REVLB"],["Labor Income","REVLB"],["Labor Revenue, Engineering","REVLB"],["Labor Revenue, Final","REVLB"],["Labor Revenue, Prewire","REVLB"],["Labor Revenue, Programming","REVLB"],["Labor Revenue, Project Mgt","REVLB"],["Labor Revenue, Service","REVLB"],["Labor Revenue, Service IT","REVLB"],["Labor Revenue, Service Program","REVLB"],["Labor Revenue, Trimout","REVLB"],["LABOR SALES","REVLB"],["Landscape Maint.","OCCP"],["Late Charges","ADMN"],["Leased Office Equipment","ADMN"],["Legal & Professional Fees","ADMN"],["Legal & Professional Services","ADMN"],["Legal Fees","ADMN"],["Legal Professional","ADMN"],["Liability","ADMN"],["Liability Insurance","ADMN"],["License & Dues","ADMN"],["License & Permits","SLSX"],["License & Registration (Auto)","SLSX"],["Licenses and taxes","ADMN"],["Life Insurance","PAYX"],["Line of credit - interest","INTR"],["Loan Forgiveness","OTHI"],["Loan Interest","INTR"],["Loans Fee","ADMN"],["Lodging","ADMN"],["Lodging - Project","SLSX"],["M&T Bank Boat Interest","INTR"],["Maintennace","SLSX"],["Management Fees","PROD"],["Marketing","SLSX"],["Marketing and Advertising","SLSX"],["Material cost","CGSEQ"],["Material Cost Field","CGSEQ"],["Material Cost service","CGSEQ"],["MATERIAL INCOME","REVEQ"],["Material Income","REVEQ"],["Materials COS","CGSPT"],["Materials Revenue","REVPT"],["Materials Revenue, Service","REVPT"],["Meals","SLSX"],["Meals & Entertainment","SLSX"],["Meals and Entertainment","SLSX"],["Meals COGS","SLSX"],["Medical Expenses ( Misc )","PAYX"],["Medical Insurance","PAYX"],["Memberships/Licenses/Subscripts","ADMN"],["Merchant deposit fees","SLSX"],["Merchant Fee","ADMN"],["Microsoft","ADMN"],["Mileage","SLSX"],["Misc HW COGS","CGSEQ"],["Misc. Income","OTHI"],["Miscellaneous","OTHE"],["Miscellaneous Expense","MISC"],["Mobil Services","SLSX"],["Net Income","NETIN"],["Net Profit (Loss)","NETIN"],["Notary","ADMN"],["Office & Computer Equipment","ADMN"],["Office Expenses","ADMN"],["Office Security","OCCP"],["Office Supplies","ADMN"],["Office Supplies & Expenses","ADMN"],["Office Supplies & Software","ADMN"],["Officer Health insurance","PAYX"],["Officer Salary","OWN"],["Officer Wages","OWN"],["Officers Salaries","OWN"],["On Call Pay","PAYX"],["Other Business Expenses","SLSX"],["Other Expenses","OTHE"],["Other Hardware & Peripherals","ADMN"],["Other Income","OTHI"],["Other income","REVEQ"],["OTHER INDIRECT COST (tools, small equipment)","SLSX"],["Other Job Related Costs","SLSX"],["Other Taxes","TAX"],["Other Transportation","SLSX"],["Outsourced Services","SUBC"],["Owner Salary","OWN"],["Parking","SLSX"],["PayPal Fees","SLSX"],["Payroll & Benefit Admin Fees","PAYX"],["Payroll Expense - Other","PAYX"],["Payroll Expenses","PAYX"],["Payroll Expenses - Other","PAYX"],["Payroll Fees","PAYX"],["Payroll Preparation Fees","PAYX"],["Payroll Processing Fees","PAYX"],["Payroll Tax","PAYX"],["Payroll Tax Expense","PAYX"],["Payroll Taxes","PAYX"],["Payroll Taxes ER","PAYX"],["Penalty / Late Fee","ADMN"],["Per Diem","SLSX"],["Permits Runner","ADMN"],["Personal","SLSX"],["Personal Property Tax","TAX"],["Pest Control","OCCP"],["Postage","ADMN"],["Postage and Delivery (courier, postage, handling and deliveries)","ADMN"],["Postage Expense","ADMN"],["Postage/Courier","ADMN"],["PPP grant (CARES ACT PPP)","OTHI"],["PreEmployment Screening","SLSX"],["Prewire COGS","CGSEQ"],["Professional Development","SLSX"],["Professional Fees","ADMN"],["PROFESSIONAL FEES","ADMN"],["Professional Services","ADMN"],["Promotional","SLSX"],["Property","SLSX"],["Propriators Expenses","OTHE"],["PTO- Office (Holiday, sick & vacation pay)","ADME"],["PTO-Field (Holiday, sick & vacation pay (FIELD employees))","PROD"],["Public Relations","SLSX"],["Qualifier License","SLSX"],["QuickBooks Loan - Interest","INTR"],["QuickBooks Payments Fees","ADMN"],["Real Estate Taxes","OCCP"],["Reconciliation Discrepancies","SLSX"],["Recurring Monthly Revenue","REVEQ"],["Recurring Revenue","REVMS"],["Refunds-Allowances","REVEQ"],["Reimbursements","SLSX"],["Remote Monitoring","MONI"],["Rent","OCCP"],["Rent & Lease","OCCP"],["Rent - Other","OCCP"],["Rent Expense","OCCP"],["Rent or Lease","OCCP"],["Repair & Maintenance","OCCP"],["Repairs & Maintenance","OCCP"],["Repairs & Maintenance (Auto)","SLSX"],["Repairs and Maintenance","ADMN"],["RESEARCH AND DEVELOPMENT (innovations and product development)","SLSX"],["RMR","REVMS"],["Salaries & Wages","PROD"],["Sales","REVEQ"],["Sales & Support - Other","SALC"],["Sales & Support - Service","SALC"],["SALES M (Merchandise)","REVEQ"],["Sales of Product Income","REVEQ"],["SALES P (Parts & Materials)","REVPT"],["SALES S (Labor & Services)","REVLB"],["Sales Tax","TAX"],["Sales Tax Adj Utah Expense","TAX"],["Sales Taxes by Vendor","SLSX"],["Sales Wages - Primary","SALC"],["SBA Loan Interest","INTR"],["SBA Loan Intrest","OTHE"],["Security","OCCP"],["SEP IRA contribution","PAYX"],["Service Calls","REVLB"],["Service Dept Cost - Other","SLSX"],["Service/Labor Income","REVLB"],["Services","REVLB"],["Services Income","REVLB"],["Shareholder Health Insurance","PAYX"],["Shipping","SLSX"],["Shipping COGS","SLSX"],["Shipping, Freight & Delivery","SLSX"],["Shop supplies","SLSX"],["Showroom Exp ( Display)","SLSX"],["Showroom Expenses-12245 WTD","SLSX"],["Simple IRA Employer Match","PAYX"],["Small Tools/Shop Supplies","SLSX"],["Software Expense","ADMN"],["Software Fees","ADMN"],["Software Lease","ADMN"],["Software Licenses","ADMN"],["Software Maint & Support Svc","ADMN"],["Software Purchase - Lease","ADMN"],["Software Purchase Expense","ADMN"],["Square Fees","SLSX"],["State Taxes","TAX"],["Subcontracted Labor","SUBC"],["Subcontracted Materials","CGSEQ"],["Subcontractor","SUBC"],["Subcontractor  Labor ( Sub )","SUBC"],["Subcontractor Labor","SUBC"],["Subcontractor labor","SUBC"],["Subcontractors Expense","SUBC"],["Subcontractors(outside service)","SUBC"],["Subscription Expense","ADMN"],["Supplies & Materials","CGSEQ"],["Tax","TAX"],["Taxable Interest Income","INTR"],["Taxes","TAX"],["TAXES","TAX"],["Taxes & Licenses","ADMN"],["Telecommunication","SLSX"],["TELECOMMUNICATIONS","ADMN"],["Telephone","SLSX"],["Temporary Help","PROD"],["Temporary Labor","SUBC"],["Terms Discounts","CGSVD"],["Tesla Interest","INTR"],["Tesla Internet","SLSX"],["Time Sheets","PAYX"],["Tolls","SLSX"],["Tools","SLSX"],["Tools & Machinery (under $500)","SLSX"],["Tools and Small Equipment","SLSX"],["Total 4205 \u00b7 Labor Income service","REVLB"],["Total 4215 \u00b7 Material Income Service","REVEQ"],["Total 6100 \u00b7 Automobile Expenses","SLSX"],["Total 6100 \u00b7 Payroll Burden & Benefit","PAYX"],["Total 6200 \u00b7 Facilities Expense","OCCP"],["Total 6300 \u00b7 Marketing","SLSX"],["Total 6400 \u00b7 General & Admin","ADMN"],["Total 6600 \u00b7 Professional Fees","ADMN"],["Total 6800 \u00b7 Auto Expense/Fleet","SLSX"],["Total 6900 \u00b7 Travel & Entertainment","SLSX"],["Total 7030 \u00b7 Service COGS","SLSX"],["Total 8009 \u00b7 Industry Partnership Expense","ADMN"],["Total 8012 \u00b7 Meals & Enter. Expense","SLSX"],["Total 8050 \u00b7 Vehicle Expenses","SLSX"],["Total 8300 \u00b7 Professional Fees","ADMN"],["Total ADMINISTRATIVE","ADMN"],["Total Auto and Truck Expenses","SLSX"],["Total Car & Truck","SLSX"],["Total Dues & subscriptions","ADMN"],["Total EMPLOYEES BENEFITS","PAYX"],["Total FACILITIES EXPENSE","OCCP"],["Total Gasoline","SLSX"],["Total Job Supplies","CGSEQ"],["Total Labor Income Field","REVLB"],["Total Marketing","SLSX"],["Total Material Income field","REVEQ"],["Total OCCUPANCY","OCCP"],["Total Other Expenses","OTHE"],["Total Other Income","OTHI"],["Total Payroll Taxes","PAYX"],["Total SALES EXPENSE","SLSX"],["Total TAXES","TAX"],["Total TRAVEL AND ENTERTAINMENT","SLSX"],["Total Utilities","OCCP"],["Training","SLSX"],["Training/Consulting Costs","SLSX"],["Trainning & development","SLSX"],["Transportation","SLSX"],["Travel","SLSX"],["Travel - Aaron","SLSX"],["Travel - Greg","SLSX"],["Travel - Pat","SLSX"],["Travel - Skytop","SLSX"],["Travel - Springhill","SLSX"],["Travel COGS","SLSX"],["Travel Expense","SLSX"],["Travel Expenses","SLSX"],["Travel Meals","SLSX"],["Travel Reimbursements (contra)","SLSX"],["Uncategorized Expense","OTHE"],["Uncategorized Expenses","OTHE"],["Uncategorized Income","OTHI"],["Uniforms","SLSX"],["Uniforms & Laundry","SLSX"],["Utilities","OCCP"],["Utilities - Other","OCCP"],["Vehicle Insurance","SLSX"],["Vehicle Leases","ADMN"],["Vehicle License Fees","SLSX"],["Vehicle Repairs & Maint","SLSX"],["Vendor Discounts COGS","CGSVD"],["Vendor Late Fees","OTHE"],["Vendor Marketing Credits","CGSVD"],["VOIP Service Clients","CGSEQ"],["Wages-Office","ADME"],["Warranty (Labor& Material Cost)","CGSEQ"],["Water","OCCP"],["Worker's Comp","PAYX"],["Workers Comp","PAYX"],["Workers Comp Insurance","SLSX"],["Workers Compensation","PAYX"],["Workers Compensation Ins","SLSX"],["Working meals","SLSX"]];
 
 const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","ADME","No","No"],["Access Control Technician","PROD","No","Yes"],["Account Executive","SALC","No","No"],["Account Manager","SALC","No","No"],["Accounts Payable","ADME","No","No"],["Accounts Receivable","ADME","No","No"],["Acoustical Consultant","PROD","No","Yes"],["Admin ","ADME","No","No"],["Administrative Assistant","ADME","No","No"],["Alarm Technician","PROD","No","Yes"],["AP","ADME","No","No"],["AP Specialist","ADME","No","No"],["Application Engineer","PROD","No","Yes"],["Apprentice Tech","PROD","No","Yes"],["Apprentice Technician","PROD","No","Yes"],["AR","ADME","No","No"],["Associate Project Manager","ADME","No","No"],["Install","PROD","No","Yes"],["Service","PROD","No","Yes"],["Audio Video Installer","PROD","No","Yes"],["Audio Visual Engineer","PROD","No","Yes"],["Audio Visual Programmer","PROD","No","Yes"],["Audio Visual Technician","PROD","No","Yes"],["Automation Programmer","PROD","No","Yes"],["AV Designer","ADME","No","No"],["AV Engineer","ADME","No","No"],["AV Install Tech","PROD","No","Yes"],["AV Installer","PROD","No","Yes"],["AV Programmer","PROD","No","Yes"],["AV Sales Consultant","SALC","No","No"],["AV System Designer","ADME","No","No"],["AV Tech","PROD","No","Yes"],["AV Technician","PROD","No","Yes"],["Bench","PROD","No","Yes"],["Bench Technician","PROD","No","Yes"],["Bid Coordinator","SALC","No","No"],["Billing Specialist","ADME","No","No"],["Bookkeeper","ADME","No","No"],["Branch Manager","ADME","No","No"],["Brand Manager","ADME","No","No"],["Business Development","SALC","No","No"],["Business Development Manager","SALC","No","No"],["Business Development Rep","SALC","No","No"],["Business Owner","OWN","Yes","No"],["Cable Guy","PROD","No","Yes"],["Cable Tech","PROD","No","Yes"],["Cable Technician","PROD","No","Yes"],["CAD Designer","ADME","No","No"],["CAD Technician","ADME","No","No"],["CCTV Technician","PROD","No","Yes"],["CEO","OWN","Yes","No"],["CFO","ADME","No","No"],["Client Advisor","ADME","No","No"],["Client Care Coordinator","ADME","No","No"],["Client Relationship Manager","ADME","No","No"],["Client Service Manager","ADME","No","No"],["Client Service Tech ","PROD","No","Yes"],["Client Service Technician","PROD","No","Yes"],["Client Success Manager","ADME","No","No"],["Co-Founder","OWN","Yes","No"],["Commercial AV Technician","PROD","No","Yes"],["Commissioning Engineer","PROD","No","Yes"],["Commissioning Specialist","PROD","No","Yes"],["Commissioning Technician","PROD","No","Yes"],["Concierge","ADME","No","No"],["Construction Coordinator","ADME","No","No"],["Content Manager","ADME","No","No"],["Contract Admin","ADME","No","No"],["Control System Programmer","PROD","No","Yes"],["Controller","ADME","No","No"],["Controls Engineer","PROD","No","Yes"],["COO","ADME","No","No"],["Custom Integrator","PROD","No","Yes"],["Customer Care Specialist","ADME","No","No"],["Customer Success Manager","ADME","No","No"],["Cybersecurity Technician","PROD","No","Yes"],["Deployment Manager","ADME","No","No"],["Deployment Technician","PROD","No","Yes"],["Design Engineer","ADME","No","No"],["Design Manager","ADME","No","No"],["Designer","ADME","No","No"],["Device Deployment Technician","PROD","No","Yes"],["Director of Operations","ADME","No","No"],["Director of Sales","SALC","No","No"],["Dispatch","ADME","No","No"],["Dispatcher","ADME","No","No"],["Door Entry Technician","PROD","No","Yes"],["Draftsperson","ADME","No","No"],["DSP Programmer","PROD","No","Yes"],["Electronics Technician","PROD","No","Yes"],["Engineer","ADME","No","No"],["Estimating","ADME","No","No"],["Estimator","ADME","No","No"],["Executive Assistant","ADME","No","No"],["Fabrication","PROD","No","Yes"],["Fabrication Technician","PROD","No","Yes"],["Field Engineer","PROD","No","Yes"],["Field Service Technician","PROD","No","Yes"],["Field Tech","PROD","No","Yes"],["Field Technician","PROD","No","Yes"],["Founder","OWN","Yes","No"],["General Manager","ADME","No","No"],["GM","ADME","No","No"],["Golf Simulator Technician","PROD","No","Yes"],["Help Desk","ADME","No","No"],["Help Desk Technician","PROD","No","Yes"],["Home Automation Engineer","PROD","No","Yes"],["Home Automation Programmer","PROD","No","Yes"],["Home Technology Advisor","ADME","No","No"],["Home Technology Professional","PROD","No","Yes"],["Home Theater Installer","PROD","No","Yes"],["Home Theater Specialist","PROD","No","Yes"],["HR Manager","ADME","No","No"],["Implementation Manager","ADME","No","No"],["Infrastructure Technician","PROD","No","Yes"],["Install Tech","PROD","No","Yes"],["Install Technician","PROD","No","Yes"],["Installation Manager","ADME","No","No"],["Installation Technician","PROD","No","Yes"],["Installer","PROD","No","Yes"],["Integration Developer","ADME","No","No"],["Integration Technician","PROD","No","Yes"],["Inventory Manager","ADME","No","No"],["Inventory Specialist","ADME","No","No"],["IT Specialist","ADME","No","No"],["IT Support Specialist","PROD","No","Yes"],["IT Technician","PROD","No","Yes"],["Junior Installer","PROD","No","Yes"],["Junior Tech","PROD","No","Yes"],["Lead Installer","PROD","No","Yes"],["Lead Tech","PROD","No","Yes"],["Lead Technician","PROD","No","Yes"],["Lighting Control Designer","ADME","No","No"],["Lighting Control Programmer","PROD","No","Yes"],["Lighting Control Technician","PROD","No","Yes"],["Lighting Systems Designer","ADME","No","No"],["Linked Install","PROD","No","Yes"],["Logistics Coordinator","ADME","No","No"],["Low Voltage Installer","PROD","No","Yes"],["Low Voltage Technician","PROD","No","Yes"],["Low-Volt Tech","PROD","No","Yes"],["Maintenance Technician","PROD","No","Yes"],["Managing Director","ADME","No","No"],["Managing Partner","ADME","No","No"],["Marketing Coordinator","ADME","No","No"],["Marketing Manager","ADME","No","No"],["Media Room Specialist","PROD","No","Yes"],["Motorized Shade Technician","PROD","No","Yes"],["Network Administrator","PROD","No","Yes"],["Network Engineer","PROD","No","Yes"],["Network Tech","PROD","No","Yes"],["Network Technician","PROD","No","Yes"],["NOC Engineer","PROD","No","Yes"],["NOC Technician","PROD","No","Yes"],["Office","ADME","No","No"],["Office Administrator","ADME","No","No"],["Office Manager","ADME","No","No"],["Operations Manager","ADME","No","No"],["Ops","ADME","No","No"],["Outdoor Systems Technician","PROD","No","Yes"],["Owner","OWN","Yes","No"],["Partner","ADME","No","No"],["Payroll Specialist","ADME","No","No"],["PM","ADME","No","No"],["PMO","ADME","No","No"],["Pre-Sales Engineer","ADME","No","No"],["Pre-Wire Guy","PROD","No","Yes"],["Pre-Wire Tech","PROD","No","Yes"],["Pre-Wire Technician","PROD","No","Yes"],["President","OWN","Yes","No"],["Prewire Tech","PROD","No","Yes"],["Prewire Technician","PROD","No","Yes"],["Procurement Specialist","ADME","No","No"],["Production Manager","ADME","No","No"],["Programmer","PROD","No","Yes"],["Project Administrator","ADME","No","No"],["Project Coordinator","ADME","No","No"],["Project Engineer","ADME","No","No"],["Project Manager","ADME","No","No"],["Project Scheduler","ADME","No","No"],["Proposal Manager","ADME","No","No"],["Purchaser","ADME","No","No"],["Purchasing","ADME","No","No"],["Purchasing Agent","ADME","No","No"],["Purchasing Manager","ADME","No","No"],["QA Bench Technician","PROD","No","Yes"],["QA Technician","PROD","No","Yes"],["Quality Control Technician","PROD","No","Yes"],["Rack Build Tech","PROD","No","Yes"],["Rack Builder","PROD","No","Yes"],["Rack Fabrication Technician","PROD","No","Yes"],["Rack Guy","PROD","No","Yes"],["Rack Tech","PROD","No","Yes"],["Receptionist","ADME","No","No"],["Recruiter","ADME","No","No"],["Regional Manager","ADME","No","No"],["Remote Support Technician","PROD","No","Yes"],["Repair Technician","PROD","No","Yes"],["Residential AV Technician","PROD","No","Yes"],["Retrofit Technician","PROD","No","Yes"],["Sales","SALC","No","No"],["Sales Consultant","SALC","No","No"],["Sales Director","SALC","No","No"],["Sales Engineer","SALC","No","No"],["Sales Guy","SALC","No","No"],["Sales Manager","SALC","No","No"],["Sales Rep","SALC","No","No"],["Salesman","SALC","No","No"],["Salesperson","SALC","No","No"],["Scope Writer","ADME","No","No"],["Security Tech","PROD","No","Yes"],["Security Technician","PROD","No","Yes"],["Senior Installer","PROD","No","Yes"],["Senior Project Manager","ADME","No","No"],["Senior Tech","PROD","No","Yes"],["Service Coordinator","ADME","No","No"],["Service Dispatcher","ADME","No","No"],["Service Manager","ADME","No","No"],["Service Tech","PROD","No","Yes"],["Service Technician","PROD","No","Yes"],["Shade Designer","ADME","No","No"],["Shade Programmer","PROD","No","Yes"],["Shade Tech","PROD","No","Yes"],["Shade Technician","PROD","No","Yes"],["Shop Technician","PROD","No","Yes"],["Showroom Consultant","ADME","No","No"],["Showroom Manager","ADME","No","No"],["Site Coordinator","ADME","No","No"],["Smart Home Consultant","ADME","No","No"],["Smart Home Designer","ADME","No","No"],["Smart Home Installer","PROD","No","Yes"],["Smart Home Integrator","PROD","No","Yes"],["Social Media Manager","ADME","No","No"],["Software Developer","ADME","No","No"],["Solutions Consultant","ADME","No","No"],["Solutions Engineer","ADME","No","No"],["Specification Writer","ADME","No","No"],["Staff Accountant","ADME","No","No"],["Staging Technician","PROD","No","Yes"],["Startup Technician","PROD","No","Yes"],["Structured Cabling Technician","PROD","No","Yes"],["Support","PROD","No","Yes"],["Support Specialist","PROD","No","Yes"],["Surveillance Technician","PROD","No","Yes"],["Systems Administrator","ADME","No","No"],["Systems Designer","ADME","No","No"],["Systems Engineer","ADME","No","No"],["Systems Integration Specialist","PROD","No","Yes"],["Systems Integrator","PROD","No","Yes"],["Systems Technician","PROD","No","Yes"],["Tech","PROD","No","Yes"],["Technical Support Specialist","PROD","No","Yes"],["Technician","PROD","No","Yes"],["Technology Consultant","ADME","No","No"],["Technology Designer","ADME","No","No"],["Technology Integrator","PROD","No","Yes"],["Termination Technician","PROD","No","Yes"],["Trim Guy","PROD","No","Yes"],["Trim Tech","PROD","No","Yes"],["Trim-Out Technician","PROD","No","Yes"],["UI Programmer","PROD","No","Yes"],["VP of Engineering","ADME","No","No"],["VP of Operations","ADME","No","No"],["VP of Sales","SALC","No","No"],["Warehouse","ADME","No","No"],["Warehouse Associate","ADME","No","No"],["Warehouse Manager","ADME","No","No"],["Warranty Technician","PROD","No","Yes"],["Wi-Fi Engineer","PROD","No","Yes"],["Wiring Technician","PROD","No","Yes"]];
 
@@ -977,7 +977,7 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════════════════
 function initSetup() {
   const defaults = ['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'];
-  const codes = ['REVEQ/CGSEQ','REVPT/CGSPT','REVLF/CGSLF','REVMS/CGSMS','REVLB/CMP1'];
+  const codes = ['REVEQ/CGSEQ','REVPT/CGSPT','REVLF/CGSLF','REVMS/CGSMS','REVLB/PROD'];
   const html = defaults.map((d,i) => `
     <div class="form-group">
       <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
@@ -1411,7 +1411,7 @@ function processPL() {
 
   setPLStep(2);
 
-  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','CMP1','CMP2','C2EM','C2OW','CMP3','CMP4','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
+  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
   const tbody = document.getElementById('unmatchedTableBody');
   tbody.innerHTML = unmatchedList.map((u,i) => `
     <tr>
@@ -1492,7 +1492,7 @@ function showPLReview() {
   setPLStep(3);
 
   // Build summary
-  const allCodes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','CMP1','C2EM','C2OW','CMP3','CMP4','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','SLSX','TAX','NETIN'];
+  const allCodes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','SLSX','TAX','NETIN'];
   const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
   const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
 
@@ -1503,8 +1503,8 @@ function showPLReview() {
     CGSEQ:`COGS — ${state.setup.categories[0]}`, CGSPT:`COGS — ${state.setup.categories[1]}`,
     CGSLF:`COGS — ${state.setup.categories[2]}`, CGSMS:`COGS — Managed Services`,
     CGSIA:'COGS — Inventory Adj', CGSVD:'COGS — Vendor Disc/Rebates',
-    SUBC:'Subcontractors', CMP1:'COMP 1 — Direct Labor', C2EM:'COMP 2 — Admin (Employees)',
-    C2OW:'COMP 2 — Admin (Owner)', CMP3:'COMP 3 — Sales', CMP4:'COMP 4 — Benefits/Taxes',
+    SUBC:'Subcontractors', PROD:'PROD — Direct Labor', ADME:'ADME — Admin Wages',
+    OWN:'OWN — Admin (Owner)', SALC:'SALC — Sales & Commissions', PAYX:'PAYX — Benefits & Taxes',
     OCCP:'Occupancy', ADMN:'Admin Expense', SLSX:'Sales Expense', INTR:'Interest', DEPR:'Depreciation',
     MISC:'Miscellaneous', MONI:'Monitoring Income', MONE:'Monitoring Expense',
     OTHI:'Other Income', OTHE:'Other Expense', TAX:'Taxes', NETIN:'Net Income'
@@ -1784,9 +1784,8 @@ function runCrossCheck() {
 
   grid.innerHTML = buckets.map(({key,label}) => {
     const census = censusTotals[key] || 0;
-    // Map census PROD/ADME/OWN/SALC/PAYX to their P&L code equivalents for comparison
-    const plKeyMap = {PROD:'CMP1', ADME:'C2EM', OWN:'C2OW', SALC:'CMP3', PAYX:'CMP4'};
-    const pl = priorTotals[plKeyMap[key]] || 0;
+    // P&L now uses the same PROD/ADME/OWN/SALC/PAYX codes as the census — direct comparison
+    const pl = priorTotals[key] || 0;
     const hasPL = state.priorPL !== null;
     const pct = pl > 0 ? Math.abs(census-pl)/pl : 0;
     const isMatch = hasPL && pct <= 0.01;
@@ -1885,18 +1884,18 @@ function buildCensusCompTotals() {
   const wagesTotal = raw.PROD + raw.ADME + raw.OWN + raw.SALC;
   const payx = wagesTotal * comp4Rate;
   return { PROD: raw.PROD, ADME: raw.ADME, OWN: raw.OWN, SALC: raw.SALC, PAYX: payx,
+           SUBC: 0,  // census has no subcontractor line; SUBC comes from P&L only
            total: wagesTotal + payx };
 }
 
 // Sum all comp-coded lines from a P&L aggregation
 function plCompTotal(pl) {
-  return (pl.CMP1||0)+(pl.C2EM||0)+(pl.C2OW||0)+(pl.CMP3||0)+(pl.CMP4||0);
+  return (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0)+(pl.PAYX||0)+(pl.SUBC||0);
 }
 
 // Scale census proportions to a target total
 function scaleCensusToTotal(census, target) {
   const wagesBase = census.PROD + census.ADME + census.OWN + census.SALC;
-  // PAYX is derived from wages; keep its proportion of the total
   const payxPct = census.total > 0 ? census.PAYX / census.total : 0;
   const wagesPct = census.total > 0 ? wagesBase / census.total : 1;
   const newWages = target * wagesPct;
@@ -1908,23 +1907,22 @@ function scaleCensusToTotal(census, target) {
     OWN:  census.OWN  * scale,
     SALC: census.SALC * scale,
     PAYX: newPayx,
+    SUBC: census.SUBC || 0,  // SUBC not in census — stays 0; P&L path handles it via plToLines
     total: target
   };
 }
 
 // Show modal when census vs P&L comp totals differ > 5%
-function showCompReconciliationModal(censusComp, plCompPrior, plCompCurr, onConfirm) {
-  const pctPrior = plCompPrior > 0 ? Math.abs(censusComp.total - plCompPrior) / plCompPrior : 0;
-  const pctCurr  = plCompCurr  > 0 ? Math.abs(censusComp.total - plCompCurr)  / plCompCurr  : 0;
-  const maxPct   = Math.max(pctPrior, pctCurr);
+function showCompReconciliationModal(censusComp, plCompCurr, onConfirm) {
+  const pctCurr = plCompCurr > 0 ? Math.abs(censusComp.total - plCompCurr) / plCompCurr : 0;
 
-  if (maxPct <= 0.05 || state.payrollData.length === 0) {
-    // Within threshold or no census — use census (or P&L if no census)
+  if (pctCurr <= 0.05 || state.payrollData.length === 0) {
+    // Within threshold or no census — use census
     onConfirm('census');
     return;
   }
 
-  // Store pending callback and args on state so onclick can reach them
+  // Store pending callback on state so onclick can reach it
   state._pendingCompConfirm = onConfirm;
 
   const fmt = fmtDollar;
@@ -1932,39 +1930,30 @@ function showCompReconciliationModal(censusComp, plCompPrior, plCompCurr, onConf
   document.getElementById('modalBody').innerHTML = `
     <div class="alert alert-warn" style="margin-bottom:16px">
       <span class="alert-icon">⚠</span>
-      <div>The payroll census total and P&L compensation differ by <strong>${fmtPct(maxPct)}</strong>, which exceeds the 5% threshold. Choose which source to use for the compensation lines in the P&L results.</div>
+      <div>The payroll census total and current year P&L compensation differ by <strong>${fmtPct(pctCurr)}</strong>, which exceeds the 5% threshold. Choose which source to use for current year compensation.</div>
     </div>
     <div class="table-wrap" style="margin-bottom:16px">
       <table>
-        <thead><tr><th>Source</th><th>Total Comp</th><th>vs Prior Year P&L</th></tr></thead>
+        <thead><tr><th>Source</th><th>Total Comp</th><th>vs Current Year P&L</th></tr></thead>
         <tbody>
           <tr>
             <td class="bold">Payroll Census</td>
             <td class="mono">${fmt(censusComp.total)}</td>
-            <td class="mono">${plCompPrior > 0 ? fmtPct(Math.abs(censusComp.total-plCompPrior)/plCompPrior)+' diff' : '—'}</td>
-          </tr>
-          <tr>
-            <td class="bold">P&L (Prior Year)</td>
-            <td class="mono">${fmt(plCompPrior)}</td>
-            <td class="mono text-muted">—</td>
+            <td class="mono">${fmtPct(pctCurr)} diff</td>
           </tr>
           <tr>
             <td class="bold">P&L (Current Year)</td>
             <td class="mono">${fmt(plCompCurr)}</td>
-            <td class="mono">${plCompPrior > 0 ? fmtPct(Math.abs(plCompCurr-plCompPrior)/plCompPrior)+' YOY' : '—'}</td>
+            <td class="mono text-muted">—</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">If P&L is selected, census proportions (PROD/ADME/OWN/SALC/PAYX) will be scaled to match the P&L total.</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">The prior year always uses its own P&L data. This choice only affects the current year. If P&L is selected, census proportions (PROD/ADME/OWN/SALC/PAYX) will be scaled to match the P&L total.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
         <input type="radio" name="compSource" value="census" checked>
-        <span><strong>Use Payroll Census</strong> — ${fmt(censusComp.total)}</span>
-      </label>
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-        <input type="radio" name="compSource" value="pl_prior">
-        <span><strong>Use Prior Year P&L</strong> — ${fmt(plCompPrior)}</span>
+        <span><strong>Use Payroll Census for current year</strong> — ${fmt(censusComp.total)}</span>
       </label>
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
         <input type="radio" name="compSource" value="pl_curr">
@@ -1972,7 +1961,7 @@ function showCompReconciliationModal(censusComp, plCompPrior, plCompCurr, onConf
       </label>
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
         <input type="radio" name="compSource" value="pl_both">
-        <span><strong>Use P&L for each year independently</strong> (prior uses prior P&L, current uses current P&L)</span>
+        <span><strong>Use P&L for both years independently</strong></span>
       </label>
     </div>`;
   document.getElementById('modalFooter').innerHTML = `
@@ -2009,43 +1998,46 @@ function runAnalysis() {
 
   // Build census comp breakdown
   const censusComp = buildCensusCompTotals();
-  const plCompPrior = plCompTotal(prior);
   const plCompCurr  = plCompTotal(curr);
 
-  // Check threshold and show modal if needed, then continue analysis
-  showCompReconciliationModal(censusComp, plCompPrior, plCompCurr, (source) => {
-    _runAnalysisWithCompSource(prior, curr, censusComp, plCompPrior, plCompCurr, source);
+  // Check threshold against current year only, then continue analysis
+  showCompReconciliationModal(censusComp, plCompCurr, (source) => {
+    _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, source);
   });
 }
 
-function _runAnalysisWithCompSource(prior, curr, censusComp, plCompPrior, plCompCurr, compSource) {
+function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSource) {
   const months = state.setup.throughMonth;
   const annFactor = 12 / months;
   const cats = state.setup.categories;
   const usePayroll = state.payrollData.length > 0;
 
-  // Resolve comp breakdown for prior and current based on chosen source
-  let priorCompLines, currCompLines;
-  if (!usePayroll || compSource === 'pl_both') {
-    // No census or user chose each year's P&L independently
-    const comp4Rate = state.comp4Rate/100;
-    const plToLines = (pl) => {
-      const wages = (pl.CMP1||0)+(pl.C2EM||0)+(pl.C2OW||0)+(pl.CMP3||0);
-      return { PROD: pl.CMP1||0, ADME: pl.C2EM||0, OWN: pl.C2OW||0, SALC: pl.CMP3||0,
-               PAYX: pl.CMP4||0 || wages*comp4Rate,
-               total: (pl.CMP1||0)+(pl.C2EM||0)+(pl.C2OW||0)+(pl.CMP3||0)+(pl.CMP4||0) };
+  // Prior year ALWAYS uses its own P&L data for compensation — direct read, no translation
+  const comp4Rate = state.comp4Rate/100;
+  const plToLines = (pl) => {
+    const wages = (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0);
+    return {
+      PROD: pl.PROD||0,
+      ADME: pl.ADME||0,
+      OWN:  pl.OWN||0,
+      SALC: pl.SALC||0,
+      PAYX: pl.PAYX||0 || wages*comp4Rate,
+      SUBC: pl.SUBC||0,
+      total: (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0)+(pl.PAYX||0 || wages*comp4Rate)+(pl.SUBC||0)
     };
-    priorCompLines = plToLines(prior);
-    currCompLines  = plToLines(curr);
-  } else if (compSource === 'census') {
-    priorCompLines = censusComp;
-    currCompLines  = censusComp;
-  } else if (compSource === 'pl_prior') {
-    priorCompLines = scaleCensusToTotal(censusComp, plCompPrior);
-    currCompLines  = scaleCensusToTotal(censusComp, plCompPrior);
-  } else if (compSource === 'pl_curr') {
-    priorCompLines = scaleCensusToTotal(censusComp, plCompCurr);
-    currCompLines  = scaleCensusToTotal(censusComp, plCompCurr);
+  };
+  const priorCompLines = plToLines(prior);
+
+  // Current year comp source depends on user choice
+  let currCompLines;
+  if (!usePayroll || compSource === 'pl_both' || compSource === 'pl_curr') {
+    // No census, user chose P&L, or user chose each year independently
+    currCompLines = compSource === 'pl_curr'
+      ? scaleCensusToTotal(censusComp, plCompCurr)
+      : plToLines(curr);
+  } else {
+    // census — use census totals for current year
+    currCompLines = censusComp;
   }
 
   // Revenue totals
@@ -2185,6 +2177,28 @@ function renderBenchmarks(m) {
     S3: gmPct(m.curr.REVLF, m.curr.CGSLF), S4: gmPct(m.curr.REVMS, m.curr.CGSMS),
   };
 
+  // Item 1: only render category GM cards where at least one year has data
+  const catGMCards = [
+    {label: cats[0]+' GM%', prior: priorGMBycat.S1, curr: currGMBycat.S1, bm: getBM('Equipment GM%')},
+    {label: cats[1]+' GM%', prior: priorGMBycat.S2, curr: currGMBycat.S2, bm: getBM('Parts GM%')},
+    {label: cats[2]+' GM%', prior: priorGMBycat.S3, curr: currGMBycat.S3, bm: getBM('Lighting Fixtures GM%')},
+    {label: cats[3]+' GM%', prior: priorGMBycat.S4, curr: currGMBycat.S4, bm: getBM('Managed Services GM%')},
+  ].filter(c => c.prior !== null || c.curr !== null);
+
+  // Item 4: comp table status badge — pull rating from benchmark engine
+  const compPct = m.currRev > 0 ? m.currComp / m.currRev : null;
+  const compStatus = benchStatus(compPct, getBM('COMP % of Revenue'));
+  const compBadge = compStatus.label
+    ? `<span class="metric-status ${compStatus.cls}" style="margin-left:8px;font-size:11px;padding:2px 7px;border-radius:4px;vertical-align:middle">${compStatus.label}</span>`
+    : '';
+
+  // Section wrapper for visual grouping
+  const section = (title, content, extraStyle='') =>
+    `<div style="margin-bottom:24px;padding:20px;background:var(--bg2);border-radius:10px;border:1px solid var(--border)${extraStyle}">
+      <div class="section-title mb8" style="margin-bottom:14px;margin-top:0">${title}</div>
+      ${content}
+    </div>`;
+
   let html = `
   <div style="margin-bottom:20px">
     <div class="card">
@@ -2199,55 +2213,59 @@ function renderBenchmarks(m) {
     </div>
   </div>
 
-  <div class="section-title mb8" style="margin-bottom:12px">Revenue & Profitability</div>
-  <div class="metrics-grid">
-    ${metricCard('Total Revenue', m.priorRev, m.currRev, fmtDollar, null, 'YOY comparison — no benchmark', '')}
-    ${metricCard('Gross Profit', m.priorGP, m.currGP, fmtDollar, null, 'Revenue minus COGS', '')}
-    ${metricCard('Overall Gross Margin', m.priorGM, m.currGM, fmtPct, getBM('Overall Gross Margin'), getBM('Overall Gross Margin')?.note||'', '')}
-    ${metricCard('Net Operating Profit %', m.priorNOIPct, m.currNOIPct, fmtPct, getBM('Net Operating Profit %'), getBM('Net Operating Profit %')?.note||'', '')}
-  </div>
+  ${section('Revenue & Profitability', `
+    <div class="metrics-grid">
+      ${metricCard('Total Revenue',           m.priorRev,     m.currRev,     fmtDollar, null,                          'YOY comparison — no benchmark',              '')}
+      ${metricCard('Gross Profit',            m.priorGP,      m.currGP,      fmtDollar, null,                          'Revenue minus COGS',                         '')}
+      ${metricCard('Overall Gross Margin',    m.priorGM,      m.currGM,      fmtPct,    getBM('Overall Gross Margin'),  getBM('Overall Gross Margin')?.note||'',      '')}
+      ${metricCard('Net Operating Profit %',  m.priorNOIPct,  m.currNOIPct,  fmtPct,    getBM('Net Operating Profit %'),getBM('Net Operating Profit %')?.note||'',   '')}
+      ${metricCard('Net Operating Profit $',  m.priorNOI,     m.currNOI,     fmtDollar, null,                          'Gross Profit minus Comp and MOC',            '')}
+    </div>`)}
 
-  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Gross Margin by Category</div>
-  <div class="metrics-grid">
-    ${metricCard(cats[0]+' GM%', priorGMBycat.S1, currGMBycat.S1, fmtPct, getBM('Equipment GM%'),         getBM('Equipment GM%')?.note||'',         '')}
-    ${metricCard(cats[1]+' GM%', priorGMBycat.S2, currGMBycat.S2, fmtPct, getBM('Parts GM%'),             getBM('Parts GM%')?.note||'',             '')}
-    ${metricCard(cats[2]+' GM%', priorGMBycat.S3, currGMBycat.S3, fmtPct, getBM('Lighting Fixtures GM%'), getBM('Lighting Fixtures GM%')?.note||'', '')}
-    ${metricCard(cats[3]+' GM%', priorGMBycat.S4, currGMBycat.S4, fmtPct, getBM('Managed Services GM%'),  getBM('Managed Services GM%')?.note||'',  '')}
-  </div>
+  ${catGMCards.length ? section('Gross Margin by Category', `
+    <div class="metrics-grid">
+      ${catGMCards.map(c => metricCard(c.label, c.prior, c.curr, fmtPct, c.bm, c.bm?.note||'', '')).join('')}
+    </div>`) : ''}
 
-  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Compensation</div>
-  ${m.compSource ? `<div class="alert alert-info" style="margin-bottom:12px"><span class="alert-icon">ℹ</span>Compensation source: <strong>${{census:'Payroll Census',pl_prior:'Prior Year P&L',pl_curr:'Current Year P&L',pl_both:'P&L (each year independently)'}[m.compSource]||m.compSource}</strong></div>` : ''}
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-body" style="padding:0">
-      <div class="table-wrap" style="border:none;border-radius:0">
-        <table>
-          <thead><tr><th>Compensation Line</th><th class="text-right">${pY}</th><th class="text-right">${cY}</th><th class="text-right">% of Rev (${cY})</th></tr></thead>
-          <tbody>
-            <tr><td>PROD — Direct Labor</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PROD)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PROD)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PROD/m.currRev):''}</td></tr>
-            <tr><td>ADME — Admin (Employees)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.ADME)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.ADME)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.ADME/m.currRev):''}</td></tr>
-            <tr><td>OWN — Admin (Owners)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.OWN)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.OWN)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.OWN/m.currRev):''}</td></tr>
-            <tr><td>SALC — Sales & Commissions</td><td class="mono text-right">${fmtDollar(m.priorCompLines.SALC)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.SALC)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.SALC/m.currRev):''}</td></tr>
-            <tr><td>PAYX — Benefits & Taxes</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PAYX)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PAYX)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PAYX/m.currRev):''}</td></tr>
-            <tr class="yoy-total"><td>TOTAL COMPENSATION</td><td class="mono text-right">${fmtDollar(m.priorComp)}</td><td class="mono text-right">${fmtDollar(m.currComp)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currComp/m.currRev):''}</td></tr>
-          </tbody>
-        </table>
+  ${section('Compensation', `
+    ${m.compSource ? `<div class="alert alert-info" style="margin-bottom:12px"><span class="alert-icon">ℹ</span>Compensation source: <strong>${{census:'Payroll Census (current year)',pl_curr:'Current Year P&L',pl_both:'P&L (each year independently)'}[m.compSource]||m.compSource}</strong></div>` : ''}
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header" style="padding:10px 16px">
+        <div class="card-title" style="font-size:13px">
+          Compensation Detail${compBadge}
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap" style="border:none;border-radius:0">
+          <table>
+            <thead><tr><th>Compensation Line</th><th class="text-right">${pY}</th><th class="text-right">${cY}</th><th class="text-right">% of Rev (${cY})</th></tr></thead>
+            <tbody>
+              <tr><td>PROD — Direct Labor</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PROD)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PROD)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PROD/m.currRev):''}</td></tr>
+              <tr><td>ADME — Admin (Employees)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.ADME)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.ADME)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.ADME/m.currRev):''}</td></tr>
+              <tr><td>OWN — Admin (Owners)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.OWN)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.OWN)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.OWN/m.currRev):''}</td></tr>
+              <tr><td>SALC — Sales & Commissions</td><td class="mono text-right">${fmtDollar(m.priorCompLines.SALC)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.SALC)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.SALC/m.currRev):''}</td></tr>
+              <tr><td>PAYX — Benefits & Taxes</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PAYX)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PAYX)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PAYX/m.currRev):''}</td></tr>
+              <tr><td>Subcontractors</td><td class="mono text-right">${fmtDollar(m.priorCompLines.SUBC)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.SUBC)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.SUBC/m.currRev):''}</td></tr>
+              <tr class="yoy-total"><td>TOTAL COMPENSATION</td><td class="mono text-right">${fmtDollar(m.priorComp)}</td><td class="mono text-right">${fmtDollar(m.currComp)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currComp/m.currRev):''}</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="metrics-grid">
-    ${metricCard('COMP % of Revenue',            m.priorCompPct,      m.currCompPct,       fmtPct,              getBM('COMP % of Revenue'),                          getBM('COMP % of Revenue')?.note||'',                          '')}
-    ${metricCard('GP per Payroll Dollar',         m.priorGPP,          m.currGPP,           v=>v.toFixed(2)+'x', getBM('GP per Payroll Dollar'),                      getBM('GP per Payroll Dollar')?.note||'',                      '')}
-    ${metricCard('Sales Productivity (Rev/FTE)',  m.priorRevFTE,       m.currRevFTE,        fmtDollar,           getBM('Sales Productivity (Rev/FTE)'),               getBM('Sales Productivity (Rev/FTE)')?.note||'',               '')}
-    ${metricCard('Labor Productivity (Rev/BEE/mo)', m.priorLaborRevBEE, m.currLaborRevBEE, fmtDollar,           getBM('Direct Labor Productivity (Labor Rev/BEE)'),  getBM('Direct Labor Productivity (Labor Rev/BEE)')?.note||'',  '')}
-  </div>
+    <div class="metrics-grid">
+      ${metricCard('COMP % of Revenue',              m.priorCompPct,    m.currCompPct,    fmtPct,              getBM('COMP % of Revenue'),                         getBM('COMP % of Revenue')?.note||'',                        '')}
+      ${metricCard('GP per Payroll Dollar',          m.priorGPP,        m.currGPP,        v=>v.toFixed(2)+'x', getBM('GP per Payroll Dollar'),                     getBM('GP per Payroll Dollar')?.note||'',                     '')}
+      ${metricCard('Sales Productivity (Rev/FTE)',   m.priorRevFTE,     m.currRevFTE,     fmtDollar,           getBM('Sales Productivity (Rev/FTE)'),              getBM('Sales Productivity (Rev/FTE)')?.note||'',              '')}
+      ${metricCard('Labor Productivity (Rev/BEE/mo)',m.priorLaborRevBEE,m.currLaborRevBEE,fmtDollar,           getBM('Direct Labor Productivity (Labor Rev/BEE)'), getBM('Direct Labor Productivity (Labor Rev/BEE)')?.note||'', '')}
+    </div>`)}
 
-  <div class="section-title mb8" style="margin-top:20px;margin-bottom:12px">Major Operating Costs</div>
-  <div class="metrics-grid">
-    ${metricCard('Admin % of Revenue',         m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct, getBM('Admin % of Revenue'),       getBM('Admin % of Revenue')?.note||'',       '')}
-    ${metricCard('Occupancy % of Revenue',     m.priorRev>0?m.priorOcc/m.priorRev:null,   m.currRev>0?m.currOcc/m.currRev:null,   fmtPct, getBM('Occupancy % of Revenue'),   getBM('Occupancy % of Revenue')?.note||'',   '')}
-    ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null,    m.currRev>0?m.currSX/m.currRev:null,    fmtPct, getBM('Sales Expense % of Rev'),   getBM('Sales Expense % of Rev')?.note||'',   '')}
-    ${metricCard('Total MOC % of Revenue',     m.priorRev>0?m.priorMOC/m.priorRev:null,   m.currRev>0?m.currMOC/m.currRev:null,   fmtPct, getBM('Total MOC % of Revenue'),   getBM('Total MOC % of Revenue')?.note||'',   '')}
-  </div>`;
+  ${section('Major Operating Costs', `
+    <div class="metrics-grid">
+      ${metricCard('Admin % of Revenue',         m.priorRev>0?m.priorAdmin/m.priorRev:null, m.currRev>0?m.currAdmin/m.currRev:null, fmtPct, getBM('Admin % of Revenue'),     getBM('Admin % of Revenue')?.note||'',     '')}
+      ${metricCard('Occupancy % of Revenue',     m.priorRev>0?m.priorOcc/m.priorRev:null,   m.currRev>0?m.currOcc/m.currRev:null,   fmtPct, getBM('Occupancy % of Revenue'), getBM('Occupancy % of Revenue')?.note||'', '')}
+      ${metricCard('Sales Expense % of Revenue', m.priorRev>0?m.priorSX/m.priorRev:null,    m.currRev>0?m.currSX/m.currRev:null,    fmtPct, getBM('Sales Expense % of Rev'), getBM('Sales Expense % of Rev')?.note||'', '')}
+      ${metricCard('Total MOC % of Revenue',     m.priorRev>0?m.priorMOC/m.priorRev:null,   m.currRev>0?m.currMOC/m.currRev:null,   fmtPct, getBM('Total MOC % of Revenue'), getBM('Total MOC % of Revenue')?.note||'', '')}
+    </div>`)}`;
 
   document.getElementById('benchmarksContent').innerHTML = html;
 }
@@ -2262,6 +2280,8 @@ function renderYOY(m) {
   const p = m.prior, c = m.curr;
 
   const yoyRow = (label, pVal, cVal, isTotal=false) => {
+    // Item 5: hide rows where both values are zero (non-total rows only)
+    if (!isTotal && pVal === 0 && cVal === 0) return '';
     const delta = cVal - pVal;
     const pct = pVal !== 0 ? delta/Math.abs(pVal) : null;
     const cls = isTotal ? 'yoy-total' : '';
@@ -2272,6 +2292,22 @@ function renderYOY(m) {
       <td class="mono text-right">${pVal>0?fmtPct(pVal/m.priorRev):''}</td>
       <td class="mono text-right">${fmtDollar(cVal)}</td>
       <td class="mono text-right">${cVal>0?fmtPct(cVal/m.currRev):''}</td>
+      <td class="mono text-right ${dCls}">${delta>=0?'+':''}${fmtDollar(delta)}</td>
+      <td class="mono text-right ${dCls}">${pct!==null?(delta>=0?'+':'')+fmtPct(pct):''}</td>
+    </tr>`;
+  };
+
+  // Item 6: key totals get a stronger top border to stand out in the dense table
+  const keyTotal = (label, pVal, cVal) => {
+    const delta = cVal - pVal;
+    const pct = pVal !== 0 ? delta/Math.abs(pVal) : null;
+    const dCls = delta >= 0 ? 'yoy-pos' : 'yoy-neg';
+    return `<tr class="yoy-total" style="border-top:2px solid var(--border)">
+      <td style="font-size:13px">${label}</td>
+      <td class="mono text-right">${fmtDollar(pVal)}</td>
+      <td class="mono text-right">${pVal!==0&&m.priorRev>0?fmtPct(pVal/m.priorRev):''}</td>
+      <td class="mono text-right">${fmtDollar(cVal)}</td>
+      <td class="mono text-right">${cVal!==0&&m.currRev>0?fmtPct(cVal/m.currRev):''}</td>
       <td class="mono text-right ${dCls}">${delta>=0?'+':''}${fmtDollar(delta)}</td>
       <td class="mono text-right ${dCls}">${pct!==null?(delta>=0?'+':'')+fmtPct(pct):''}</td>
     </tr>`;
@@ -2295,8 +2331,9 @@ function renderYOY(m) {
   const currNOI  = currGP-currComp-currMOC;
 
   const compSourceLabels = {
-    census:   'Payroll Census', pl_prior: 'Prior Year P&L',
-    pl_curr:  'Current Year P&L', pl_both: 'P&L (each year independently)'
+    census:  'Payroll Census (current year)',
+    pl_curr: 'Current Year P&L',
+    pl_both: 'P&L (each year independently)'
   };
   const compSourceNote = m.compSource
     ? `<div class="alert alert-info" style="margin:12px 20px 0"><span class="alert-icon">ℹ</span>Compensation source: <strong>${compSourceLabels[m.compSource]||m.compSource}</strong></div>`
@@ -2326,7 +2363,7 @@ function renderYOY(m) {
             ${yoyRow(cats[2], p.REVLF||0, c.REVLF||0)}
             ${yoyRow(cats[3], p.REVMS||0, c.REVMS||0)}
             ${yoyRow(cats[4], p.REVLB||0, c.REVLB||0)}
-            ${yoyRow('TOTAL REVENUE', priorRev, currRev, true)}
+            ${keyTotal('TOTAL REVENUE', priorRev, currRev)}
             ${secRow('COST OF GOODS SOLD')}
             ${yoyRow(`COGS — ${cats[0]}`, p.CGSEQ||0, c.CGSEQ||0)}
             ${yoyRow(`COGS — ${cats[1]}`, p.CGSPT||0, c.CGSPT||0)}
@@ -2335,14 +2372,14 @@ function renderYOY(m) {
             ${yoyRow('Inventory Adjustments', p.CGSIA||0, c.CGSIA||0)}
             ${yoyRow('Vendor Disc / Rebates', p.CGSVD||0, c.CGSVD||0)}
             ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
-            ${yoyRow('GROSS PROFIT', priorGP, currGP, true)}
+            ${keyTotal('GROSS PROFIT', priorGP, currGP)}
             ${secRow('COMPENSATION')}
             ${yoyRow('PROD — Direct Labor', pComp.PROD, cComp.PROD)}
             ${yoyRow('ADME — Admin (Employees)', pComp.ADME, cComp.ADME)}
             ${yoyRow('OWN — Admin (Owners)', pComp.OWN, cComp.OWN)}
             ${yoyRow('SALC — Sales & Commissions', pComp.SALC, cComp.SALC)}
             ${yoyRow('PAYX — Benefits & Taxes', pComp.PAYX, cComp.PAYX)}
-            ${yoyRow('Subcontractors', p.SUBC||0, c.SUBC||0)}
+            ${yoyRow('Subcontractors', pComp.SUBC, cComp.SUBC)}
             ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
             ${secRow('MAJOR OPERATING COSTS')}
             ${yoyRow('Admin Expense', p.ADMN||0, c.ADMN||0)}
@@ -2356,7 +2393,7 @@ function renderYOY(m) {
             ${yoyRow('Other Income', p.OTHI||0, c.OTHI||0)}
             ${yoyRow('Other Expense', p.OTHE||0, c.OTHE||0)}
             ${yoyRow('Taxes', p.TAX||0, c.TAX||0)}
-            ${yoyRow('NET OPERATING PROFIT', priorNOI, currNOI, true)}
+            ${keyTotal('NET OPERATING PROFIT', priorNOI, currNOI)}
           </tbody>
         </table>
       </div>
@@ -2372,7 +2409,7 @@ function renderYOY(m) {
 function renderLookupTables() {
   // P&L Lookup
   document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
-  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','CMP1','CMP2','C2EM','C2OW','CMP3','CMP4','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
+  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
   const plBody = document.getElementById('plLookupBody');
   plBody.innerHTML = state.plLookup.map(([name, code], i) => `
     <tr>
