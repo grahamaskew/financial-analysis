@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Financial Benchmarking Tool</title>
+<title>Financial Analysis Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -608,7 +608,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
           <div class="upload-zone" id="priorUploadZone" onclick="document.getElementById('priorFileInput').click()" ondragover="handleDragOver(event,'priorUploadZone')" ondragleave="handleDragLeave(event,'priorUploadZone')" ondrop="handleDrop(event,'prior')">
             <div class="upload-icon">📄</div>
             <div class="upload-title">Click or drag to upload</div>
-            <div class="upload-sub">VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV</div>
+            <div class="upload-sub">QuickBooks P&amp;L export • Excel or CSV</div>
             <div class="upload-file-info" id="priorFileInfo"></div>
           </div>
           <input type="file" id="priorFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'prior')">
@@ -620,7 +620,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
           <div class="upload-zone" id="currentUploadZone" onclick="document.getElementById('currentFileInput').click()" ondragover="handleDragOver(event,'currentUploadZone')" ondragleave="handleDragLeave(event,'currentUploadZone')" ondrop="handleDrop(event,'current')">
             <div class="upload-icon">📄</div>
             <div class="upload-title">Click or drag to upload</div>
-            <div class="upload-sub">VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV</div>
+            <div class="upload-sub">QuickBooks P&amp;L export • Excel or CSV</div>
             <div class="upload-file-info" id="currentFileInfo"></div>
           </div>
           <input type="file" id="currentFileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(event,'current')">
@@ -1085,19 +1085,24 @@ function processUploadedFile(file, type) {
 
 // ── Sheet & format selection modal ──────────────────────
 function showSheetSelectionModal(wb, filename, type, dispatch) {
-  const translateCodePattern = /^(s[1-5]|g[1-6]|c[1-4]|c2[eo]|sub|sx|[adimot]|mi|me|oi|oe|ni|b)$/i;
   const typeLabel = type === 'prior' ? 'Prior Year' : 'Current Year';
 
-  // Score each sheet: count translate code hits in col 9 within first 40 rows
+  // Score each sheet: detect QuickBooks monthly layout (names in cols B-G, amounts across cols)
   const sheetScores = wb.SheetNames.map(name => {
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:''});
     const sample = rows.slice(0, 40);
-    const codeHits = sample.filter(r => r.length > 9 && translateCodePattern.test((r[9]||'').toString().trim())).length;
-    const isLikelyPL = codeHits >= 2;
+    const hasManyCols = sample.some(r => r.length > 15);
+    const monthlyHits = sample.filter(r => {
+      const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
+      const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+      return midName && farAmt;
+    }).length;
+    const isLikelyPL = hasManyCols && monthlyHits >= 3;
     const nameMatch = type === 'prior'
       ? /prior|p&l prior|p\.l.*prior|prior.*p/i.test(name)
       : /current|p&l current|p\.l.*current|current.*p/i.test(name);
-    return { name, codeHits, isLikelyPL, nameMatch, rows };
+    return { name, isLikelyPL, nameMatch, rows,
+             format: isLikelyPL ? 'quickbooks_monthly' : 'quickbooks' };
   });
 
   const recommended =
@@ -1105,32 +1110,36 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
     sheetScores.find(s => s.isLikelyPL) ||
     sheetScores[0];
 
-  function getFormat(score) {
-    return score.codeHits >= 2 ? 'worksheet' : 'quickbooks';
-  }
-
   function getSampleRows(score) {
-    const fmt = getFormat(score);
-    if (fmt === 'worksheet') {
-      return score.rows
-        .filter(r => r.length > 10 && translateCodePattern.test((r[9]||'').toString().trim()) && !isNaN(parseFloat((r[10]||'').toString().replace(/[$,\s]/g,''))))
-        .slice(0, 3)
-        .map(r => {
-          const nameArr = [0,1,2,3,4,5,6].map(i=>(r[i]||'').toString().trim()).filter(Boolean);
-          return { name: nameArr[nameArr.length-1]||'', amount: parseFloat((r[10]||'').toString().replace(/[$,\s]/g,'')) };
-        });
+    if (score.format === 'quickbooks_monthly') {
+      return score.rows.filter(r => {
+        const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
+        const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+        return midName && farAmt;
+      }).slice(0, 3).map(r => {
+        const nameArr = [1,2,3,4,5,6].map(i=>(r[i]||'').toString().trim()).filter(Boolean);
+        let amount = NaN;
+        for (let i = r.length-1; i >= 7; i--) {
+          const v = parseFloat((r[i]||'').toString().replace(/[$,\s]/g,''));
+          if (!isNaN(v)) { amount = v; break; }
+        }
+        return { name: nameArr[nameArr.length-1]||'', amount };
+      });
     } else {
-      return score.rows
-        .filter(r => r.length >= 2 && (r[0]||'').toString().trim() && !isNaN(parseFloat((r[1]||'').toString().replace(/[$,\s]/g,''))))
-        .slice(0, 3)
-        .map(r => ({ name: (r[0]||'').toString().trim(), amount: parseFloat((r[1]||'').toString().replace(/[$,\s]/g,'')) }));
+      return score.rows.filter(r =>
+        r.length >= 2 && (r[0]||'').toString().trim() &&
+        !isNaN(parseFloat((r[1]||'').toString().replace(/[$,\s]/g,'')))
+      ).slice(0, 3).map(r => ({
+        name: (r[0]||'').toString().trim(),
+        amount: parseFloat((r[1]||'').toString().replace(/[$,\s]/g,''))
+      }));
     }
   }
 
   function renderModal(selName, selFormat, expanded) {
     const sel = sheetScores.find(s => s.name === selName) || recommended;
-    const fmt = selFormat || getFormat(sel);
-    const fmtLabel = fmt === 'worksheet' ? 'VITAL Benchmarking Worksheet' : 'QuickBooks P&L Export';
+    const fmt = selFormat || sel.format;
+    const fmtLabel = fmt === 'quickbooks_monthly' ? 'QuickBooks Monthly Detail' : 'QuickBooks Summary';
     const sampleRows = getSampleRows(sel);
     const hasData = sampleRows.length > 0;
 
@@ -1163,19 +1172,19 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
           }).join('')}
         </div>
         <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">File format</div>
-        <div style="display:flex;gap:8px;margin-bottom:6px">
-          <label style="flex:1;display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:5px;border:1px solid ${fmt==='worksheet'?'var(--primary)':'var(--border)'};background:${fmt==='worksheet'?'var(--primary-faint)':'var(--bg2)'}">
-            <input type="radio" name="formatSelect" value="worksheet" ${fmt==='worksheet'?'checked':''} onchange="refreshSheetModal(null,'worksheet')">
-            <span style="font-size:12px">VITAL Worksheet</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:5px;border:1px solid ${fmt==='quickbooks_monthly'?'var(--primary)':'var(--border)'};background:${fmt==='quickbooks_monthly'?'var(--primary-faint)':'var(--bg2)'}">
+            <input type="radio" name="formatSelect" value="quickbooks_monthly" ${fmt==='quickbooks_monthly'?'checked':''} onchange="refreshSheetModal(null,'quickbooks_monthly')">
+            <span style="font-size:12px">QuickBooks Monthly Detail</span>
           </label>
-          <label style="flex:1;display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:5px;border:1px solid ${fmt==='quickbooks'?'var(--primary)':'var(--border)'};background:${fmt==='quickbooks'?'var(--primary-faint)':'var(--bg2)'}">
+          <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:5px;border:1px solid ${fmt==='quickbooks'?'var(--primary)':'var(--border)'};background:${fmt==='quickbooks'?'var(--primary-faint)':'var(--bg2)'}">
             <input type="radio" name="formatSelect" value="quickbooks" ${fmt==='quickbooks'?'checked':''} onchange="refreshSheetModal(null,'quickbooks')">
-            <span style="font-size:12px">QuickBooks Export</span>
+            <span style="font-size:12px">QuickBooks Summary</span>
           </label>
         </div>
         <div style="font-size:11px;color:var(--text3)">
-          <strong>VITAL Worksheet</strong> — the benchmarking Excel template with translate codes in column J.<br>
-          <strong>QuickBooks Export</strong> — a two-column P&L summary (account name, amount).
+          <strong>Monthly Detail</strong> — P&L with months across columns (Jan–Dec) and a Total column at the right.<br>
+          <strong>Summary</strong> — two-column export with account name in column A and amount in column B.
         </div>
       </div>` : '';
 
@@ -1184,8 +1193,8 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
       <div style="font-size:12px;color:var(--text3);margin-bottom:8px">${escHtml(filename)}</div>
       <div style="font-size:14px;color:var(--text);line-height:1.5">
         ${hasData
-          ? `We found your <strong>${typeLabel} P&L</strong> data on sheet <strong>"${escHtml(sel.name)}"</strong><span style="color:var(--text3)"> — ${fmtLabel}</span>.`
-          : `We could not detect P&L data on sheet <strong>"${escHtml(sel.name)}"</strong>. Please select a different sheet below.`}
+          ? `Found <strong>${typeLabel} P&L</strong> data on sheet <strong>"${escHtml(sel.name)}"</strong><span style="color:var(--text3)"> — ${fmtLabel}</span>.`
+          : `Could not detect P&L data on sheet <strong>"${escHtml(sel.name)}"</strong>. Please select a different sheet below.`}
       </div>
       ${sampleHtml}
       ${!expanded
@@ -1199,31 +1208,29 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
     document.getElementById('modalOverlay').classList.remove('hidden');
   }
 
-  state._sheetModalData = { wb, dispatch, sheetScores, getFormat, recommended };
+  state._sheetModalData = { wb, dispatch, sheetScores, recommended };
   renderModal(recommended.name, null, false);
 
   window.refreshSheetModal = function(newSheet, newFormat, expand) {
     const currentSheet  = document.querySelector('input[name="sheetSelect"]:checked')?.value  || recommended.name;
     const currentFormat = document.querySelector('input[name="formatSelect"]:checked')?.value || null;
-    const sheet  = newSheet  || currentSheet;
-    const format = newFormat || currentFormat;
-    renderModal(sheet, format, expand !== undefined ? expand : true);
+    renderModal(newSheet || currentSheet, newFormat || currentFormat, expand !== undefined ? expand : true);
   };
 }
 
 function confirmSheetSelection(filename, type) {
-  const { wb, dispatch, sheetScores, getFormat, recommended } = state._sheetModalData;
+  const { wb, dispatch, sheetScores, recommended } = state._sheetModalData;
   const sheetName = document.querySelector('input[name="sheetSelect"]:checked')?.value || recommended.name;
   const formatSel = document.querySelector('input[name="formatSelect"]:checked')?.value;
-  const format = formatSel || getFormat(sheetScores.find(s => s.name === sheetName) || recommended);
-  console.log(`[DEBUG] confirmSheetSelection: sheetName=${JSON.stringify(sheetName)}, format=${format}, recommended=${recommended?.name}`);
+  const format = formatSel || (sheetScores.find(s => s.name === sheetName) || recommended).format;
   closeModal();
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval:''});
-  console.log(`[DEBUG] confirmSheetSelection: rows.length=${rows.length}, rows[0]?.length=${rows[0]?.length}`);
   rows._confirmedFormat = format;
   dispatch(rows);
   state._sheetModalData = null;
 }
+
+
 
 
 function parseCSV(text) {
@@ -1242,10 +1249,12 @@ function parseCSV(text) {
 }
 
 function stripAccountNumber(name) {
-  // Strip leading number codes with · or - separators (e.g. "4000 · Name", "8001 · 8001- Name")
-  let result = name.replace(/^\d+\s*[·\-]\s*/, '').trim();
+  // Strip leading number codes with · - or * separators (e.g. "4000 · Name", "66001 · *Name")
+  let result = name.replace(/^\d+\s*[·\-\*]\s*/, '').trim();
   // Second pass catches double-prefixed names like "7000 · 7000- Cost of Goods Sold"
-  result = result.replace(/^\d+\s*[·\-]\s*/, '').trim();
+  result = result.replace(/^\d+\s*[·\-\*]\s*/, '').trim();
+  // Strip leading * (e.g. "*Payroll Processing Fees")
+  result = result.replace(/^\*\s*/, '').trim();
   return result;
 }
 
@@ -1258,66 +1267,49 @@ function buildLookupMap() {
   return map;
 }
 
-// Old translate codes (from benchmarking worksheets) to new P&L codes
-const TRANSLATE_CODE_MAP = {
-  's1':'REVEQ','s2':'REVPT','s3':'REVLF','s4':'REVMS','s5':'REVLB',
-  'g1':'CGSEQ','g2':'CGSPT','g3':'CGSLF','g4':'CGSMS','g5':'CGSIA','g6':'CGSVD',
-  'sub':'SUBC','c1':'CMP1','c2':'CMP2','c2e':'C2EM','c2o':'C2OW',
-  'c3':'CMP3','c4':'CMP4','o':'OCCP','a':'ADMN','i':'INTR',
-  'sx':'SLSX','m':'MISC','d':'DEPR','mi':'MONI','me':'MONE',
-  'oi':'OTHI','oe':'OTHE','b':'BONUS','t':'TAX','ni':'NETIN'
-};
-
 function detectPLFormat(rows) {
-  // Benchmarking worksheet format:
-  //   - Many columns (>4)
-  //   - Col 9 (index 9) contains short translate codes like s1, g1, c1, sx, etc.
-  //   - Col 10 (index 10) contains amounts
-  // QuickBooks CSV format:
-  //   - 2 columns: account name, amount
-  const sampleRows = rows.slice(0, 30).filter(r => r && r.length > 9);
-  const translateCodePattern = /^(s[1-5]|g[1-6]|c[1-4]|c2[eo]|sub|sx|[adimot]|mi|me|oi|oe|ni|b)$/i;
-  const worksheetHits = sampleRows.filter(r => {
-    const col9 = (r[9] || '').toString().trim();
-    return translateCodePattern.test(col9);
+  const sample = rows.slice(0, 40);
+  // QuickBooks monthly detail: account names in cols 1-6 (B-G), amounts across multiple columns
+  const hasManyCols = sample.some(r => r.length > 15);
+  const monthlyHits = sample.filter(r => {
+    const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
+    const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+    return midName && farAmt;
   }).length;
-  return worksheetHits >= 2 ? 'worksheet' : 'quickbooks';
+  if (hasManyCols && monthlyHits >= 3) return 'quickbooks_monthly';
+  return 'quickbooks';
 }
 
 function processPLFile(rows, type, filename) {
-  // Use format confirmed by user in modal if present, otherwise auto-detect
   const format = rows._confirmedFormat || detectPLFormat(rows);
-  console.log(`[DEBUG] processPLFile(${type}): format=${format} (${rows._confirmedFormat ? 'user-confirmed' : 'auto-detected'}), total rows=${rows.length}`);
-
   const mapped = [], unmatched = [];
+  let dataRows = rows;
 
-  let dataRows = rows; // used for state.rawPriorPL/rawCurrentPL storage
-
-  if (format === 'worksheet') {
-    // Benchmarking worksheet format: name in cols 0-6, translate code in col 9, amount in col 10
-    let debugSampled = 0;
+  if (format === 'quickbooks_monthly') {
+    // QuickBooks monthly P&L: name in cols 1-6 (B-G), amount = rightmost numeric column
+    const lookupMap = buildLookupMap();
     rows.forEach(row => {
-      if (!row || row.length < 11) {
-        if (debugSampled < 3) { console.log(`[DEBUG] worksheet row skipped: length=${row ? row.length : 'null'}`); debugSampled++; }
-        return;
-      }
-      const codeRaw = (row[9] || '').toString().trim().toLowerCase();
-      const amount = parseFloat((row[10] || '').toString().replace(/[$,\s]/g,''));
-      if (debugSampled < 5) { console.log(`[DEBUG] worksheet row: col9=${JSON.stringify(row[9])}, col10=${JSON.stringify(row[10])}, codeRaw=${codeRaw}, amount=${amount}`); debugSampled++; }
-      if (!codeRaw || isNaN(amount)) return;
-      const newCode = TRANSLATE_CODE_MAP[codeRaw];
-      if (!newCode || newCode === 'NETIN') return;
-      // Get rightmost non-empty name from cols 0-6
+      if (!row || row.length < 8) return;
       const nameArr = [];
-      for (let i = 0; i <= 6; i++) {
+      for (let i = 1; i <= 6; i++) {
         const v = (row[i] || '').toString().trim();
         if (v) nameArr.push(v);
       }
-      const name = nameArr.length ? nameArr[nameArr.length - 1] : '';
-      mapped.push({raw: name, clean: name, code: newCode, amount});
+      if (!nameArr.length) return;
+      const raw = nameArr[nameArr.length - 1];
+      let amount = NaN;
+      for (let i = row.length - 1; i >= 7; i--) {
+        const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+        if (!isNaN(v)) { amount = v; break; }
+      }
+      if (isNaN(amount)) return;
+      const clean = stripAccountNumber(raw.trim());
+      const code = lookupMap[clean];
+      if (!code) { unmatched.push({raw, clean, amount}); }
+      else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
     });
   } else {
-    // QuickBooks CSV format: col 0 = name, col 1+ = amount
+    // QuickBooks summary CSV/Excel: col 0 = name, col 1+ = amount
     if (rows.length > 0 && isNaN(parseFloat((rows[0][rows[0].length-1]||'').toString()))) {
       dataRows = rows.slice(1);
     }
@@ -1339,10 +1331,6 @@ function processPLFile(rows, type, filename) {
       else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
     });
   }
-
-  console.log(`[DEBUG] processPLFile(${type}): ${mapped.length} mapped, ${unmatched.length} unmatched`);
-  if (mapped.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 mapped=`, mapped.slice(0,3));
-  if (mapped.length === 0 && unmatched.length > 0) console.log(`[DEBUG] processPLFile(${type}): first 3 unmatched=`, unmatched.slice(0,3).map(u=>({clean:u.clean,amount:u.amount})));
 
   if (type === 'prior') {
     state.priorPL = {raw: dataRows, mapped, unmatched, filename};
@@ -1477,7 +1465,6 @@ function confirmPLMapping() {
       if (existing) existing[1] = code;
     }
   });
-  console.log(`[DEBUG] confirmPLMapping: saved ${Object.keys(newMap).length} entries to plLookup. plLookup size now=${state.plLookup.length}`);
 
   // Re-map with new codes
   const remapPL = (plData) => {
@@ -1568,7 +1555,7 @@ function resetPL() {
     zone.classList.remove('done');
     zone.querySelector('.upload-icon').textContent = '📄';
     zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
-    zone.querySelector('.upload-sub').textContent = 'VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV';
+    zone.querySelector('.upload-sub').textContent = 'QuickBooks P&amp;L export • Excel or CSV';
   });
   document.getElementById('processPLBtn').disabled = true;
   setPLStep(1);
@@ -2019,9 +2006,6 @@ function runAnalysis() {
 
   const prior = aggregateByCode(state.priorPL.mapped);
   const curr  = aggregateByCode(state.currentPL.mapped);
-  console.log(`[DEBUG] runAnalysis: priorPL.mapped.length=${state.priorPL.mapped.length}, currentPL.mapped.length=${state.currentPL.mapped.length}`);
-  console.log(`[DEBUG] runAnalysis: prior aggregated codes=`, Object.keys(prior));
-  console.log(`[DEBUG] runAnalysis: prior.REVEQ=${prior.REVEQ}, prior.REVLB=${prior.REVLB}, prior.CGSEQ=${prior.CGSEQ}`);
 
   // Build census comp breakdown
   const censusComp = buildCensusCompTotals();
@@ -2068,7 +2052,6 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompPrior, plComp
   const priorRev = (prior.REVEQ||0)+(prior.REVPT||0)+(prior.REVLF||0)+(prior.REVMS||0)+(prior.REVLB||0);
   const currRev  = (curr.REVEQ||0)+(curr.REVPT||0)+(curr.REVLF||0)+(curr.REVMS||0)+(curr.REVLB||0);
   const currRevAnn = currRev * annFactor;
-  console.log(`[DEBUG] _runAnalysis: priorRev=${priorRev}, currRev=${currRev}`);
 
   // COGS
   const priorCOGS = (prior.CGSEQ||0)+(prior.CGSPT||0)+(prior.CGSLF||0)+(prior.CGSMS||0)+(prior.CGSIA||0)+(prior.CGSVD||0);
@@ -2545,7 +2528,7 @@ function newClientReset() {
     zone.classList.remove('done');
     zone.querySelector('.upload-icon').textContent  = '📄';
     zone.querySelector('.upload-title').textContent = 'Click or drag to upload';
-    zone.querySelector('.upload-sub').textContent   = 'VITAL Benchmarking Worksheet or QuickBooks P&amp;L export • Excel or CSV';
+    zone.querySelector('.upload-sub').textContent   = 'QuickBooks P&amp;L export • Excel or CSV';
   });
   const pzone = document.getElementById('payrollUploadZone');
   pzone.classList.remove('done');
