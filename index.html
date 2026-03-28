@@ -723,7 +723,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     <div class="card-header">
       <div>
         <div class="card-title">Revenue & COGS Categories</div>
-        <div class="card-sub">Define up to 5 categories. These map to revenue codes REVEQ–REVLB and COGS codes CGSEQ–CGSMS.</div>
+        <div class="card-sub">Define up to 5 categories. These map to revenue codes rev-eq–rev-lab and COGS codes cog-eq–cog-ms.</div>
       </div>
     </div>
     <div class="card-body">
@@ -824,6 +824,8 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
       <span class="alert-icon">✅</span>
       P&L data successfully mapped. Review the category totals below, then proceed to Payroll Census.
     </div>
+    <div id="plBalanceAlert" class="hidden"></div>
+    <div id="plDoubleCountAlert" class="hidden"></div>
     <div class="card">
       <div class="card-header"><div class="card-title">Mapped Category Totals</div></div>
       <div class="card-body" style="padding:0">
@@ -1088,9 +1090,9 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
 // ═══════════════════════════════════════════════════════
 // EMBEDDED LOOKUP TABLES
 // ═══════════════════════════════════════════════════════
-const DEFAULT_PL_LOOKUP = [["2N Subscriptions","CGSEQ"],["401K Match","PAYX"],["401K/HSA Match","PAYX"],["Accounting","ADMN"],["Accounting Fees","ADMN"],["Admin Wages","ADME"],["Adobe","ADMN"],["ADP Payroll Expense","PAYX"],["ADP Payroll Fees","PAYX"],["Advertising","SLSX"],["Advertising & Marketing","SLSX"],["Advertising - Other","SLSX"],["Advertising/Promotional","SLSX"],["Airfare","ADMN"],["Airfare - Project","SLSX"],["Airlines Fare","SLSX"],["AMEX Amazon Interest","INTR"],["Amortization","DEPR"],["Ask My Accountant","OTHE"],["Auto","SLSX"],["Auto and Truck Expenses - Other","SLSX"],["Auto Expense","SLSX"],["Auto Lease","SLSX"],["Auto Rental (Auto)","SLSX"],["AutoCAD","ADMN"],["Automobile","SLSX"],["AUTOMOBILE EXPENSE","SLSX"],["Bad Debt","OTHE"],["Bad Debt (Bad Debt)","OTHE"],["Bad Debt Expense","OTHE"],["Bad Debts","OTHE"],["Bad debts","OTHE"],["Bank Charges","ADMN"],["Bank Charges & Fees","ADMN"],["Bank Service Charge","ADMN"],["Bank Service Charges","ADMN"],["Barclay Advantage MC Interest","INTR"],["Billable Expense Income","REVEQ"],["Blueprint","SLSX"],["BOA Cash Rewards Interest","INTR"],["BOA Travel Rewrds Interest","INTR"],["Bonus","PAYX"],["Bookkeeping","ADMN"],["Brands Training","SLSX"],["Building Rent","OCCP"],["Business Insurance","ADMN"],["Business License","SLSX"],["Business License & Fees","ADMN"],["Business Licenses","ADMN"],["C1 - Subcontractor Labor","SUBC"],["Car & Truck","SLSX"],["Car Insurance","SLSX"],["Car Rental","ADMN"],["Car Rental - Project","SLSX"],["Cell phone","SLSX"],["Cell Phones","SLSX"],["Charitable Contributions","SLSX"],["Charitable Donations","SLSX"],["Charity","MISC"],["City & State","SLSX"],["Cleaning","OCCP"],["Cleaning and Mainteneance","OCCP"],["CMS Monitoring COGS","CGSEQ"],["COGS M (Merchandise)","CGSEQ"],["COGS P (Parts & Materials)","CGSPT"],["COGS V (Vendor Disc & Rebates)","CGSVD"],["Commission","SALC"],["Commissions & bonuses","SALC"],["Commissions & fees","SLSX"],["Common Area Maintenance","OCCP"],["Company Events","SLSX"],["Component COS","CGSEQ"],["Component Revenue","REVEQ"],["Component Revenue, Service","REVLB"],["Component Shrinkage","CGSIA"],["Computer & Internet Expense","ADMN"],["Construction Costs","OCCP"],["Consulting Subs","SUBC"],["Continuing Education","SLSX"],["Continuous Education","SLSX"],["Contract labor","SUBC"],["Contractor Payroll","SUBC"],["Contractors","SUBC"],["Contribution - Donations","SLSX"],["Contributions","PAYX"],["Cost of Goods Sold","CGSEQ"],["Cost of Goods Sold - Other","CGSEQ"],["COVID Expense (testing, supplies)","ADMN"],["Credit Card Annual Fee","SLSX"],["credits","OTHI"],["D-tools","ADMN"],["Deprec Exp - Autos & Trucks","DEPR"],["Deprec Exp - Lease Improve","DEPR"],["Depreciation","DEPR"],["Depreciation Expense","DEPR"],["Depreciation Expense (Depreciation Expense)","DEPR"],["Direct 401K/HSA Match","PAYX"],["Direct Commissions/Bonuses","SALC"],["Direct Employee Contributions","PAYX"],["Direct Employer Payroll Taxes","PAYX"],["Direct Group Benefit Insurance","PAYX"],["DIRECT MATERIAL COST","CGSEQ"],["Direct PTO","PROD"],["Discount Fees (merchant bank)","SLSX"],["Discounts","REVEQ"],["Dues & Subscriptions","ADMN"],["Dues/Subscriptions/EmpLic","ADMN"],["Electricity/Utilities","OCCP"],["Employee Benefits","PAYX"],["Employee bonus","PAYX"],["Employee Computers","ADMN"],["Employee Morale","PAYX"],["Employee Recognition","PAYX"],["Employee Reimbursement","OTHE"],["Employee Training","PAYX"],["Employer Payroll Taxes","PAYX"],["Equipment & Supplies - COGS","CGSEQ"],["Equipment Rental","SLSX"],["Equipment Repairs","SLSX"],["EQUIPMENT SALES","REVEQ"],["Events","SLSX"],["eWaste Fees","ADMN"],["Executive Wages","OWN"],["Expense","PAYX"],["Federal","TAX"],["Food & Entertainment Expenses","SLSX"],["FPL","OCCP"],["Fraud expenses - BOA","SLSX"],["Fraud expenses - credit cards","SLSX"],["Freight","SLSX"],["Freight & delivery - COS","SLSX"],["Freight - Outbound","SLSX"],["Fuel","SLSX"],["Funding Circle Interest Paid","INTR"],["Gain on Sale of Assets","OTHI"],["Gain/Loss on Vendor Returns","OTHE"],["Garbage Collection","OCCP"],["Gas/Fuel (Auto)","SLSX"],["Gasoline","SLSX"],["General Marketing","SLSX"],["General Repairs & Maintenance","OCCP"],["Gifts","SLSX"],["Gross Receipts","REVEQ"],["Group Benefits Insurance","PAYX"],["Health Insurance - Employees","PAYX"],["Health Insurance-Owners","PAYX"],["Health Insurrance","PAYX"],["Hiring Fees","PAYX"],["Hotels","SLSX"],["Housecall Pro Tips Account","OTHI"],["HR Expenses - Other","ADMN"],["HR/recruiting","ADMN"],["I-Phone","ADMN"],["Indirect Commissions/Bonuses","SALC"],["Indirect Employee Contribution","PAYX"],["Indirect PTO","ADME"],["Install Material COGS","CGSEQ"],["Insurance","ADMN"],["INSURANCE","ADMN"],["Insurance - Automobile","SLSX"],["Insurance - Dental, employer","PAYX"],["Insurance - Disability","PAYX"],["Insurance - Employee Share","PAYX"],["Insurance - Health, employer","PAYX"],["Insurance - Liability","PAYX"],["Insurance - Vision, employer","PAYX"],["Insurance Expense","ADMN"],["Interest & finance charge","INTR"],["Interest earned","OTHI"],["Interest Expense","INTR"],["Interest Income","OTHI"],["Interest Paid","INTR"],["Internet","OCCP"],["Internet Service Provider","OCCP"],["Intuit","ADMN"],["Inventory Obsolescence","CGSIA"],["Inventory Shrinkage","CGSIA"],["IT Wages","ADME"],["Janitorial Services","OCCP"],["Job Direct Labor","PROD"],["Job Income - Other","REVEQ"],["Job Materials","CGSEQ"],["Job Materials Purchased","CGSEQ"],["Job Supplies","SLSX"],["Labor","REVLB"],["Labor Costs, Engineering","PROD"],["Labor Costs, Installation","PROD"],["Labor Costs, Programming","PROD"],["Labor Costs, Project Mgt","PROD"],["Labor Costs, Service","PROD"],["LABOR INCOME","REVLB"],["Labor Income","REVLB"],["Labor Revenue, Engineering","REVLB"],["Labor Revenue, Final","REVLB"],["Labor Revenue, Prewire","REVLB"],["Labor Revenue, Programming","REVLB"],["Labor Revenue, Project Mgt","REVLB"],["Labor Revenue, Service","REVLB"],["Labor Revenue, Service IT","REVLB"],["Labor Revenue, Service Program","REVLB"],["Labor Revenue, Trimout","REVLB"],["LABOR SALES","REVLB"],["Landscape Maint.","OCCP"],["Late Charges","ADMN"],["Leased Office Equipment","ADMN"],["Legal & Professional Fees","ADMN"],["Legal & Professional Services","ADMN"],["Legal Fees","ADMN"],["Legal Professional","ADMN"],["Liability","ADMN"],["Liability Insurance","ADMN"],["License & Dues","ADMN"],["License & Permits","SLSX"],["License & Registration (Auto)","SLSX"],["Licenses and taxes","ADMN"],["Life Insurance","PAYX"],["Line of credit - interest","INTR"],["Loan Forgiveness","OTHI"],["Loan Interest","INTR"],["Loans Fee","ADMN"],["Lodging","ADMN"],["Lodging - Project","SLSX"],["M&T Bank Boat Interest","INTR"],["Maintennace","SLSX"],["Management Fees","PROD"],["Marketing","SLSX"],["Marketing and Advertising","SLSX"],["Material cost","CGSEQ"],["Material Cost Field","CGSEQ"],["Material Cost service","CGSEQ"],["MATERIAL INCOME","REVEQ"],["Material Income","REVEQ"],["Materials COS","CGSPT"],["Materials Revenue","REVPT"],["Materials Revenue, Service","REVPT"],["Meals","SLSX"],["Meals & Entertainment","SLSX"],["Meals and Entertainment","SLSX"],["Meals COGS","SLSX"],["Medical Expenses ( Misc )","PAYX"],["Medical Insurance","PAYX"],["Memberships/Licenses/Subscripts","ADMN"],["Merchant deposit fees","SLSX"],["Merchant Fee","ADMN"],["Microsoft","ADMN"],["Mileage","SLSX"],["Misc HW COGS","CGSEQ"],["Misc. Income","OTHI"],["Miscellaneous","OTHE"],["Miscellaneous Expense","MISC"],["Mobil Services","SLSX"],["Net Income","NETIN"],["Net Profit (Loss)","NETIN"],["Notary","ADMN"],["Office & Computer Equipment","ADMN"],["Office Expenses","ADMN"],["Office Security","OCCP"],["Office Supplies","ADMN"],["Office Supplies & Expenses","ADMN"],["Office Supplies & Software","ADMN"],["Officer Health insurance","PAYX"],["Officer Salary","OWN"],["Officer Wages","OWN"],["Officers Salaries","OWN"],["On Call Pay","PAYX"],["Other Business Expenses","SLSX"],["Other Expenses","OTHE"],["Other Hardware & Peripherals","ADMN"],["Other Income","OTHI"],["Other income","REVEQ"],["OTHER INDIRECT COST (tools, small equipment)","SLSX"],["Other Job Related Costs","SLSX"],["Other Taxes","TAX"],["Other Transportation","SLSX"],["Outsourced Services","SUBC"],["Owner Salary","OWN"],["Parking","SLSX"],["PayPal Fees","SLSX"],["Payroll & Benefit Admin Fees","PAYX"],["Payroll Expense - Other","PAYX"],["Payroll Expenses","PAYX"],["Payroll Expenses - Other","PAYX"],["Payroll Fees","PAYX"],["Payroll Preparation Fees","PAYX"],["Payroll Processing Fees","PAYX"],["Payroll Tax","PAYX"],["Payroll Tax Expense","PAYX"],["Payroll Taxes","PAYX"],["Payroll Taxes ER","PAYX"],["Penalty / Late Fee","ADMN"],["Per Diem","SLSX"],["Permits Runner","ADMN"],["Personal","SLSX"],["Personal Property Tax","TAX"],["Pest Control","OCCP"],["Postage","ADMN"],["Postage and Delivery (courier, postage, handling and deliveries)","ADMN"],["Postage Expense","ADMN"],["Postage/Courier","ADMN"],["PPP grant (CARES ACT PPP)","OTHI"],["PreEmployment Screening","SLSX"],["Prewire COGS","CGSEQ"],["Professional Development","SLSX"],["Professional Fees","ADMN"],["PROFESSIONAL FEES","ADMN"],["Professional Services","ADMN"],["Promotional","SLSX"],["Property","SLSX"],["Propriators Expenses","OTHE"],["PTO- Office (Holiday, sick & vacation pay)","ADME"],["PTO-Field (Holiday, sick & vacation pay (FIELD employees))","PROD"],["Public Relations","SLSX"],["Qualifier License","SLSX"],["QuickBooks Loan - Interest","INTR"],["QuickBooks Payments Fees","ADMN"],["Real Estate Taxes","OCCP"],["Reconciliation Discrepancies","SLSX"],["Recurring Monthly Revenue","REVEQ"],["Recurring Revenue","REVMS"],["Refunds-Allowances","REVEQ"],["Reimbursements","SLSX"],["Remote Monitoring","MONI"],["Rent","OCCP"],["Rent & Lease","OCCP"],["Rent - Other","OCCP"],["Rent Expense","OCCP"],["Rent or Lease","OCCP"],["Repair & Maintenance","OCCP"],["Repairs & Maintenance","OCCP"],["Repairs & Maintenance (Auto)","SLSX"],["Repairs and Maintenance","ADMN"],["RESEARCH AND DEVELOPMENT (innovations and product development)","SLSX"],["RMR","REVMS"],["Salaries & Wages","PROD"],["Sales","REVEQ"],["Sales & Support - Other","SALC"],["Sales & Support - Service","SALC"],["SALES M (Merchandise)","REVEQ"],["Sales of Product Income","REVEQ"],["SALES P (Parts & Materials)","REVPT"],["SALES S (Labor & Services)","REVLB"],["Sales Tax","TAX"],["Sales Tax Adj Utah Expense","TAX"],["Sales Taxes by Vendor","SLSX"],["Sales Wages - Primary","SALC"],["SBA Loan Interest","INTR"],["SBA Loan Intrest","OTHE"],["Security","OCCP"],["SEP IRA contribution","PAYX"],["Service Calls","REVLB"],["Service Dept Cost - Other","SLSX"],["Service/Labor Income","REVLB"],["Services","REVLB"],["Services Income","REVLB"],["Shareholder Health Insurance","PAYX"],["Shipping","SLSX"],["Shipping COGS","SLSX"],["Shipping, Freight & Delivery","SLSX"],["Shop supplies","SLSX"],["Showroom Exp ( Display)","SLSX"],["Showroom Expenses-12245 WTD","SLSX"],["Simple IRA Employer Match","PAYX"],["Small Tools/Shop Supplies","SLSX"],["Software Expense","ADMN"],["Software Fees","ADMN"],["Software Lease","ADMN"],["Software Licenses","ADMN"],["Software Maint & Support Svc","ADMN"],["Software Purchase - Lease","ADMN"],["Software Purchase Expense","ADMN"],["Square Fees","SLSX"],["State Taxes","TAX"],["Subcontracted Labor","SUBC"],["Subcontracted Materials","CGSEQ"],["Subcontractor","SUBC"],["Subcontractor  Labor ( Sub )","SUBC"],["Subcontractor Labor","SUBC"],["Subcontractor labor","SUBC"],["Subcontractors Expense","SUBC"],["Subcontractors(outside service)","SUBC"],["Subscription Expense","ADMN"],["Supplies & Materials","CGSEQ"],["Tax","TAX"],["Taxable Interest Income","INTR"],["Taxes","TAX"],["TAXES","TAX"],["Taxes & Licenses","ADMN"],["Telecommunication","SLSX"],["TELECOMMUNICATIONS","ADMN"],["Telephone","SLSX"],["Temporary Help","PROD"],["Temporary Labor","SUBC"],["Terms Discounts","CGSVD"],["Tesla Interest","INTR"],["Tesla Internet","SLSX"],["Time Sheets","PAYX"],["Tolls","SLSX"],["Tools","SLSX"],["Tools & Machinery (under $500)","SLSX"],["Tools and Small Equipment","SLSX"],["Total 4205 \u00b7 Labor Income service","REVLB"],["Total 4215 \u00b7 Material Income Service","REVEQ"],["Total 6100 \u00b7 Automobile Expenses","SLSX"],["Total 6100 \u00b7 Payroll Burden & Benefit","PAYX"],["Total 6200 \u00b7 Facilities Expense","OCCP"],["Total 6300 \u00b7 Marketing","SLSX"],["Total 6400 \u00b7 General & Admin","ADMN"],["Total 6600 \u00b7 Professional Fees","ADMN"],["Total 6800 \u00b7 Auto Expense/Fleet","SLSX"],["Total 6900 \u00b7 Travel & Entertainment","SLSX"],["Total 7030 \u00b7 Service COGS","SLSX"],["Total 8009 \u00b7 Industry Partnership Expense","ADMN"],["Total 8012 \u00b7 Meals & Enter. Expense","SLSX"],["Total 8050 \u00b7 Vehicle Expenses","SLSX"],["Total 8300 \u00b7 Professional Fees","ADMN"],["Total ADMINISTRATIVE","ADMN"],["Total Auto and Truck Expenses","SLSX"],["Total Car & Truck","SLSX"],["Total Dues & subscriptions","ADMN"],["Total EMPLOYEES BENEFITS","PAYX"],["Total FACILITIES EXPENSE","OCCP"],["Total Gasoline","SLSX"],["Total Job Supplies","CGSEQ"],["Total Labor Income Field","REVLB"],["Total Marketing","SLSX"],["Total Material Income field","REVEQ"],["Total OCCUPANCY","OCCP"],["Total Other Expenses","OTHE"],["Total Other Income","OTHI"],["Total Payroll Taxes","PAYX"],["Total SALES EXPENSE","SLSX"],["Total TAXES","TAX"],["Total TRAVEL AND ENTERTAINMENT","SLSX"],["Total Utilities","OCCP"],["Training","SLSX"],["Training/Consulting Costs","SLSX"],["Trainning & development","SLSX"],["Transportation","SLSX"],["Travel","SLSX"],["Travel - Aaron","SLSX"],["Travel - Greg","SLSX"],["Travel - Pat","SLSX"],["Travel - Skytop","SLSX"],["Travel - Springhill","SLSX"],["Travel COGS","SLSX"],["Travel Expense","SLSX"],["Travel Expenses","SLSX"],["Travel Meals","SLSX"],["Travel Reimbursements (contra)","SLSX"],["Uncategorized Expense","OTHE"],["Uncategorized Expenses","OTHE"],["Uncategorized Income","OTHI"],["Uniforms","SLSX"],["Uniforms & Laundry","SLSX"],["Utilities","OCCP"],["Utilities - Other","OCCP"],["Vehicle Insurance","SLSX"],["Vehicle Leases","ADMN"],["Vehicle License Fees","SLSX"],["Vehicle Repairs & Maint","SLSX"],["Vendor Discounts COGS","CGSVD"],["Vendor Late Fees","OTHE"],["Vendor Marketing Credits","CGSVD"],["VOIP Service Clients","CGSEQ"],["Wages-Office","ADME"],["Warranty (Labor& Material Cost)","CGSEQ"],["Water","OCCP"],["Worker's Comp","PAYX"],["Workers Comp","PAYX"],["Workers Comp Insurance","SLSX"],["Workers Compensation","PAYX"],["Workers Compensation Ins","SLSX"],["Working meals","SLSX"]];
+const DEFAULT_PL_LOOKUP = [["2N Subscriptions","cog-eq"],["401K Match","c4"],["401K/HSA Match","c4"],["Accounting","admin"],["Accounting Fees","admin"],["Admin Wages","c2e"],["Adobe","admin"],["ADP Payroll Expense","c4"],["ADP Payroll Fees","c4"],["Advertising","slsx"],["Advertising & Marketing","slsx"],["Advertising - Other","slsx"],["Advertising/Promotional","slsx"],["Airfare","admin"],["Airfare - Project","slsx"],["Airlines Fare","slsx"],["AMEX Amazon Interest","int"],["Amortization","dep"],["Ask My Accountant","oth-exp"],["Auto","slsx"],["Auto and Truck Expenses - Other","slsx"],["Auto Expense","slsx"],["Auto Lease","slsx"],["Auto Rental (Auto)","slsx"],["AutoCAD","admin"],["Automobile","slsx"],["AUTOMOBILE EXPENSE","slsx"],["Bad Debt","oth-exp"],["Bad Debt (Bad Debt)","oth-exp"],["Bad Debt Expense","oth-exp"],["Bad Debts","oth-exp"],["Bad debts","oth-exp"],["Bank Charges","admin"],["Bank Charges & Fees","admin"],["Bank Service Charge","admin"],["Bank Service Charges","admin"],["Barclay Advantage MC Interest","int"],["Billable Expense Income","rev-eq"],["Blueprint","slsx"],["BOA Cash Rewards Interest","int"],["BOA Travel Rewrds Interest","int"],["Bonus","c4"],["Bookkeeping","admin"],["Brands Training","slsx"],["Building Rent","occ"],["Business Insurance","admin"],["Business License","slsx"],["Business License & Fees","admin"],["Business Licenses","admin"],["C1 - Subcontractor Labor","csub"],["Car & Truck","slsx"],["Car Insurance","slsx"],["Car Rental","admin"],["Car Rental - Project","slsx"],["Cell phone","slsx"],["Cell Phones","slsx"],["Charitable Contributions","slsx"],["Charitable Donations","slsx"],["Charity","admin"],["City & State","slsx"],["Cleaning","occ"],["Cleaning and Mainteneance","occ"],["CMS Monitoring COGS","cog-eq"],["COGS M (Merchandise)","cog-eq"],["COGS P (Parts & Materials)","cog-pa"],["COGS V (Vendor Disc & Rebates)","cog-dis"],["Commission","c3"],["Commissions & bonuses","c3"],["Commissions & fees","slsx"],["Common Area Maintenance","occ"],["Company Events","slsx"],["Component COS","cog-eq"],["Component Revenue","rev-eq"],["Component Revenue, Service","rev-lab"],["Component Shrinkage","cog-adj"],["Computer & Internet Expense","admin"],["Construction Costs","occ"],["Consulting Subs","csub"],["Continuing Education","slsx"],["Continuous Education","slsx"],["Contract labor","csub"],["Contractor Payroll","csub"],["Contractors","csub"],["Contribution - Donations","slsx"],["Contributions","c4"],["Cost of Goods Sold","cog-eq"],["Cost of Goods Sold - Other","cog-eq"],["COVID Expense (testing, supplies)","admin"],["Credit Card Annual Fee","slsx"],["credits","oth-in"],["D-tools","admin"],["Deprec Exp - Autos & Trucks","dep"],["Deprec Exp - Lease Improve","dep"],["Depreciation","dep"],["Depreciation Expense","dep"],["Depreciation Expense (Depreciation Expense)","dep"],["Direct 401K/HSA Match","c4"],["Direct Commissions/Bonuses","c3"],["Direct Employee Contributions","c4"],["Direct Employer Payroll Taxes","c4"],["Direct Group Benefit Insurance","c4"],["DIRECT MATERIAL COST","cog-eq"],["Direct PTO","c1"],["Discount Fees (merchant bank)","slsx"],["Discounts","rev-eq"],["Dues & Subscriptions","admin"],["Dues/Subscriptions/EmpLic","admin"],["Electricity/Utilities","occ"],["Employee Benefits","c4"],["Employee bonus","c4"],["Employee Computers","admin"],["Employee Morale","c4"],["Employee Recognition","c4"],["Employee Reimbursement","oth-exp"],["Employee Training","c4"],["Employer Payroll Taxes","c4"],["Equipment & Supplies - COGS","cog-eq"],["Equipment Rental","slsx"],["Equipment Repairs","slsx"],["EQUIPMENT SALES","rev-eq"],["Events","slsx"],["eWaste Fees","admin"],["Executive Wages","c2o"],["Expense","c4"],["Federal","tax"],["Food & Entertainment Expenses","slsx"],["FPL","occ"],["Fraud expenses - BOA","slsx"],["Fraud expenses - credit cards","slsx"],["Freight","slsx"],["Freight & delivery - COS","slsx"],["Freight - Outbound","slsx"],["Fuel","slsx"],["Funding Circle Interest Paid","int"],["Gain on Sale of Assets","oth-in"],["Gain/Loss on Vendor Returns","oth-exp"],["Garbage Collection","occ"],["Gas/Fuel (Auto)","slsx"],["Gasoline","slsx"],["General Marketing","slsx"],["General Repairs & Maintenance","occ"],["Gifts","slsx"],["Gross Receipts","rev-eq"],["Group Benefits Insurance","c4"],["Health Insurance - Employees","c4"],["Health Insurance-Owners","c4"],["Health Insurrance","c4"],["Hiring Fees","c4"],["Hotels","slsx"],["Housecall Pro Tips Account","oth-in"],["HR Expenses - Other","admin"],["HR/recruiting","admin"],["I-Phone","admin"],["Indirect Commissions/Bonuses","c3"],["Indirect Employee Contribution","c4"],["Indirect PTO","c4"],["Install Material COGS","cog-eq"],["Insurance","admin"],["INSURANCE","admin"],["Insurance - Automobile","slsx"],["Insurance - Dental, employer","c4"],["Insurance - Disability","c4"],["Insurance - Employee Share","c4"],["Insurance - Health, employer","c4"],["Insurance - Liability","c4"],["Insurance - Vision, employer","c4"],["Insurance Expense","admin"],["Interest & finance charge","int"],["Interest earned","oth-in"],["Interest Expense","int"],["Interest Income","oth-in"],["Interest Paid","int"],["Internet","occ"],["Internet Service Provider","occ"],["Intuit","admin"],["Inventory Obsolescence","cog-adj"],["Inventory Shrinkage","cog-adj"],["IT Wages","c2e"],["Janitorial Services","occ"],["Job Direct Labor","c1"],["Job Income - Other","rev-eq"],["Job Materials","cog-eq"],["Job Materials Purchased","cog-eq"],["Job Supplies","slsx"],["Labor","rev-lab"],["Labor Costs, Engineering","c1"],["Labor Costs, Installation","c1"],["Labor Costs, Programming","c1"],["Labor Costs, Project Mgt","c1"],["Labor Costs, Service","c1"],["LABOR INCOME","rev-lab"],["Labor Income","rev-lab"],["Labor Revenue, Engineering","rev-lab"],["Labor Revenue, Final","rev-lab"],["Labor Revenue, Prewire","rev-lab"],["Labor Revenue, Programming","rev-lab"],["Labor Revenue, Project Mgt","rev-lab"],["Labor Revenue, Service","rev-lab"],["Labor Revenue, Service IT","rev-lab"],["Labor Revenue, Service Program","rev-lab"],["Labor Revenue, Trimout","rev-lab"],["LABOR SALES","rev-lab"],["Landscape Maint.","occ"],["Late Charges","admin"],["Leased Office Equipment","admin"],["Legal & Professional Fees","admin"],["Legal & Professional Services","admin"],["Legal Fees","admin"],["Legal Professional","admin"],["Liability","admin"],["Liability Insurance","admin"],["License & Dues","admin"],["License & Permits","slsx"],["License & Registration (Auto)","slsx"],["Licenses and taxes","admin"],["Life Insurance","c4"],["Lighting Fixtures COGS","cog-lf"],["Lighting Fixtures Cost","cog-lf"],["Lighting Fixtures Revenue","rev-lf"],["Lighting Fixtures Sales","rev-lf"],["Lighting Revenue","rev-lf"],["Line of credit - interest","int"],["Loan Forgiveness","oth-in"],["Loan Interest","int"],["Loans Fee","admin"],["Lodging","admin"],["Lodging - Project","slsx"],["M&T Bank Boat Interest","int"],["Maintennace","slsx"],["Managed Services COGS","cog-ms"],["Managed Services Cost","cog-ms"],["Management Fees","c1"],["Marketing","slsx"],["Marketing and Advertising","slsx"],["Material cost","cog-eq"],["Material Cost Field","cog-eq"],["Material Cost service","cog-eq"],["MATERIAL INCOME","rev-eq"],["Material Income","rev-eq"],["Materials COS","cog-pa"],["Materials Revenue","rev-pa"],["Materials Revenue, Service","rev-pa"],["Meals","slsx"],["Meals & Entertainment","slsx"],["Meals and Entertainment","slsx"],["Meals COGS","slsx"],["Medical Expenses ( Misc )","c4"],["Medical Insurance","c4"],["Memberships/Licenses/Subscripts","admin"],["Merchant deposit fees","slsx"],["Merchant Fee","admin"],["Microsoft","admin"],["Mileage","slsx"],["Misc HW COGS","cog-eq"],["Misc. Income","oth-in"],["Miscellaneous","oth-exp"],["Miscellaneous Expense","misc"],["Mobil Services","slsx"],["Net Income","net-in"],["Net Profit (Loss)","net-in"],["Notary","admin"],["Office & Computer Equipment","admin"],["Office Expenses","admin"],["Office Security","occ"],["Office Supplies","admin"],["Office Supplies & Expenses","admin"],["Office Supplies & Software","admin"],["Officer Health insurance","c4"],["Officer Salary","c2o"],["Officer Wages","c2o"],["Officers Salaries","c2o"],["On Call Pay","c4"],["Other Business Expenses","slsx"],["Other Expenses","oth-exp"],["Other Hardware & Peripherals","admin"],["Other Income","oth-in"],["Other income","rev-eq"],["OTHER INDIRECT COST (tools, small equipment)","slsx"],["Other Job Related Costs","slsx"],["Other Taxes","tax"],["Other Transportation","slsx"],["Outsourced Services","csub"],["Owner Salary","c2o"],["Parking","slsx"],["PayPal Fees","slsx"],["Payroll & Benefit Admin Fees","c4"],["Payroll Expense - Other","c4"],["Payroll Expenses","c4"],["Payroll Expenses - Other","c4"],["Payroll Fees","c4"],["Payroll Preparation Fees","c4"],["Payroll Processing Fees","c4"],["Payroll Tax","c4"],["Payroll Tax Expense","c4"],["Payroll Taxes","c4"],["Payroll Taxes ER","c4"],["Penalty / Late Fee","admin"],["Per Diem","slsx"],["Permits Runner","admin"],["Personal","slsx"],["Personal Property Tax","tax"],["Pest Control","occ"],["Postage","admin"],["Postage and Delivery (courier, postage, handling and deliveries)","admin"],["Postage Expense","admin"],["Postage/Courier","admin"],["PPP grant (CARES ACT PPP)","oth-in"],["PreEmployment Screening","slsx"],["Prewire COGS","cog-eq"],["Professional Development","slsx"],["Professional Fees","admin"],["PROFESSIONAL FEES","admin"],["Professional Services","admin"],["Promotional","slsx"],["Property","slsx"],["Propriators Expenses","oth-exp"],["PTO-Field (Holiday, sick & vacation pay (FIELD employees))","c1"],["Public Relations","slsx"],["Qualifier License","slsx"],["QuickBooks Loan - Interest","int"],["QuickBooks Payments Fees","admin"],["Real Estate Taxes","occ"],["Reconciliation Discrepancies","slsx"],["Recurring Monthly Revenue","rev-eq"],["Recurring Revenue","rev-ms"],["Refunds-Allowances","rev-eq"],["Reimbursements","slsx"],["Remote Monitoring","mon-in"],["Rent","occ"],["Rent & Lease","occ"],["Rent - Other","occ"],["Rent Expense","occ"],["Rent or Lease","occ"],["Repair & Maintenance","occ"],["Repairs & Maintenance","occ"],["Repairs & Maintenance (Auto)","slsx"],["Repairs and Maintenance","admin"],["RESEARCH AND DEVELOPMENT (innovations and product development)","slsx"],["RMR","rev-ms"],["RMR COGS","cog-ms"],["Salaries & Wages","c1"],["Sales","rev-eq"],["Sales & Support - Other","c3"],["Sales & Support - Service","c3"],["SALES M (Merchandise)","rev-eq"],["Sales of Product Income","rev-eq"],["SALES P (Parts & Materials)","rev-pa"],["SALES S (Labor & Services)","rev-lab"],["Sales Tax","tax"],["Sales Tax Adj Utah Expense","tax"],["Sales Taxes by Vendor","slsx"],["Sales Wages - Primary","c3"],["SBA Loan Interest","int"],["SBA Loan Intrest","oth-exp"],["Security","occ"],["SEP IRA contribution","c4"],["Service Calls","rev-lab"],["Service Dept Cost - Other","slsx"],["Service/Labor Income","rev-lab"],["Services","rev-lab"],["Services Income","rev-lab"],["Shareholder Health Insurance","c4"],["Shipping","slsx"],["Shipping COGS","slsx"],["Shipping, Freight & Delivery","slsx"],["Shop supplies","slsx"],["Showroom Exp ( Display)","slsx"],["Showroom Expenses-12245 WTD","slsx"],["Simple IRA Employer Match","c4"],["Small Tools/Shop Supplies","slsx"],["Software Expense","admin"],["Software Fees","admin"],["Software Lease","admin"],["Software Licenses","admin"],["Software Maint & Support Svc","admin"],["Software Purchase - Lease","admin"],["Software Purchase Expense","admin"],["Square Fees","slsx"],["State Taxes","tax"],["Subcontracted Labor","csub"],["Subcontracted Materials","cog-eq"],["Subcontractor","csub"],["Subcontractor  Labor ( Sub )","csub"],["Subcontractor Labor","csub"],["Subcontractor labor","csub"],["Subcontractors Expense","csub"],["Subcontractors(outside service)","csub"],["Subscription Expense","admin"],["Supplies & Materials","cog-eq"],["Tax","tax"],["Taxable Interest Income","int"],["Taxes","tax"],["TAXES","tax"],["Taxes & Licenses","admin"],["Telecommunication","slsx"],["TELECOMMUNICATIONS","admin"],["Telephone","slsx"],["Temporary Help","c2e"],["Temporary Labor","csub"],["Terms Discounts","cog-dis"],["Tesla Interest","int"],["Tesla Internet","slsx"],["Time Sheets","c4"],["Tolls","slsx"],["Tools","slsx"],["Tools & Machinery (under $500)","slsx"],["Tools and Small Equipment","slsx"],["Total 4205 · Labor Income service","rev-lab"],["Total 4215 · Material Income Service","rev-eq"],["Total 6100 · Automobile Expenses","slsx"],["Total 6100 · Payroll Burden & Benefit","c4"],["Total 6200 · Facilities Expense","occ"],["Total 6300 · Marketing","slsx"],["Total 6400 · General & Admin","admin"],["Total 6600 · Professional Fees","admin"],["Total 6800 · Auto Expense/Fleet","slsx"],["Total 6900 · Travel & Entertainment","slsx"],["Total 7030 · Service COGS","slsx"],["Total 8009 · Industry Partnership Expense","admin"],["Total 8012 · Meals & Enter. Expense","slsx"],["Total 8050 · Vehicle Expenses","slsx"],["Total 8300 · Professional Fees","admin"],["Total ADMINISTRATIVE","admin"],["Total Auto and Truck Expenses","slsx"],["Total Car & Truck","slsx"],["Total Dues & subscriptions","admin"],["Total EMPLOYEES BENEFITS","c4"],["Total FACILITIES EXPENSE","occ"],["Total Gasoline","slsx"],["Total Job Supplies","cog-eq"],["Total Labor Income Field","rev-lab"],["Total Marketing","slsx"],["Total Material Income field","rev-eq"],["Total OCCUPANCY","occ"],["Total Other Expenses","oth-exp"],["Total Other Income","oth-in"],["Total Payroll Taxes","c4"],["Total SALES EXPENSE","slsx"],["Total TAXES","tax"],["Total TRAVEL AND ENTERTAINMENT","slsx"],["Total Utilities","occ"],["Training","slsx"],["Training/Consulting Costs","slsx"],["Trainning & development","slsx"],["Transportation","slsx"],["Travel","slsx"],["Travel - Aaron","slsx"],["Travel - Greg","slsx"],["Travel - Pat","slsx"],["Travel - Skytop","slsx"],["Travel - Springhill","slsx"],["Travel COGS","slsx"],["Travel Expense","slsx"],["Travel Expenses","slsx"],["Travel Meals","slsx"],["Travel Reimbursements (contra)","slsx"],["Uncategorized Expense","oth-exp"],["Uncategorized Expenses","oth-exp"],["Uncategorized Income","oth-in"],["Uniforms","slsx"],["Uniforms & Laundry","slsx"],["Utilities","occ"],["Utilities - Other","occ"],["Vehicle Insurance","slsx"],["Vehicle Leases","admin"],["Vehicle License Fees","slsx"],["Vehicle Repairs & Maint","slsx"],["Vendor Discounts COGS","cog-dis"],["Vendor Late Fees","oth-exp"],["Vendor Marketing Credits","cog-dis"],["VOIP Service Clients","cog-eq"],["Wages-Office","c2e"],["Warranty (Labor& Material Cost)","cog-eq"],["Water","occ"],["Worker's Comp","c4"],["Workers Comp","c4"],["Workers Comp Insurance","slsx"],["Workers Compensation","c4"],["Workers Compensation Ins","slsx"],["Working meals","slsx"]];
 
-const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","ADME","No","No"],["Access Control Technician","PROD","No","Yes"],["Account Executive","SALC","No","No"],["Account Manager","SALC","No","No"],["Accounts Payable","ADME","No","No"],["Accounts Receivable","ADME","No","No"],["Acoustical Consultant","PROD","No","Yes"],["Admin ","ADME","No","No"],["Administrative Assistant","ADME","No","No"],["Alarm Technician","PROD","No","Yes"],["AP","ADME","No","No"],["AP Specialist","ADME","No","No"],["Application Engineer","PROD","No","Yes"],["Apprentice Tech","PROD","No","Yes"],["Apprentice Technician","PROD","No","Yes"],["AR","ADME","No","No"],["Associate Project Manager","ADME","No","No"],["Install","PROD","No","Yes"],["Service","PROD","No","Yes"],["Audio Video Installer","PROD","No","Yes"],["Audio Visual Engineer","PROD","No","Yes"],["Audio Visual Programmer","PROD","No","Yes"],["Audio Visual Technician","PROD","No","Yes"],["Automation Programmer","PROD","No","Yes"],["AV Designer","ADME","No","No"],["AV Engineer","ADME","No","No"],["AV Install Tech","PROD","No","Yes"],["AV Installer","PROD","No","Yes"],["AV Programmer","PROD","No","Yes"],["AV Sales Consultant","SALC","No","No"],["AV System Designer","ADME","No","No"],["AV Tech","PROD","No","Yes"],["AV Technician","PROD","No","Yes"],["Bench","PROD","No","Yes"],["Bench Technician","PROD","No","Yes"],["Bid Coordinator","SALC","No","No"],["Billing Specialist","ADME","No","No"],["Bookkeeper","ADME","No","No"],["Branch Manager","ADME","No","No"],["Brand Manager","ADME","No","No"],["Business Development","SALC","No","No"],["Business Development Manager","SALC","No","No"],["Business Development Rep","SALC","No","No"],["Business Owner","OWN","Yes","No"],["Cable Guy","PROD","No","Yes"],["Cable Tech","PROD","No","Yes"],["Cable Technician","PROD","No","Yes"],["CAD Designer","ADME","No","No"],["CAD Technician","ADME","No","No"],["CCTV Technician","PROD","No","Yes"],["CEO","OWN","Yes","No"],["CFO","ADME","No","No"],["Client Advisor","ADME","No","No"],["Client Care Coordinator","ADME","No","No"],["Client Relationship Manager","ADME","No","No"],["Client Service Manager","ADME","No","No"],["Client Service Tech ","PROD","No","Yes"],["Client Service Technician","PROD","No","Yes"],["Client Success Manager","ADME","No","No"],["Co-Founder","OWN","Yes","No"],["Commercial AV Technician","PROD","No","Yes"],["Commissioning Engineer","PROD","No","Yes"],["Commissioning Specialist","PROD","No","Yes"],["Commissioning Technician","PROD","No","Yes"],["Concierge","ADME","No","No"],["Construction Coordinator","ADME","No","No"],["Content Manager","ADME","No","No"],["Contract Admin","ADME","No","No"],["Control System Programmer","PROD","No","Yes"],["Controller","ADME","No","No"],["Controls Engineer","PROD","No","Yes"],["COO","ADME","No","No"],["Custom Integrator","PROD","No","Yes"],["Customer Care Specialist","ADME","No","No"],["Customer Success Manager","ADME","No","No"],["Cybersecurity Technician","PROD","No","Yes"],["Deployment Manager","ADME","No","No"],["Deployment Technician","PROD","No","Yes"],["Design Engineer","ADME","No","No"],["Design Manager","ADME","No","No"],["Designer","ADME","No","No"],["Device Deployment Technician","PROD","No","Yes"],["Director of Operations","ADME","No","No"],["Director of Sales","SALC","No","No"],["Dispatch","ADME","No","No"],["Dispatcher","ADME","No","No"],["Door Entry Technician","PROD","No","Yes"],["Draftsperson","ADME","No","No"],["DSP Programmer","PROD","No","Yes"],["Electronics Technician","PROD","No","Yes"],["Engineer","ADME","No","No"],["Estimating","ADME","No","No"],["Estimator","ADME","No","No"],["Executive Assistant","ADME","No","No"],["Fabrication","PROD","No","Yes"],["Fabrication Technician","PROD","No","Yes"],["Field Engineer","PROD","No","Yes"],["Field Service Technician","PROD","No","Yes"],["Field Tech","PROD","No","Yes"],["Field Technician","PROD","No","Yes"],["Founder","OWN","Yes","No"],["General Manager","ADME","No","No"],["GM","ADME","No","No"],["Golf Simulator Technician","PROD","No","Yes"],["Help Desk","ADME","No","No"],["Help Desk Technician","PROD","No","Yes"],["Home Automation Engineer","PROD","No","Yes"],["Home Automation Programmer","PROD","No","Yes"],["Home Technology Advisor","ADME","No","No"],["Home Technology Professional","PROD","No","Yes"],["Home Theater Installer","PROD","No","Yes"],["Home Theater Specialist","PROD","No","Yes"],["HR Manager","ADME","No","No"],["Implementation Manager","ADME","No","No"],["Infrastructure Technician","PROD","No","Yes"],["Install Tech","PROD","No","Yes"],["Install Technician","PROD","No","Yes"],["Installation Manager","ADME","No","No"],["Installation Technician","PROD","No","Yes"],["Installer","PROD","No","Yes"],["Integration Developer","ADME","No","No"],["Integration Technician","PROD","No","Yes"],["Inventory Manager","ADME","No","No"],["Inventory Specialist","ADME","No","No"],["IT Specialist","ADME","No","No"],["IT Support Specialist","PROD","No","Yes"],["IT Technician","PROD","No","Yes"],["Junior Installer","PROD","No","Yes"],["Junior Tech","PROD","No","Yes"],["Lead Installer","PROD","No","Yes"],["Lead Tech","PROD","No","Yes"],["Lead Technician","PROD","No","Yes"],["Lighting Control Designer","ADME","No","No"],["Lighting Control Programmer","PROD","No","Yes"],["Lighting Control Technician","PROD","No","Yes"],["Lighting Systems Designer","ADME","No","No"],["Linked Install","PROD","No","Yes"],["Logistics Coordinator","ADME","No","No"],["Low Voltage Installer","PROD","No","Yes"],["Low Voltage Technician","PROD","No","Yes"],["Low-Volt Tech","PROD","No","Yes"],["Maintenance Technician","PROD","No","Yes"],["Managing Director","ADME","No","No"],["Managing Partner","ADME","No","No"],["Marketing Coordinator","ADME","No","No"],["Marketing Manager","ADME","No","No"],["Media Room Specialist","PROD","No","Yes"],["Motorized Shade Technician","PROD","No","Yes"],["Network Administrator","PROD","No","Yes"],["Network Engineer","PROD","No","Yes"],["Network Tech","PROD","No","Yes"],["Network Technician","PROD","No","Yes"],["NOC Engineer","PROD","No","Yes"],["NOC Technician","PROD","No","Yes"],["Office","ADME","No","No"],["Office Administrator","ADME","No","No"],["Office Manager","ADME","No","No"],["Operations Manager","ADME","No","No"],["Ops","ADME","No","No"],["Outdoor Systems Technician","PROD","No","Yes"],["Owner","OWN","Yes","No"],["Partner","ADME","No","No"],["Payroll Specialist","ADME","No","No"],["PM","ADME","No","No"],["PMO","ADME","No","No"],["Pre-Sales Engineer","ADME","No","No"],["Pre-Wire Guy","PROD","No","Yes"],["Pre-Wire Tech","PROD","No","Yes"],["Pre-Wire Technician","PROD","No","Yes"],["President","OWN","Yes","No"],["Prewire Tech","PROD","No","Yes"],["Prewire Technician","PROD","No","Yes"],["Procurement Specialist","ADME","No","No"],["Production Manager","ADME","No","No"],["Programmer","PROD","No","Yes"],["Project Administrator","ADME","No","No"],["Project Coordinator","ADME","No","No"],["Project Engineer","ADME","No","No"],["Project Manager","ADME","No","No"],["Project Scheduler","ADME","No","No"],["Proposal Manager","ADME","No","No"],["Purchaser","ADME","No","No"],["Purchasing","ADME","No","No"],["Purchasing Agent","ADME","No","No"],["Purchasing Manager","ADME","No","No"],["QA Bench Technician","PROD","No","Yes"],["QA Technician","PROD","No","Yes"],["Quality Control Technician","PROD","No","Yes"],["Rack Build Tech","PROD","No","Yes"],["Rack Builder","PROD","No","Yes"],["Rack Fabrication Technician","PROD","No","Yes"],["Rack Guy","PROD","No","Yes"],["Rack Tech","PROD","No","Yes"],["Receptionist","ADME","No","No"],["Recruiter","ADME","No","No"],["Regional Manager","ADME","No","No"],["Remote Support Technician","PROD","No","Yes"],["Repair Technician","PROD","No","Yes"],["Residential AV Technician","PROD","No","Yes"],["Retrofit Technician","PROD","No","Yes"],["Sales","SALC","No","No"],["Sales Consultant","SALC","No","No"],["Sales Director","SALC","No","No"],["Sales Engineer","SALC","No","No"],["Sales Guy","SALC","No","No"],["Sales Manager","SALC","No","No"],["Sales Rep","SALC","No","No"],["Salesman","SALC","No","No"],["Salesperson","SALC","No","No"],["Scope Writer","ADME","No","No"],["Security Tech","PROD","No","Yes"],["Security Technician","PROD","No","Yes"],["Senior Installer","PROD","No","Yes"],["Senior Project Manager","ADME","No","No"],["Senior Tech","PROD","No","Yes"],["Service Coordinator","ADME","No","No"],["Service Dispatcher","ADME","No","No"],["Service Manager","ADME","No","No"],["Service Tech","PROD","No","Yes"],["Service Technician","PROD","No","Yes"],["Shade Designer","ADME","No","No"],["Shade Programmer","PROD","No","Yes"],["Shade Tech","PROD","No","Yes"],["Shade Technician","PROD","No","Yes"],["Shop Technician","PROD","No","Yes"],["Showroom Consultant","ADME","No","No"],["Showroom Manager","ADME","No","No"],["Site Coordinator","ADME","No","No"],["Smart Home Consultant","ADME","No","No"],["Smart Home Designer","ADME","No","No"],["Smart Home Installer","PROD","No","Yes"],["Smart Home Integrator","PROD","No","Yes"],["Social Media Manager","ADME","No","No"],["Software Developer","ADME","No","No"],["Solutions Consultant","ADME","No","No"],["Solutions Engineer","ADME","No","No"],["Specification Writer","ADME","No","No"],["Staff Accountant","ADME","No","No"],["Staging Technician","PROD","No","Yes"],["Startup Technician","PROD","No","Yes"],["Structured Cabling Technician","PROD","No","Yes"],["Support","PROD","No","Yes"],["Support Specialist","PROD","No","Yes"],["Surveillance Technician","PROD","No","Yes"],["Systems Administrator","ADME","No","No"],["Systems Designer","ADME","No","No"],["Systems Engineer","ADME","No","No"],["Systems Integration Specialist","PROD","No","Yes"],["Systems Integrator","PROD","No","Yes"],["Systems Technician","PROD","No","Yes"],["Tech","PROD","No","Yes"],["Technical Support Specialist","PROD","No","Yes"],["Technician","PROD","No","Yes"],["Technology Consultant","ADME","No","No"],["Technology Designer","ADME","No","No"],["Technology Integrator","PROD","No","Yes"],["Termination Technician","PROD","No","Yes"],["Trim Guy","PROD","No","Yes"],["Trim Tech","PROD","No","Yes"],["Trim-Out Technician","PROD","No","Yes"],["UI Programmer","PROD","No","Yes"],["VP of Engineering","ADME","No","No"],["VP of Operations","ADME","No","No"],["VP of Sales","SALC","No","No"],["Warehouse","ADME","No","No"],["Warehouse Associate","ADME","No","No"],["Warehouse Manager","ADME","No","No"],["Warranty Technician","PROD","No","Yes"],["Wi-Fi Engineer","PROD","No","Yes"],["Wiring Technician","PROD","No","Yes"]];
+const DEFAULT_PAYROLL_LOOKUP = [["A/R Manager","c2e","No","No"],["Access Control Technician","c1","No","Yes"],["Account Executive","c3","No","No"],["Account Manager","c3","No","No"],["Accounts Payable","c2e","No","No"],["Accounts Receivable","c2e","No","No"],["Acoustical Consultant","c1","No","Yes"],["Admin ","c2e","No","No"],["Administrative Assistant","c2e","No","No"],["Alarm Technician","c1","No","Yes"],["AP","c2e","No","No"],["AP Specialist","c2e","No","No"],["Application Engineer","c1","No","Yes"],["Apprentice Tech","c1","No","Yes"],["Apprentice Technician","c1","No","Yes"],["AR","c2e","No","No"],["Associate Project Manager","c2e","No","No"],["Audio Video Installer","c1","No","Yes"],["Audio Visual Engineer","c1","No","Yes"],["Audio Visual Programmer","c1","No","Yes"],["Audio Visual Technician","c1","No","Yes"],["Automation Programmer","c1","No","Yes"],["AV Designer","c2e","No","No"],["AV Engineer","c2e","No","No"],["AV Install Tech","c1","No","Yes"],["AV Installer","c1","No","Yes"],["AV Programmer","c1","No","Yes"],["AV Sales Consultant","c3","No","No"],["AV System Designer","c2e","No","No"],["AV Tech","c1","No","Yes"],["AV Technician","c1","No","Yes"],["Bench","c1","No","Yes"],["Bench Technician","c1","No","Yes"],["Bid Coordinator","c3","No","No"],["Billing Specialist","c2e","No","No"],["Bookkeeper","c2e","No","No"],["Branch Manager","c2e","No","No"],["Brand Manager","c2e","No","No"],["Business Development","c3","No","No"],["Business Development Manager","c3","No","No"],["Business Development Rep","c3","No","No"],["Business Owner","c2o","Yes","No"],["Cable Guy","c1","No","Yes"],["Cable Tech","c1","No","Yes"],["Cable Technician","c1","No","Yes"],["CAD Designer","c2e","No","No"],["CAD Technician","c2e","No","No"],["CCTV Technician","c1","No","Yes"],["CEO","c2o","Yes","No"],["CFO","c2e","No","No"],["Client Advisor","c2e","No","No"],["Client Care Coordinator","c2e","No","No"],["Client Relationship Manager","c2e","No","No"],["Client Service Manager","c2e","No","No"],["Client Service Tech ","c1","No","Yes"],["Client Service Technician","c1","No","Yes"],["Client Success Manager","c2e","No","No"],["Co-Founder","c2o","Yes","No"],["Commercial AV Technician","c1","No","Yes"],["Commissioning Engineer","c1","No","Yes"],["Commissioning Specialist","c1","No","Yes"],["Commissioning Technician","c1","No","Yes"],["Concierge","c2e","No","No"],["Construction Coordinator","c2e","No","No"],["Content Manager","c2e","No","No"],["Contract Admin","c2e","No","No"],["Control System Programmer","c1","No","Yes"],["Controller","c2e","No","No"],["Controls Engineer","c1","No","Yes"],["COO","c2e","No","No"],["Custom Integrator","c1","No","Yes"],["Customer Care Specialist","c2e","No","No"],["Customer Success Manager","c2e","No","No"],["Cybersecurity Technician","c1","No","Yes"],["Deployment Manager","c2e","No","No"],["Deployment Technician","c1","No","Yes"],["Design Engineer","c2e","No","No"],["Design Manager","c2e","No","No"],["Designer","c2e","No","No"],["Device Deployment Technician","c1","No","Yes"],["Director of Operations","c2e","No","No"],["Director of Sales","c3","No","No"],["Dispatch","c2e","No","No"],["Dispatcher","c2e","No","No"],["Door Entry Technician","c1","No","Yes"],["Draftsperson","c2e","No","No"],["DSP Programmer","c1","No","Yes"],["Electronics Technician","c1","No","Yes"],["Engineer","c2e","No","No"],["Estimating","c2e","No","No"],["Estimator","c2e","No","No"],["Executive Assistant","c2e","No","No"],["Fabrication","c1","No","Yes"],["Fabrication Technician","c1","No","Yes"],["Field Engineer","c1","No","Yes"],["Field Service Technician","c1","No","Yes"],["Field Tech","c1","No","Yes"],["Field Technician","c1","No","Yes"],["Founder","c2o","Yes","No"],["General Manager","c2e","No","No"],["GM","c2e","No","No"],["Golf Simulator Technician","c1","No","Yes"],["Help Desk","c2e","No","No"],["Help Desk Technician","c1","No","Yes"],["Home Automation Engineer","c1","No","Yes"],["Home Automation Programmer","c1","No","Yes"],["Home Technology Advisor","c2e","No","No"],["Home Technology Professional","c1","No","Yes"],["Home Theater Installer","c1","No","Yes"],["Home Theater Specialist","c1","No","Yes"],["HR Manager","c2e","No","No"],["Implementation Manager","c2e","No","No"],["Infrastructure Technician","c1","No","Yes"],["Install","c1","No","Yes"],["Install Tech","c1","No","Yes"],["Install Technician","c1","No","Yes"],["Installation Manager","c2e","No","No"],["Installation Technician","c1","No","Yes"],["Installer","c1","No","Yes"],["Integration Developer","c2e","No","No"],["Integration Technician","c1","No","Yes"],["Inventory Manager","c2e","No","No"],["Inventory Specialist","c2e","No","No"],["IT Specialist","c2e","No","No"],["IT Support Specialist","c1","No","Yes"],["IT Technician","c1","No","Yes"],["Junior Installer","c1","No","Yes"],["Junior Tech","c1","No","Yes"],["Lead Installer","c1","No","Yes"],["Lead Tech","c1","No","Yes"],["Lead Technician","c1","No","Yes"],["Lighting Control Designer","c2e","No","No"],["Lighting Control Programmer","c1","No","Yes"],["Lighting Control Technician","c1","No","Yes"],["Lighting Systems Designer","c2e","No","No"],["Linked Install","c1","No","Yes"],["Logistics Coordinator","c2e","No","No"],["Low Voltage Installer","c1","No","Yes"],["Low Voltage Technician","c1","No","Yes"],["Low-Volt Tech","c1","No","Yes"],["Maintenance Technician","c1","No","Yes"],["Managing Director","c2e","No","No"],["Managing Partner","c2e","No","No"],["Marketing Coordinator","c2e","No","No"],["Marketing Manager","c2e","No","No"],["Media Room Specialist","c1","No","Yes"],["Motorized Shade Technician","c1","No","Yes"],["Network Administrator","c1","No","Yes"],["Network Engineer","c1","No","Yes"],["Network Tech","c1","No","Yes"],["Network Technician","c1","No","Yes"],["NOC Engineer","c1","No","Yes"],["NOC Technician","c1","No","Yes"],["Office","c2e","No","No"],["Office Administrator","c2e","No","No"],["Office Manager","c2e","No","No"],["Operations Manager","c2e","No","No"],["Ops","c2e","No","No"],["Outdoor Systems Technician","c1","No","Yes"],["Owner","c2o","Yes","No"],["Partner","c2e","No","No"],["Payroll Specialist","c2e","No","No"],["PM","c2e","No","No"],["PMO","c2e","No","No"],["Pre-Sales Engineer","c2e","No","No"],["Pre-Wire Guy","c1","No","Yes"],["Pre-Wire Tech","c1","No","Yes"],["Pre-Wire Technician","c1","No","Yes"],["President","c2o","Yes","No"],["Prewire Tech","c1","No","Yes"],["Prewire Technician","c1","No","Yes"],["Procurement Specialist","c2e","No","No"],["Production Manager","c2e","No","No"],["Programmer","c1","No","Yes"],["Project Administrator","c2e","No","No"],["Project Coordinator","c2e","No","No"],["Project Engineer","c2e","No","No"],["Project Manager","c2e","No","No"],["Project Scheduler","c2e","No","No"],["Proposal Manager","c2e","No","No"],["Purchaser","c2e","No","No"],["Purchasing","c2e","No","No"],["Purchasing Agent","c2e","No","No"],["Purchasing Manager","c2e","No","No"],["QA Bench Technician","c1","No","Yes"],["QA Technician","c1","No","Yes"],["Quality Control Technician","c1","No","Yes"],["Rack Build Tech","c1","No","Yes"],["Rack Builder","c1","No","Yes"],["Rack Fabrication Technician","c1","No","Yes"],["Rack Guy","c1","No","Yes"],["Rack Tech","c1","No","Yes"],["Receptionist","c2e","No","No"],["Recruiter","c2e","No","No"],["Regional Manager","c2e","No","No"],["Remote Support Technician","c1","No","Yes"],["Repair Technician","c1","No","Yes"],["Residential AV Technician","c1","No","Yes"],["Retrofit Technician","c1","No","Yes"],["Sales","c3","No","No"],["Sales Consultant","c3","No","No"],["Sales Director","c3","No","No"],["Sales Engineer","c3","No","No"],["Sales Guy","c3","No","No"],["Sales Manager","c3","No","No"],["Sales Rep","c3","No","No"],["Salesman","c3","No","No"],["Salesperson","c3","No","No"],["Scope Writer","c2e","No","No"],["Security Tech","c1","No","Yes"],["Security Technician","c1","No","Yes"],["Senior Installer","c1","No","Yes"],["Senior Project Manager","c2e","No","No"],["Senior Tech","c1","No","Yes"],["Service","c1","No","Yes"],["Service Coordinator","c2e","No","No"],["Service Dispatcher","c2e","No","No"],["Service Manager","c2e","No","No"],["Service Tech","c1","No","Yes"],["Service Technician","c1","No","Yes"],["Shade Designer","c2e","No","No"],["Shade Programmer","c1","No","Yes"],["Shade Tech","c1","No","Yes"],["Shade Technician","c1","No","Yes"],["Shop Technician","c1","No","Yes"],["Showroom Consultant","c2e","No","No"],["Showroom Manager","c2e","No","No"],["Site Coordinator","c2e","No","No"],["Smart Home Consultant","c2e","No","No"],["Smart Home Designer","c2e","No","No"],["Smart Home Installer","c1","No","Yes"],["Smart Home Integrator","c1","No","Yes"],["Social Media Manager","c2e","No","No"],["Software Developer","c2e","No","No"],["Solutions Consultant","c2e","No","No"],["Solutions Engineer","c2e","No","No"],["Specification Writer","c2e","No","No"],["Staff Accountant","c2e","No","No"],["Staging Technician","c1","No","Yes"],["Startup Technician","c1","No","Yes"],["Structured Cabling Technician","c1","No","Yes"],["Support","c1","No","Yes"],["Support Specialist","c1","No","Yes"],["Surveillance Technician","c1","No","Yes"],["Systems Administrator","c2e","No","No"],["Systems Designer","c2e","No","No"],["Systems Engineer","c2e","No","No"],["Systems Integration Specialist","c1","No","Yes"],["Systems Integrator","c1","No","Yes"],["Systems Technician","c1","No","Yes"],["Tech","c1","No","Yes"],["Technical Support Specialist","c1","No","Yes"],["Technician","c1","No","Yes"],["Technology Consultant","c2e","No","No"],["Technology Designer","c2e","No","No"],["Technology Integrator","c1","No","Yes"],["Termination Technician","c1","No","Yes"],["Trim Guy","c1","No","Yes"],["Trim Tech","c1","No","Yes"],["Trim-Out Technician","c1","No","Yes"],["UI Programmer","c1","No","Yes"],["VP of Engineering","c2e","No","No"],["VP of Operations","c2e","No","No"],["VP of Sales","c3","No","No"],["Warehouse","c2e","No","No"],["Warehouse Associate","c2e","No","No"],["Warehouse Manager","c2e","No","No"],["Warranty Technician","c1","No","Yes"],["Wi-Fi Engineer","c1","No","Yes"],["Wiring Technician","c1","No","Yes"]];
 
 const BENCHMARK_RANGES = [{metric:"Sales Productivity (Rev/FTE)",notOK:"<$175K",ok:"$175K–$200K",good:">$200K-$250K",veryGood:">$250K",note:"Annual revenue per FTE",notOKThresh:175000.0,okThresh:175000.0,goodThresh:200000.0,veryGoodThresh:250000.0,higher:true},{metric:"Direct Labor Productivity (Labor Rev/BEE)",notOK:"<$10K/mo",ok:"≥$10K/mo-$13K/mo",good:">$13K/mo-$15K/mo",veryGood:">$15K/mo",note:"Monthly labor revenue per BEE",notOKThresh:10000.0,okThresh:10000.0,goodThresh:13000.0,veryGoodThresh:15000.0,higher:true},{metric:"Direct Labor Utilization",notOK:"<50%",ok:"≥50%",good:"≥55%",veryGood:"≥60%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.55,veryGoodThresh:0.6,higher:true},{metric:"Equipment GM%",notOK:"<30%",ok:"≥30%",good:"≥38%",veryGood:"≥43%",note:"35-40% benchmark",notOKThresh:0.3,okThresh:0.3,goodThresh:0.38,veryGoodThresh:0.43,higher:true},{metric:"Parts GM%",notOK:"<50%",ok:"≥50%",good:"≥60%",veryGood:"≥70%",note:"55-65% benchmark",notOKThresh:0.5,okThresh:0.5,goodThresh:0.6,veryGoodThresh:0.7,higher:true},{metric:"Lighting Fixtures GM%",notOK:"<20%",ok:"≥20%",good:"≥30%",veryGood:"≥35%",note:"25-30% benchmark",notOKThresh:0.2,okThresh:0.2,goodThresh:0.3,veryGoodThresh:0.35,higher:true},{metric:"Managed Services GM%",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:"No fixed benchmark",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"Overall Gross Margin",notOK:"<40%",ok:"≥40%",good:"≥50%",veryGood:"≥60%",note:">=60% target",notOKThresh:0.4,okThresh:0.4,goodThresh:0.5,veryGoodThresh:0.6,higher:true},{metric:"COMP % of Revenue",notOK:">37.5%",ok:"≤37.5%",good:"≤34%",veryGood:"≤30%",note:"<=30% target",notOKThresh:0.375,okThresh:0.375,goodThresh:0.34,veryGoodThresh:0.3,higher:false},{metric:"GP per Payroll Dollar",notOK:"<1.5",ok:"≥1.5",good:"≥1.7",veryGood:"≥1.9",note:">1.9x target",notOKThresh:1.5,okThresh:1.5,goodThresh:1.7,veryGoodThresh:1.9,higher:true},{metric:"Admin % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Occupancy % of Revenue",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Sales Expense % of Rev",notOK:">8%",ok:"≤8%",good:"≤6%",veryGood:"≤4%",note:"4-8% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.06,veryGoodThresh:0.04,higher:false},{metric:"Total MOC % of Revenue",notOK:">17.5%",ok:"≤17.5%",good:"≤15%",veryGood:"≤12%",note:"<16% benchmark",notOKThresh:0.175,okThresh:0.175,goodThresh:0.15,veryGoodThresh:0.12,higher:false},{metric:"Net Operating Profit %",notOK:"<8%",ok:"≥8%",good:"≥15%",veryGood:"≥25%",note:"10-20% benchmark",notOKThresh:0.08,okThresh:0.08,goodThresh:0.15,veryGoodThresh:0.25,higher:true}];
 
@@ -1137,7 +1139,7 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════════════════
 function initSetup() {
   const defaults = ['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'];
-  const codes = ['REVEQ/CGSEQ','REVPT/CGSPT','REVLF/CGSLF','REVMS/CGSMS','REVLB/PROD'];
+  const codes = ['rev-eq/cog-eq','rev-pa/cog-pa','rev-lf/cog-lf','rev-ms/cog-ms','rev-lab/c1'];
   const html = defaults.map((d,i) => `
     <div class="form-group">
       <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
@@ -1466,7 +1468,7 @@ function processPLFile(rows, type, filename) {
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
       if (!code) { unmatched.push({raw, clean, amount}); }
-      else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
+      else if (code !== 'skip') { mapped.push({raw, clean, code, amount}); }
     });
   } else {
     // QuickBooks summary CSV/Excel: col 0 = name, col 1+ = amount
@@ -1488,7 +1490,7 @@ function processPLFile(rows, type, filename) {
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
       if (!code) { unmatched.push({raw, clean, amount}); }
-      else if (code !== 'SKIP') { mapped.push({raw, clean, code, amount}); }
+      else if (code !== 'skip') { mapped.push({raw, clean, code, amount}); }
     });
   }
 
@@ -1516,6 +1518,107 @@ function processPLFile(rows, type, filename) {
   document.getElementById('processPLBtn').disabled = !(state.priorUploaded && state.currentUploaded);
 }
 
+// ═══════════════════════════════════════════════════════
+// LOOKUP PERSISTENCE (localStorage)
+// ═══════════════════════════════════════════════════════
+const LS_PL      = 'fa_plLookup';
+const LS_PAY     = 'fa_payrollLookup';
+const LS_BM      = 'fa_benchmarkRanges';
+const LS_C4      = 'fa_comp4Rate';
+
+function saveLookupsToStorage() {
+  try {
+    localStorage.setItem(LS_PL,  JSON.stringify(state.plLookup));
+    localStorage.setItem(LS_PAY, JSON.stringify(state.payrollLookup));
+    localStorage.setItem(LS_BM,  JSON.stringify(state.benchmarkRanges));
+    localStorage.setItem(LS_C4,  state.comp4Rate);
+  } catch(e) { /* storage unavailable */ }
+}
+
+function loadLookupsFromStorage() {
+  try {
+    const pl  = localStorage.getItem(LS_PL);
+    const pay = localStorage.getItem(LS_PAY);
+    const bm  = localStorage.getItem(LS_BM);
+    const c4  = localStorage.getItem(LS_C4);
+    if (pl)  { const d = JSON.parse(pl);  if (Array.isArray(d) && d.length)  state.plLookup         = d; }
+    if (pay) { const d = JSON.parse(pay); if (Array.isArray(d) && d.length)  state.payrollLookup    = d; }
+    if (bm)  { const d = JSON.parse(bm);  if (Array.isArray(d) && d.length)  state.benchmarkRanges  = d; }
+    if (c4)  { const v = parseFloat(c4);  if (!isNaN(v))                     state.comp4Rate        = v; }
+  } catch(e) { /* ignore parse errors — use defaults */ }
+}
+
+// ── Keyword-based code suggestion for unmatched P&L accounts ──
+function suggestPLCode(name) {
+  const n = name.toLowerCase();
+  if (/\bnet.?(income|profit|loss)\b/.test(n)) return 'net-in';
+  if (/\b(monitor|rmr)\b/.test(n) && /\b(income|revenue|sales)\b/.test(n)) return 'mon-in';
+  if (/\b(monitor|rmr)\b/.test(n) && /\b(expense|cost)\b/.test(n)) return 'mon-exp';
+  if (/\b(monitor|rmr)\b/.test(n)) return 'mon-in';
+  if (/\b(revenue|income|sales).*(labor|labour|service|install)\b/.test(n) || /\b(labor|service|install).*(revenue|income|sales)\b/.test(n)) return 'rev-lab';
+  if (/\b(revenue|income|sales|receipts)\b/.test(n) && /\b(managed.serv|rmr|recurring|subscription)\b/.test(n)) return 'rev-ms';
+  if (/\b(revenue|income|sales|receipts)\b/.test(n)) return 'rev-eq';
+  if (/\b(vendor.disc|vendor.rebate|terms.discount|cog.*disc|disc.*cog)\b/.test(n)) return 'cog-dis';
+  if (/\b(inventory.adj|inventory.obsol|inventory.shrink|shrinkage)\b/.test(n)) return 'cog-adj';
+  if (/\bcog[s]?\b/.test(n) && /\b(managed.serv|monitor|rmr)\b/.test(n)) return 'cog-ms';
+  if (/\b(cost|cogs|cos)\b/.test(n)) return 'cog-eq';
+  if (/\b(subcontract|outside.serv|contract.labor|temp.labor|temporary.labor)\b/.test(n)) return 'csub';
+  if (/\b(owner|officer|principal|partner|ceo|president)\b/.test(n) && /\b(salary|wage|pay|comp)\b/.test(n)) return 'c2o';
+  if (/\b(commission|sales.wage|sales.salary)\b/.test(n)) return 'c3';
+  if (/\b(payroll.tax|fica|401k|hsa|benefit|health.ins|workers.comp|pto|vacation|sick.pay|holiday.pay|bonus)\b/.test(n)) return 'c4';
+  if (/\b(wage|salary|direct.labor|field.labor|payroll)\b/.test(n)) return 'c1';
+  if (/\b(rent|lease|cam|common.area|janitorial|pest|trash|garbage)\b/.test(n)) return 'occ';
+  if (/\b(electric|utilities|water|occ.+internet|internet.+serv)\b/.test(n)) return 'occ';
+  if (/\b(depreci|amortiz)\b/.test(n)) return 'dep';
+  if (/\b(interest|finance.charge|loan.interest)\b/.test(n) && !/\b(income|earned)\b/.test(n)) return 'int';
+  if (/\b(interest.income|interest.earned)\b/.test(n)) return 'oth-in';
+  if (/\b(income.tax|state.tax|federal.tax|sales.tax|property.tax)\b/.test(n) && !/payroll/.test(n)) return 'tax';
+  if (/\btaxes?\b/.test(n) && !/payroll/.test(n) && !/\b(credit|license)\b/.test(n)) return 'tax';
+  if (/\b(marketing|advertising|trade.show|brand|promo)\b/.test(n)) return 'slsx';
+  if (/\b(travel|hotel|lodging|airfare|meal|entertain|mileage|fuel|vehicle|auto|car.and.truck)\b/.test(n)) return 'slsx';
+  if (/\b(legal|professional.fee|accounting|bookkeep)\b/.test(n)) return 'admin';
+  if (/\b(software|subscription|dues|licens|office.supply|postage|cell.phone|telecom)\b/.test(n)) return 'admin';
+  if (/\b(insurance)\b/.test(n)) return 'admin';
+  if (/\b(other.income|gain.on.sale|forgiveness|ppp|credit)\b/.test(n)) return 'oth-in';
+  if (/\b(other.expense|bad.debt|uncategor)\b/.test(n)) return 'oth-exp';
+  if (/\bmisc(ellaneous)?\b/.test(n)) return 'misc';
+  return null;
+}
+
+// ── Keyword-based COMP suggestion for unmatched payroll titles ──
+function suggestPayrollComp(title) {
+  const t = title.toLowerCase();
+  if (/\b(owner|president|ceo|coo|principal|partner|founder|managing.member)\b/.test(t)) return 'c2o';
+  if (/\b(sales|account.exec|account.manager|business.dev|bdr|sdr)\b/.test(t)) return 'c3';
+  if (/\b(admin|office|manager|coordinator|hr|human.res|bookkeep|accountant|cfo|controller|dispatcher|project.mana|scheduler|receptionist|customer.service|estimator|purchasing)\b/.test(t)) return 'c2e';
+  return 'c1';
+}
+
+// ── P&L balance computation ──
+function computePLBalance(totals) {
+  const rev  = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c)=>s+(totals[c]||0),0);
+  const cogs = ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'].reduce((s,c)=>s+(totals[c]||0),0);
+  const comp = ['c1','c2e','c2o','c3','c4','csub'].reduce((s,c)=>s+(totals[c]||0),0);
+  const opex = ['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'].reduce((s,c)=>s+(totals[c]||0),0);
+  const otherinc = (totals['mon-in']||0) + (totals['oth-in']||0);
+  const computed = rev - cogs - comp - opex + otherinc;
+  const reported = totals['net-in'] != null ? totals['net-in'] : null;
+  return { computed, reported };
+}
+
+// ── Double-count detection: "Total X" present alongside "X" ──
+function detectDoubleCounts(mapped) {
+  const nameSet = new Set(mapped.map(m => m.clean.toLowerCase()));
+  const warnings = [];
+  mapped.forEach(m => {
+    if (/^total\s+/i.test(m.clean)) {
+      const stripped = m.clean.replace(/^total\s+/i, '').toLowerCase();
+      if (nameSet.has(stripped)) warnings.push(m.clean);
+    }
+  });
+  return [...new Set(warnings)];
+}
+
 function processPL() {
   // Collect all unique unmatched across both years
   const allUnmatched = {};
@@ -1534,7 +1637,7 @@ function processPL() {
   Object.values(allUnmatched).forEach(u => {
     if (Math.abs(u.prior) <= THRESHOLD && Math.abs(u.current) <= THRESHOLD) {
       // Add to lookup as SKIP and remove from unmatched pool
-      state.plLookup.push([u.clean, 'SKIP']);
+      state.plLookup.push([u.clean, 'skip']);
       delete allUnmatched[u.clean];
       autoSkipped++;
     }
@@ -1547,7 +1650,7 @@ function processPL() {
       const stillUnmatched = [];
       state[key].unmatched.forEach(u => {
         const code = lookupMap[u.clean];
-        if (code === 'SKIP') { /* silently excluded */ }
+        if (code === 'skip') { /* silently excluded */ }
         else if (code) { state[key].mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount}); }
         else { stillUnmatched.push(u); }
       });
@@ -1571,9 +1674,11 @@ function processPL() {
 
   setPLStep(2);
 
-  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
+  const codes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
   const tbody = document.getElementById('unmatchedTableBody');
-  tbody.innerHTML = unmatchedList.map((u,i) => `
+  tbody.innerHTML = unmatchedList.map((u,i) => {
+    const suggested = suggestPLCode(u.clean);
+    return `
     <tr>
       <td class="bold">${u.clean}</td>
       <td class="mono text-right">${fmtDollar(u.prior)}</td>
@@ -1581,13 +1686,15 @@ function processPL() {
       <td>
         <select id="unmatch_${i}" style="width:100px;padding:4px 6px;font-size:12px">
           <option value="">— Select —</option>
-          ${codes.map(c=>`<option value="${c}">${c}</option>`).join('')}
+          ${codes.map(c=>`<option value="${c}" ${c===suggested?'selected':''}>${c}</option>`).join('')}
         </select>
+        ${suggested ? `<span style="font-size:10px;color:var(--text3);display:block;margin-top:2px">★ suggested</span>` : ''}
       </td>
       <td>
         <button class="btn btn-sm btn-secondary" onclick="savePLToLookup(${i},'${escHtml(u.clean)}')">Save</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function savePLToLookup(idx, name) {
@@ -1597,10 +1704,11 @@ function savePLToLookup(idx, name) {
   const btn = document.querySelector(`#unmatchedTableBody tr:nth-child(${idx+1}) td:last-child button`);
   if(btn) { btn.textContent = '✓ Saved'; btn.disabled = true; btn.className = 'btn btn-sm btn-ghost'; }
   setDirty();
+  saveLookupsToStorage();
 }
 
 function skipAllUnmatched() {
-  document.querySelectorAll('[id^="unmatch_"]').forEach(sel => { sel.value = 'SKIP'; });
+  document.querySelectorAll('[id^="unmatch_"]').forEach(sel => { sel.value = 'skip'; });
 }
 
 function confirmPLMapping() {
@@ -1631,7 +1739,7 @@ function confirmPLMapping() {
     if (!plData) return;
     plData.unmatched.forEach(u => {
       const code = newMap[u.clean];
-      if (code && code !== 'SKIP') {
+      if (code && code !== 'skip') {
         plData.mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount});
       }
     });
@@ -1640,6 +1748,7 @@ function confirmPLMapping() {
   remapPL(state.priorPL);
   remapPL(state.currentPL);
 
+  saveLookupsToStorage();
   document.getElementById('plBadge').classList.add('hidden');
   document.getElementById('plUnmatchedSection').classList.add('hidden');
   showPLReview();
@@ -1652,22 +1761,22 @@ function showPLReview() {
   setPLStep(3);
 
   // Build summary
-  const allCodes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','SLSX','TAX','NETIN'];
+  const allCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','slsx','tax','net-in'];
   const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
   const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
 
   const labelMap = {
-    REVEQ:`Revenue — ${state.setup.categories[0]}`, REVPT:`Revenue — ${state.setup.categories[1]}`,
-    REVLF:`Revenue — ${state.setup.categories[2]}`, REVMS:`Revenue — Managed Services`,
-    REVLB:`Revenue — ${state.setup.categories[4]}`,
-    CGSEQ:`COGS — ${state.setup.categories[0]}`, CGSPT:`COGS — ${state.setup.categories[1]}`,
-    CGSLF:`COGS — ${state.setup.categories[2]}`, CGSMS:`COGS — Managed Services`,
-    CGSIA:'COGS — Inventory Adj', CGSVD:'COGS — Vendor Disc/Rebates',
-    SUBC:'Subcontractors', PROD:'PROD — Direct Labor', ADME:'ADME — Admin Wages',
-    OWN:'OWN — Admin (Owner)', SALC:'SALC — Sales & Commissions', PAYX:'PAYX — Benefits & Taxes',
-    OCCP:'Occupancy', ADMN:'Admin Expense', SLSX:'Sales Expense', INTR:'Interest', DEPR:'Depreciation',
-    MISC:'Miscellaneous', MONI:'Monitoring Income', MONE:'Monitoring Expense',
-    OTHI:'Other Income', OTHE:'Other Expense', TAX:'Taxes', NETIN:'Net Income'
+    'rev-eq':`Revenue — ${state.setup.categories[0]}`, 'rev-pa':`Revenue — ${state.setup.categories[1]}`,
+    'rev-lf':`Revenue — ${state.setup.categories[2]}`, 'rev-ms':`Revenue — Managed Services`,
+    'rev-lab':`Revenue — ${state.setup.categories[4]}`,
+    'cog-eq':`COGS — ${state.setup.categories[0]}`, 'cog-pa':`COGS — ${state.setup.categories[1]}`,
+    'cog-lf':`COGS — ${state.setup.categories[2]}`, 'cog-ms':`COGS — Managed Services`,
+    'cog-adj':'COGS — Inventory Adj', 'cog-dis':'COGS — Vendor Disc/Rebates',
+    'csub':'Subcontractors', 'c1':'C1 — Direct Labor', 'c2e':'C2E — Admin Wages (Employees)',
+    'c2o':'C2O — Admin Wages (Owners)', 'c3':'C3 — Sales & Commissions', 'c4':'C4 — Benefits & Taxes',
+    'occ':'Occupancy', 'admin':'Admin Expense', 'slsx':'Sales Expense', 'int':'Interest', 'dep':'Depreciation',
+    'misc':'Miscellaneous', 'mon-in':'Monitoring Income', 'mon-exp':'Monitoring Expense',
+    'oth-in':'Other Income', 'oth-exp':'Other Expense', 'tax':'Taxes', 'net-in':'Net Income'
   };
 
   const tbody = document.getElementById('plSummaryBody');
@@ -1684,6 +1793,45 @@ function showPLReview() {
     </tr>`;
   });
   tbody.innerHTML = rows;
+
+  // ── Balance check ──
+  const balanceEl = document.getElementById('plBalanceAlert');
+  const balanceParts = [];
+  [{label:'Prior Year', totals: priorTotals}, {label:'Current Year', totals: currentTotals}].forEach(({label, totals}) => {
+    const {computed, reported} = computePLBalance(totals);
+    if (reported === null) return; // no net-in line — skip
+    const diff = Math.abs(computed - reported);
+    const ok = diff <= 500;
+    const icon = ok ? '✅' : '⚠️';
+    const color = ok ? 'var(--green)' : 'var(--orange)';
+    const msg = ok
+      ? `${label}: computed net income <strong>${fmtDollar(computed)}</strong> matches reported <strong>${fmtDollar(reported)}</strong>`
+      : `${label}: computed net income <strong>${fmtDollar(computed)}</strong> vs reported <strong>${fmtDollar(reported)}</strong> — difference of <strong>${fmtDollar(diff)}</strong> may indicate a double-counted subtotal or unmapped account`;
+    balanceParts.push(`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span>${icon}</span><span style="color:${color};font-size:13px">${msg}</span></div>`);
+  });
+  if (balanceParts.length) {
+    balanceEl.className = '';
+    balanceEl.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px';
+    balanceEl.innerHTML = `<div style="font-weight:600;font-size:13px;margin-bottom:6px">Balance Check</div>${balanceParts.join('')}`;
+  } else {
+    balanceEl.className = 'hidden';
+  }
+
+  // ── Double-count detection ──
+  const dcEl = document.getElementById('plDoubleCountAlert');
+  const allMapped = [...(state.priorPL?.mapped||[]), ...(state.currentPL?.mapped||[])];
+  const dcWarnings = detectDoubleCounts(allMapped);
+  if (dcWarnings.length) {
+    dcEl.className = '';
+    dcEl.style.cssText = 'background:#fff7ed;border:1px solid var(--orange);border-radius:8px;padding:12px 16px;margin-bottom:12px';
+    dcEl.innerHTML = `<div style="font-weight:600;font-size:13px;color:var(--orange);margin-bottom:6px">⚠️ Possible Double-Count (${dcWarnings.length})</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">These "Total" rows appear alongside their component accounts — both may be included in the same code, doubling the amount:</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text2)">${dcWarnings.map(w=>`<li>${escHtml(w)}</li>`).join('')}</ul>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Review the lookup table and set one of the pair to <strong>skip</strong> if needed.</div>`;
+  } else {
+    dcEl.className = 'hidden';
+  }
 
   document.getElementById('chipPL').className = 'chip done';
   document.getElementById('chipPL').textContent = 'P&L ✓';
@@ -1856,7 +2004,7 @@ function renderPayrollTable() {
       <td><input type="text" value="${escHtml(emp.title)}" onchange="updatePayrollRow(${i},'title',this.value)" style="width:120px;padding:3px 6px;font-size:12px"></td>
       <td>
         <select onchange="updatePayrollRow(${i},'comp',this.value)" style="padding:3px 6px;font-size:12px">
-          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}" ${emp.comp===c?'selected':''}>${c}</option>`).join('')}
+          ${['c1','c2e','c2o','c3'].map(c=>`<option value="${c}" ${emp.comp===c?'selected':''}>${c}</option>`).join('')}
         </select>
       </td>
       <td><input type="checkbox" ${emp.isOwner?'checked':''} onchange="updatePayrollRow(${i},'isOwner',this.checked)"></td>
@@ -1875,15 +2023,18 @@ function renderPayrollUnmatched(unmatched) {
   document.getElementById('payrollUnmatchedCount').textContent = unmatched.length;
 
   const tbody = document.getElementById('payrollUnmatchedBody');
-  tbody.innerHTML = unmatched.map((emp,i) => `
+  tbody.innerHTML = unmatched.map((emp,i) => {
+    const suggested = suggestPayrollComp(emp.title);
+    return `
     <tr>
       <td class="bold">${escHtml(emp.name)}</td>
       <td>${escHtml(emp.title)}</td>
       <td class="mono text-right">${fmtDollar(emp.wages)}</td>
       <td>
         <select id="pu_comp_${i}" style="padding:4px 6px;font-size:12px">
-          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}">${c}</option>`).join('')}
+          ${['c1','c2e','c2o','c3'].map(c=>`<option value="${c}" ${c===suggested?'selected':''}>${c}</option>`).join('')}
         </select>
+        <span style="font-size:10px;color:var(--text3);display:block;margin-top:2px">★ suggested</span>
       </td>
       <td><input type="checkbox" id="pu_owner_${i}"></td>
       <td><input type="checkbox" id="pu_bill_${i}" checked></td>
@@ -1892,7 +2043,8 @@ function renderPayrollUnmatched(unmatched) {
           Add & Save
         </button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function resolvePayrollUnmatched(i, name, title, wages, hours) {
@@ -1903,12 +2055,13 @@ function resolvePayrollUnmatched(i, name, title, wages, hours) {
   state.payrollLookup.push([title, comp, isOwner?'Yes':'No', isBillable?'Yes':'No']);
   renderPayrollTable();
   setDirty();
+  saveLookupsToStorage();
   const row = document.querySelector(`#payrollUnmatchedBody tr:nth-child(${i+1})`);
   if (row) { row.style.opacity = '0.4'; row.querySelector('button').textContent = '✓ Added'; row.querySelector('button').disabled = true; }
 }
 
 function addPayrollRow() {
-  const row = {name:'', title:'', comp:'PROD', isOwner:false, isBillable:true, wages:0, hoursPerWeek:40, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1};
+  const row = {name:'', title:'', comp:'c1', isOwner:false, isBillable:true, wages:0, hoursPerWeek:40, billingRate:parseFloat(document.getElementById('billingRate').value)||130, billablePct:1};
   state.payrollData.push(row);
   state.manualPayrollRows.push(row);
   setDirty();
@@ -1926,25 +2079,25 @@ function runCrossCheck() {
   const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
   const comp4Rate = state.comp4Rate/100;
 
-  const censusTotals = {PROD:0, ADME:0, OWN:0, SALC:0, PAYX:0};
+  const censusTotals = {'c1':0, 'c2e':0, 'c2o':0, 'c3':0, 'c4':0};
   state.payrollData.forEach(emp => {
     if (censusTotals[emp.comp] !== undefined) censusTotals[emp.comp] += emp.wages;
   });
-  const totalWages = censusTotals.PROD + censusTotals.ADME + censusTotals.OWN + censusTotals.SALC;
-  censusTotals.PAYX = totalWages * comp4Rate;
+  const totalWages = censusTotals['c1'] + censusTotals['c2e'] + censusTotals['c2o'] + censusTotals['c3'];
+  censusTotals['c4'] = totalWages * comp4Rate;
 
   const grid = document.getElementById('crossCheckGrid');
   const buckets = [
-    {key:'PROD', label:'PROD'},
-    {key:'ADME', label:'ADME'},
-    {key:'OWN',  label:'OWN'},
-    {key:'SALC', label:'SALC'},
-    {key:'PAYX', label:'PAYX'}
+    {key:'c1',  label:'C1 — Direct Labor'},
+    {key:'c2e', label:'C2E — Admin (Employees)'},
+    {key:'c2o', label:'C2O — Admin (Owners)'},
+    {key:'c3',  label:'C3 — Sales & Commissions'},
+    {key:'c4',  label:'C4 — Benefits & Taxes'}
   ];
 
   grid.innerHTML = buckets.map(({key,label}) => {
     const census = censusTotals[key] || 0;
-    // P&L now uses the same PROD/ADME/OWN/SALC/PAYX codes as the census — direct comparison
+    // P&L uses the same codes as the census — direct comparison
     const pl = priorTotals[key] || 0;
     const hasPL = state.priorPL !== null;
     const pct = pl > 0 ? Math.abs(census-pl)/pl : 0;
@@ -1986,6 +2139,7 @@ function autoSaveUnmatched() {
       }
     }
   });
+  saveLookupsToStorage();
 }
 
 function reprocessFromRaw(silent = false) {
@@ -2034,40 +2188,40 @@ function clearDirty() {
 // COMPENSATION RECONCILIATION
 // ═══════════════════════════════════════════════════════
 
-// Build census comp totals broken down by PROD/ADME/OWN/SALC + PAYX
+// Build census comp totals broken down by c1/c2e/c2o/c3 + c4
 function buildCensusCompTotals() {
   const comp4Rate = state.comp4Rate/100;
-  const raw = {PROD:0, ADME:0, OWN:0, SALC:0};
+  const raw = {'c1':0, 'c2e':0, 'c2o':0, 'c3':0};
   state.payrollData.forEach(emp => {
     if (raw[emp.comp] !== undefined) raw[emp.comp] += emp.wages;
   });
-  const wagesTotal = raw.PROD + raw.ADME + raw.OWN + raw.SALC;
+  const wagesTotal = raw['c1'] + raw['c2e'] + raw['c2o'] + raw['c3'];
   const payx = wagesTotal * comp4Rate;
-  return { PROD: raw.PROD, ADME: raw.ADME, OWN: raw.OWN, SALC: raw.SALC, PAYX: payx,
-           SUBC: 0,  // census has no subcontractor line; SUBC comes from P&L only
+  return { 'c1': raw['c1'], 'c2e': raw['c2e'], 'c2o': raw['c2o'], 'c3': raw['c3'], 'c4': payx,
+           'csub': 0,  // census has no subcontractor line; csub comes from P&L only
            total: wagesTotal + payx };
 }
 
 // Sum all comp-coded lines from a P&L aggregation
 function plCompTotal(pl) {
-  return (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0)+(pl.PAYX||0)+(pl.SUBC||0);
+  return (pl['c1']||0)+(pl['c2e']||0)+(pl['c2o']||0)+(pl['c3']||0)+(pl['c4']||0)+(pl['csub']||0);
 }
 
 // Scale census proportions to a target total
 function scaleCensusToTotal(census, target) {
-  const wagesBase = census.PROD + census.ADME + census.OWN + census.SALC;
-  const payxPct = census.total > 0 ? census.PAYX / census.total : 0;
+  const wagesBase = census['c1'] + census['c2e'] + census['c2o'] + census['c3'];
+  const payxPct = census.total > 0 ? census['c4'] / census.total : 0;
   const wagesPct = census.total > 0 ? wagesBase / census.total : 1;
   const newWages = target * wagesPct;
   const newPayx  = target * payxPct;
   const scale    = wagesBase > 0 ? newWages / wagesBase : 0;
   return {
-    PROD: census.PROD * scale,
-    ADME: census.ADME * scale,
-    OWN:  census.OWN  * scale,
-    SALC: census.SALC * scale,
-    PAYX: newPayx,
-    SUBC: census.SUBC || 0,  // SUBC not in census — stays 0; P&L path handles it via plToLines
+    'c1':   census['c1'] * scale,
+    'c2e':  census['c2e'] * scale,
+    'c2o':  census['c2o'] * scale,
+    'c3':   census['c3'] * scale,
+    'c4':   newPayx,
+    'csub': census['csub'] || 0,  // csub not in census — stays 0; P&L path handles it via plToLines
     total: target
   };
 }
@@ -2109,7 +2263,7 @@ function showCompReconciliationModal(censusComp, plCompCurr, onConfirm) {
         </tbody>
       </table>
     </div>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">The prior year always uses its own P&L data. This choice only affects the current year. If P&L is selected, census proportions (PROD/ADME/OWN/SALC/PAYX) will be scaled to match the P&L total.</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">The prior year always uses its own P&L data. This choice only affects the current year. If P&L is selected, census proportions (c1/c2e/c2o/c3/c4) will be scaled to match the P&L total.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
         <input type="radio" name="compSource" value="census" checked>
@@ -2175,15 +2329,15 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
   // Prior year ALWAYS uses its own P&L data for compensation — direct read, no translation
   const comp4Rate = state.comp4Rate/100;
   const plToLines = (pl) => {
-    const wages = (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0);
+    const wages = (pl['c1']||0)+(pl['c2e']||0)+(pl['c2o']||0)+(pl['c3']||0);
     return {
-      PROD: pl.PROD||0,
-      ADME: pl.ADME||0,
-      OWN:  pl.OWN||0,
-      SALC: pl.SALC||0,
-      PAYX: pl.PAYX||0 || wages*comp4Rate,
-      SUBC: pl.SUBC||0,
-      total: (pl.PROD||0)+(pl.ADME||0)+(pl.OWN||0)+(pl.SALC||0)+(pl.PAYX||0 || wages*comp4Rate)+(pl.SUBC||0)
+      'c1':   pl['c1']||0,
+      'c2e':  pl['c2e']||0,
+      'c2o':  pl['c2o']||0,
+      'c3':   pl['c3']||0,
+      'c4':   pl['c4']||0 || wages*comp4Rate,
+      'csub': pl['csub']||0,
+      total: (pl['c1']||0)+(pl['c2e']||0)+(pl['c2o']||0)+(pl['c3']||0)+(pl['c4']||0 || wages*comp4Rate)+(pl['csub']||0)
     };
   };
   const priorCompLines = plToLines(prior);
@@ -2201,13 +2355,13 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
   }
 
   // Revenue totals
-  const priorRev = (prior.REVEQ||0)+(prior.REVPT||0)+(prior.REVLF||0)+(prior.REVMS||0)+(prior.REVLB||0);
-  const currRev  = (curr.REVEQ||0)+(curr.REVPT||0)+(curr.REVLF||0)+(curr.REVMS||0)+(curr.REVLB||0);
+  const priorRev = (prior['rev-eq']||0)+(prior['rev-pa']||0)+(prior['rev-lf']||0)+(prior['rev-ms']||0)+(prior['rev-lab']||0);
+  const currRev  = (curr['rev-eq']||0)+(curr['rev-pa']||0)+(curr['rev-lf']||0)+(curr['rev-ms']||0)+(curr['rev-lab']||0);
   const currRevAnn = currRev * annFactor;
 
   // COGS
-  const priorCOGS = (prior.CGSEQ||0)+(prior.CGSPT||0)+(prior.CGSLF||0)+(prior.CGSMS||0)+(prior.CGSIA||0)+(prior.CGSVD||0);
-  const currCOGS  = (curr.CGSEQ||0)+(curr.CGSPT||0)+(curr.CGSLF||0)+(curr.CGSMS||0)+(curr.CGSIA||0)+(curr.CGSVD||0);
+  const priorCOGS = (prior['cog-eq']||0)+(prior['cog-pa']||0)+(prior['cog-lf']||0)+(prior['cog-ms']||0)+(prior['cog-adj']||0)+(prior['cog-dis']||0);
+  const currCOGS  = (curr['cog-eq']||0)+(curr['cog-pa']||0)+(curr['cog-lf']||0)+(curr['cog-ms']||0)+(curr['cog-adj']||0)+(curr['cog-dis']||0);
 
   // GP
   const priorGP = priorRev - priorCOGS;
@@ -2222,9 +2376,9 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
   const bees = state.payrollData.filter(e=>e.isBillable).reduce((a,e)=>a+(e.hoursPerWeek/40),0) || 5;
 
   // Expenses
-  const priorAdmin = prior.ADMN||0, currAdmin = curr.ADMN||0;
-  const priorOcc   = prior.OCCP||0, currOcc   = curr.OCCP||0;
-  const priorSX    = prior.SLSX||0, currSX    = curr.SLSX||0;
+  const priorAdmin = prior['admin']||0, currAdmin = curr['admin']||0;
+  const priorOcc   = prior['occ']||0,   currOcc   = curr['occ']||0;
+  const priorSX    = prior['slsx']||0,  currSX    = curr['slsx']||0;
   const priorMOC   = priorAdmin+priorOcc+priorSX;
   const currMOC    = currAdmin+currOcc+currSX;
 
@@ -2240,7 +2394,7 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
     priorGP, currGP,
     priorGM: gmPct(priorRev, priorCOGS),
     currGM:  gmPct(currRev,  currCOGS),
-    priorC1: priorCompLines.PROD, currC1: currCompLines.PROD,
+    priorC1: priorCompLines['c1'], currC1: currCompLines['c1'],
     priorComp, currComp,
     priorCompLines, currCompLines,
     compSource,
@@ -2257,8 +2411,8 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
     currGPP:  currComp  > 0 ? currGP/currComp   : null,
     priorRevFTE: ftes > 0 ? priorRev/ftes : null,
     currRevFTE:  ftes > 0 ? currRev/ftes  : null,
-    priorLaborRevBEE: bees > 0 ? (prior.REVLB||0)/bees/12 : null,
-    currLaborRevBEE:  bees > 0 ? (curr.REVLB||0)/bees/12  : null,
+    priorLaborRevBEE: bees > 0 ? (prior['rev-lab']||0)/bees/12 : null,
+    currLaborRevBEE:  bees > 0 ? (curr['rev-lab']||0)/bees/12  : null,
     ftes, bees, prior, curr, cats,
   };
 
@@ -2329,12 +2483,12 @@ function renderBenchmarks(m) {
   const cats = m.cats;
   const pY = state.setup.priorYear, cY = state.setup.currentYear;
   const priorGMBycat = {
-    S1: gmPct(m.prior.REVEQ, m.prior.CGSEQ), S2: gmPct(m.prior.REVPT, m.prior.CGSPT),
-    S3: gmPct(m.prior.REVLF, m.prior.CGSLF), S4: gmPct(m.prior.REVMS, m.prior.CGSMS),
+    S1: gmPct(m.prior['rev-eq'], m.prior['cog-eq']), S2: gmPct(m.prior['rev-pa'], m.prior['cog-pa']),
+    S3: gmPct(m.prior['rev-lf'], m.prior['cog-lf']), S4: gmPct(m.prior['rev-ms'], m.prior['cog-ms']),
   };
   const currGMBycat = {
-    S1: gmPct(m.curr.REVEQ, m.curr.CGSEQ), S2: gmPct(m.curr.REVPT, m.curr.CGSPT),
-    S3: gmPct(m.curr.REVLF, m.curr.CGSLF), S4: gmPct(m.curr.REVMS, m.curr.CGSMS),
+    S1: gmPct(m.curr['rev-eq'], m.curr['cog-eq']), S2: gmPct(m.curr['rev-pa'], m.curr['cog-pa']),
+    S3: gmPct(m.curr['rev-lf'], m.curr['cog-lf']), S4: gmPct(m.curr['rev-ms'], m.curr['cog-ms']),
   };
 
   // Category GM cards — only where at least one year has data
@@ -2478,12 +2632,12 @@ function renderBenchmarks(m) {
           <table>
             <thead><tr><th>Compensation Line</th><th class="text-right">${pY}</th><th class="text-right">${cY}</th><th class="text-right">% of Rev (${cY})</th></tr></thead>
             <tbody>
-              <tr><td>PROD — Direct Labor</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PROD)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PROD)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PROD/m.currRev):''}</td></tr>
-              <tr><td>ADME — Admin (Employees)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.ADME)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.ADME)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.ADME/m.currRev):''}</td></tr>
-              <tr><td>OWN — Admin (Owners)</td><td class="mono text-right">${fmtDollar(m.priorCompLines.OWN)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.OWN)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.OWN/m.currRev):''}</td></tr>
-              <tr><td>SALC — Sales & Commissions</td><td class="mono text-right">${fmtDollar(m.priorCompLines.SALC)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.SALC)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.SALC/m.currRev):''}</td></tr>
-              <tr><td>PAYX — Benefits & Taxes</td><td class="mono text-right">${fmtDollar(m.priorCompLines.PAYX)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.PAYX)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.PAYX/m.currRev):''}</td></tr>
-              <tr><td>Subcontractors</td><td class="mono text-right">${fmtDollar(m.priorCompLines.SUBC)}</td><td class="mono text-right">${fmtDollar(m.currCompLines.SUBC)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines.SUBC/m.currRev):''}</td></tr>
+              <tr><td>C1 — Direct Labor</td><td class="mono text-right">${fmtDollar(m.priorCompLines['c1'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['c1'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['c1']/m.currRev):''}</td></tr>
+              <tr><td>C2E — Admin (Employees)</td><td class="mono text-right">${fmtDollar(m.priorCompLines['c2e'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['c2e'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['c2e']/m.currRev):''}</td></tr>
+              <tr><td>C2O — Admin (Owners)</td><td class="mono text-right">${fmtDollar(m.priorCompLines['c2o'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['c2o'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['c2o']/m.currRev):''}</td></tr>
+              <tr><td>C3 — Sales & Commissions</td><td class="mono text-right">${fmtDollar(m.priorCompLines['c3'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['c3'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['c3']/m.currRev):''}</td></tr>
+              <tr><td>C4 — Benefits & Taxes</td><td class="mono text-right">${fmtDollar(m.priorCompLines['c4'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['c4'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['c4']/m.currRev):''}</td></tr>
+              <tr><td>Subcontractors</td><td class="mono text-right">${fmtDollar(m.priorCompLines['csub'])}</td><td class="mono text-right">${fmtDollar(m.currCompLines['csub'])}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currCompLines['csub']/m.currRev):''}</td></tr>
               <tr class="yoy-total"><td>TOTAL COMPENSATION</td><td class="mono text-right">${fmtDollar(m.priorComp)}</td><td class="mono text-right">${fmtDollar(m.currComp)}</td><td class="mono text-right">${m.currRev>0?fmtPct(m.currComp/m.currRev):''}</td></tr>
             </tbody>
           </table>
@@ -2551,15 +2705,15 @@ function renderYOY(m) {
 
   const secRow = (label) => `<tr><td colspan="7" class="yoy-section">${label}</td></tr>`;
 
-  const priorRev  = (p.REVEQ||0)+(p.REVPT||0)+(p.REVLF||0)+(p.REVMS||0)+(p.REVLB||0);
-  const currRev   = (c.REVEQ||0)+(c.REVPT||0)+(c.REVLF||0)+(c.REVMS||0)+(c.REVLB||0);
-  const priorCOGS = (p.CGSEQ||0)+(p.CGSPT||0)+(p.CGSLF||0)+(p.CGSMS||0)+(p.CGSIA||0)+(p.CGSVD||0);
-  const currCOGS  = (c.CGSEQ||0)+(c.CGSPT||0)+(c.CGSLF||0)+(c.CGSMS||0)+(c.CGSIA||0)+(c.CGSVD||0);
+  const priorRev  = (p['rev-eq']||0)+(p['rev-pa']||0)+(p['rev-lf']||0)+(p['rev-ms']||0)+(p['rev-lab']||0);
+  const currRev   = (c['rev-eq']||0)+(c['rev-pa']||0)+(c['rev-lf']||0)+(c['rev-ms']||0)+(c['rev-lab']||0);
+  const priorCOGS = (p['cog-eq']||0)+(p['cog-pa']||0)+(p['cog-lf']||0)+(p['cog-ms']||0)+(p['cog-adj']||0)+(p['cog-dis']||0);
+  const currCOGS  = (c['cog-eq']||0)+(c['cog-pa']||0)+(c['cog-lf']||0)+(c['cog-ms']||0)+(c['cog-adj']||0)+(c['cog-dis']||0);
   const priorGP   = priorRev - priorCOGS, currGP = currRev - currCOGS;
   const pComp     = m.priorCompLines, cComp = m.currCompLines;
   const priorComp = pComp.total, currComp = cComp.total;
-  const priorMOC  = (p.ADMN||0)+(p.OCCP||0)+(p.SLSX||0);
-  const currMOC   = (c.ADMN||0)+(c.OCCP||0)+(c.SLSX||0);
+  const priorMOC  = (p['admin']||0)+(p['occ']||0)+(p['slsx']||0);
+  const currMOC   = (c['admin']||0)+(c['occ']||0)+(c['slsx']||0);
   const priorNOI  = priorGP - priorComp - priorMOC;
   const currNOI   = currGP  - currComp  - currMOC;
   const priorGM   = priorRev > 0 ? priorGP / priorRev : null;
@@ -2632,41 +2786,41 @@ function renderYOY(m) {
           </thead>
           <tbody>
             ${secRow('REVENUE')}
-            ${yoyRow(cats[0], p.REVEQ||0, c.REVEQ||0)}
-            ${yoyRow(cats[1], p.REVPT||0, c.REVPT||0)}
-            ${yoyRow(cats[2], p.REVLF||0, c.REVLF||0)}
-            ${yoyRow(cats[3], p.REVMS||0, c.REVMS||0)}
-            ${yoyRow(cats[4], p.REVLB||0, c.REVLB||0)}
+            ${yoyRow(cats[0], p['rev-eq']||0, c['rev-eq']||0)}
+            ${yoyRow(cats[1], p['rev-pa']||0, c['rev-pa']||0)}
+            ${yoyRow(cats[2], p['rev-lf']||0, c['rev-lf']||0)}
+            ${yoyRow(cats[3], p['rev-ms']||0, c['rev-ms']||0)}
+            ${yoyRow(cats[4], p['rev-lab']||0, c['rev-lab']||0)}
             ${keyTotal('TOTAL REVENUE', priorRev, currRev)}
             ${secRow('COST OF GOODS SOLD')}
-            ${yoyRow(`COGS — ${cats[0]}`, p.CGSEQ||0, c.CGSEQ||0)}
-            ${yoyRow(`COGS — ${cats[1]}`, p.CGSPT||0, c.CGSPT||0)}
-            ${yoyRow(`COGS — ${cats[2]}`, p.CGSLF||0, c.CGSLF||0)}
-            ${yoyRow(`COGS — ${cats[3]}`, p.CGSMS||0, c.CGSMS||0)}
-            ${yoyRow('Inventory Adjustments', p.CGSIA||0, c.CGSIA||0)}
-            ${yoyRow('Vendor Disc / Rebates', p.CGSVD||0, c.CGSVD||0)}
+            ${yoyRow(`COGS — ${cats[0]}`, p['cog-eq']||0, c['cog-eq']||0)}
+            ${yoyRow(`COGS — ${cats[1]}`, p['cog-pa']||0, c['cog-pa']||0)}
+            ${yoyRow(`COGS — ${cats[2]}`, p['cog-lf']||0, c['cog-lf']||0)}
+            ${yoyRow(`COGS — ${cats[3]}`, p['cog-ms']||0, c['cog-ms']||0)}
+            ${yoyRow('Inventory Adjustments', p['cog-adj']||0, c['cog-adj']||0)}
+            ${yoyRow('Vendor Disc / Rebates', p['cog-dis']||0, c['cog-dis']||0)}
             ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
             ${keyTotal('GROSS PROFIT', priorGP, currGP)}
             ${secRow('COMPENSATION')}
-            ${yoyRow('PROD — Direct Labor', pComp.PROD, cComp.PROD)}
-            ${yoyRow('ADME — Admin (Employees)', pComp.ADME, cComp.ADME)}
-            ${yoyRow('OWN — Admin (Owners)', pComp.OWN, cComp.OWN)}
-            ${yoyRow('SALC — Sales & Commissions', pComp.SALC, cComp.SALC)}
-            ${yoyRow('PAYX — Benefits & Taxes', pComp.PAYX, cComp.PAYX)}
-            ${yoyRow('Subcontractors', pComp.SUBC, cComp.SUBC)}
+            ${yoyRow('C1 — Direct Labor', pComp['c1'], cComp['c1'])}
+            ${yoyRow('C2E — Admin (Employees)', pComp['c2e'], cComp['c2e'])}
+            ${yoyRow('C2O — Admin (Owners)', pComp['c2o'], cComp['c2o'])}
+            ${yoyRow('C3 — Sales & Commissions', pComp['c3'], cComp['c3'])}
+            ${yoyRow('C4 — Benefits & Taxes', pComp['c4'], cComp['c4'])}
+            ${yoyRow('Subcontractors', pComp['csub'], cComp['csub'])}
             ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
             ${secRow('MAJOR OPERATING COSTS')}
-            ${yoyRow('Admin Expense', p.ADMN||0, c.ADMN||0)}
-            ${yoyRow('Occupancy Expense', p.OCCP||0, c.OCCP||0)}
-            ${yoyRow('Sales Expense', p.SLSX||0, c.SLSX||0)}
+            ${yoyRow('Admin Expense', p['admin']||0, c['admin']||0)}
+            ${yoyRow('Occupancy Expense', p['occ']||0, c['occ']||0)}
+            ${yoyRow('Sales Expense', p['slsx']||0, c['slsx']||0)}
             ${yoyRow('TOTAL MOC', priorMOC, currMOC, true)}
             ${secRow('OTHER')}
-            ${yoyRow('Interest', p.INTR||0, c.INTR||0)}
-            ${yoyRow('Depreciation', p.DEPR||0, c.DEPR||0)}
-            ${yoyRow('Miscellaneous', p.MISC||0, c.MISC||0)}
-            ${yoyRow('Other Income', p.OTHI||0, c.OTHI||0)}
-            ${yoyRow('Other Expense', p.OTHE||0, c.OTHE||0)}
-            ${yoyRow('Taxes', p.TAX||0, c.TAX||0)}
+            ${yoyRow('Interest', p['int']||0, c['int']||0)}
+            ${yoyRow('Depreciation', p['dep']||0, c['dep']||0)}
+            ${yoyRow('Miscellaneous', p['misc']||0, c['misc']||0)}
+            ${yoyRow('Other Income', p['oth-in']||0, c['oth-in']||0)}
+            ${yoyRow('Other Expense', p['oth-exp']||0, c['oth-exp']||0)}
+            ${yoyRow('Taxes', p['tax']||0, c['tax']||0)}
             ${keyTotal('NET OPERATING PROFIT', priorNOI, currNOI)}
           </tbody>
         </table>
@@ -2683,17 +2837,17 @@ function renderYOY(m) {
 function renderLookupTables() {
   // P&L Lookup
   document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
-  const codes = ['REVEQ','REVPT','REVLF','REVMS','REVLB','CGSEQ','CGSPT','CGSLF','CGSMS','CGSIA','CGSVD','SUBC','PROD','ADME','OWN','SALC','PAYX','OCCP','ADMN','INTR','DEPR','MISC','MONI','MONE','OTHI','OTHE','NETIN','SLSX','TAX','SKIP'];
+  const codes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
   const plBody = document.getElementById('plLookupBody');
   plBody.innerHTML = state.plLookup.map(([name, code], i) => `
     <tr>
-      <td><input type="text" value="${escHtml(name)}" onchange="state.plLookup[${i}][0]=this.value" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
+      <td><input type="text" value="${escHtml(name)}" onchange="state.plLookup[${i}][0]=this.value;saveLookupsToStorage()" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
       <td>
-        <select onchange="state.plLookup[${i}][1]=this.value" style="padding:3px 6px;font-size:12px">
+        <select onchange="state.plLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px">
           ${codes.map(c=>`<option value="${c}" ${code===c?'selected':''}>${c}</option>`).join('')}
         </select>
       </td>
-      <td><button class="btn btn-sm btn-danger" onclick="state.plLookup.splice(${i},1);renderLookupTables()">✕</button></td>
+      <td><button class="btn btn-sm btn-danger" onclick="state.plLookup.splice(${i},1);renderLookupTables();saveLookupsToStorage()">✕</button></td>
     </tr>`).join('');
 
   // Payroll Lookup
@@ -2701,15 +2855,15 @@ function renderLookupTables() {
   const payBody = document.getElementById('payrollLookupBody');
   payBody.innerHTML = state.payrollLookup.map(([title, comp, owner, bill], i) => `
     <tr>
-      <td><input type="text" value="${escHtml(title)}" onchange="state.payrollLookup[${i}][0]=this.value" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
+      <td><input type="text" value="${escHtml(title)}" onchange="state.payrollLookup[${i}][0]=this.value;saveLookupsToStorage()" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
       <td>
-        <select onchange="state.payrollLookup[${i}][1]=this.value" style="padding:3px 6px;font-size:12px">
-          ${['PROD','ADME','OWN','SALC'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
+        <select onchange="state.payrollLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px">
+          ${['c1','c2e','c2o','c3'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
         </select>
       </td>
-      <td style="text-align:center"><input type="checkbox" ${(owner==='Yes'||owner===true)?'checked':''} onchange="state.payrollLookup[${i}][2]=this.checked?'Yes':'No'"></td>
-      <td style="text-align:center"><input type="checkbox" ${(bill==='Yes'||bill===true)?'checked':''} onchange="state.payrollLookup[${i}][3]=this.checked?'Yes':'No'"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="state.payrollLookup.splice(${i},1);renderLookupTables()">✕</button></td>
+      <td style="text-align:center"><input type="checkbox" ${(owner==='Yes'||owner===true)?'checked':''} onchange="state.payrollLookup[${i}][2]=this.checked?'Yes':'No';saveLookupsToStorage()"></td>
+      <td style="text-align:center"><input type="checkbox" ${(bill==='Yes'||bill===true)?'checked':''} onchange="state.payrollLookup[${i}][3]=this.checked?'Yes':'No';saveLookupsToStorage()"></td>
+      <td><button class="btn btn-sm btn-danger" onclick="state.payrollLookup.splice(${i},1);renderLookupTables();saveLookupsToStorage()">✕</button></td>
     </tr>`).join('');
 
   // Benchmark Ranges — editable
@@ -2753,6 +2907,7 @@ function renderLookupTables() {
             if (inp) inp.value = v;
             this.style.background = v !== 3.45 ? 'var(--primary-faint)' : 'var(--bg2)';
             setDirty();
+            saveLookupsToStorage();
           "
         >
         <span style="font-size:12px;color:var(--text3);margin-left:8px">Default: 3.45% — used to calculate PAYX from census wages</span>
@@ -2761,8 +2916,8 @@ function renderLookupTables() {
   updateBenchmarkModifiedBadge();
 }
 
-function addPLLookupRow() { state.plLookup.push(['New Account','SKIP']); renderLookupTables(); }
-function addPayrollLookupRow() { state.payrollLookup.push(['New Title','PROD','No','Yes']); renderLookupTables(); }
+function addPLLookupRow() { state.plLookup.push(['New Account','skip']); renderLookupTables(); saveLookupsToStorage(); }
+function addPayrollLookupRow() { state.payrollLookup.push(['New Title','c1','No','Yes']); renderLookupTables(); saveLookupsToStorage(); }
 
 function exportPLLookup() {
   const csv = 'account_name,category_code\n' + state.plLookup.map(([n,c])=>`"${n}","${c}"`).join('\n');
@@ -2780,7 +2935,7 @@ function uploadPLLookup(e) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     const rows = parseCSV(ev.target.result).slice(1);
-    if (rows.length > 0) { state.plLookup = rows.filter(r=>r.length>=2); renderLookupTables(); setDirty(); }
+    if (rows.length > 0) { state.plLookup = rows.filter(r=>r.length>=2); renderLookupTables(); setDirty(); saveLookupsToStorage(); }
   };
   reader.readAsText(file);
 }
@@ -2791,7 +2946,7 @@ function uploadPayrollLookup(e) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     const rows = parseCSV(ev.target.result).slice(1);
-    if (rows.length > 0) { state.payrollLookup = rows.filter(r=>r.length>=4); renderLookupTables(); setDirty(); }
+    if (rows.length > 0) { state.payrollLookup = rows.filter(r=>r.length>=4); renderLookupTables(); setDirty(); saveLookupsToStorage(); }
   };
   reader.readAsText(file);
 }
@@ -2948,12 +3103,14 @@ function validateBenchmarkInput(input) {
   input.style.background = isModified ? 'var(--primary-faint)' : 'var(--bg2)';
   updateBenchmarkModifiedBadge();
   setDirty();
+  saveLookupsToStorage();
 }
 
 function resetBenchmarkRanges() {
   if (!confirm('Reset all benchmark ranges to defaults? This cannot be undone.')) return;
   state.benchmarkRanges = BENCHMARK_RANGES.map(r => Object.assign({}, r));
   renderLookupTables();
+  saveLookupsToStorage();
 }
 
 function updateBenchmarkModifiedBadge() {
@@ -2996,6 +3153,7 @@ function downloadFile(content, filename, mime) {
 // INIT
 // ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  loadLookupsFromStorage();
   initSetup();
   updateTopbar();
 });
