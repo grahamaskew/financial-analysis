@@ -735,6 +735,29 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     </div>
   </div>
 
+  <!-- Balance Check Estimates -->
+  <div class="card" style="margin-top:16px" id="balanceEstimatesCard">
+    <div class="card-header">
+      <div class="card-title">Balance Check Estimates</div>
+      <div class="card-sub" style="font-size:12px;color:var(--text2);font-weight:400">Optional per-client estimates used during the P&L balance check to flag potential misclassification. Not saved between sessions.</div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px">Revenue Mix Estimates <span style="font-weight:400;color:var(--text3)">(% of Total Revenue)</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Leave all blank to skip, or fill all but one (the remainder is derived automatically).</div>
+          <div id="revMixInputs" style="display:flex;flex-direction:column;gap:6px"></div>
+          <div id="revMixWarning" class="hidden" style="margin-top:8px;font-size:12px;color:var(--orange);background:#fff7ed;border:1px solid var(--orange);border-radius:6px;padding:8px 10px"></div>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px">Category Margin Estimates <span style="font-weight:400;color:var(--text3)">(Gross Margin %)</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Leave blank to use benchmark thresholds. Labor is excluded.</div>
+          <div id="marginInputs" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div style="display:flex; justify-content:flex-end; gap:10px">
     <button class="btn btn-primary btn-lg" onclick="completeSetup()">Save Setup & Continue →</button>
   </div>
@@ -801,6 +824,9 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     <div class="alert alert-warn">
       <span class="alert-icon">⚠</span>
       <div><strong id="unmatchedCount">0</strong> account(s) were not found in the lookup table. Assign a category code to each before continuing. Use <strong>SKIP</strong> to exclude an account from calculations.</div>
+    </div>
+    <div style="background:var(--primary-faint,#eef1fb);border:1px solid var(--primary-subtle,#d8dff7);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--primary)">Note:</strong> Some accounts may appear under "Cost of Goods Sold" in your QuickBooks export but should be coded differently — for example, direct labour costs (<strong>c1</strong>), subcontractor costs (<strong>csub</strong>), or parts/equipment COGS (<strong>cog-eq</strong>, <strong>cog-pa</strong>). Review each account name carefully before assigning a code.
     </div>
     <div class="card">
       <div class="card-header">
@@ -1142,7 +1168,7 @@ const BENCHMARK_RANGES = [{metric:"Sales Productivity (Rev/FTE)",notOK:"<$175K",
 // STATE
 // ═══════════════════════════════════════════════════════
 const state = {
-  setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'] },
+  setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'], revMix:['','','','',''], margins:['','','',''] },
   plLookup: [...DEFAULT_PL_LOOKUP],
   payrollLookup: [...DEFAULT_PAYROLL_LOOKUP],
   benchmarkRanges: BENCHMARK_RANGES.map(r => Object.assign({}, r)),
@@ -1161,6 +1187,16 @@ const state = {
   rawPayroll: null,
   rawPayrollFilename: '',
   manualPayrollRows: [],
+};
+
+// ═══════════════════════════════════════════════════════
+// BUCKET REF NAMES — maps QB "Total X" row names to bucket keys
+// ═══════════════════════════════════════════════════════
+const BUCKET_REF_NAMES = {
+  'Total Revenue':'rev','Total Income':'rev','Total Sales':'rev','Total Sales Revenue':'rev','Total Sales and Revenue':'rev',
+  'Total Cost of Goods Sold':'cogs','Total COGS':'cogs','Total Job Costs':'cogs','Total Direct Costs':'cogs','Total Direct Expenses':'cogs',
+  'Total Payroll':'comp','Total Compensation':'comp','Total Payroll Expense':'comp',
+  'Total Operating Expenses':'opex'
 };
 
 // ═══════════════════════════════════════════════════════
@@ -1185,9 +1221,10 @@ function initSetup() {
   const html = defaults.map((d,i) => `
     <div class="form-group">
       <label>Category ${i+1} <span class="tag">${codes[i]}</span></label>
-      <input type="text" id="cat${i}" value="${state.setup.categories[i]||d}" placeholder="${d}">
+      <input type="text" id="cat${i}" value="${state.setup.categories[i]||d}" placeholder="${d}" oninput="updateCategoryName(${i}, this.value)">
     </div>`).join('');
   document.getElementById('catGrid').innerHTML = html;
+  renderBalanceEstimateInputs();
 }
 
 function updateTopbar() {
@@ -1219,6 +1256,91 @@ function completeSetup() {
   document.querySelector('[data-tab="setup"]').innerHTML = '① Setup <span class="done-tab"><span class="tab-check">✓</span></span>';
   setDirty();
   switchTab('pl');
+}
+
+function updateCategoryName(i, val) {
+  state.setup.categories[i] = val;
+  renderBalanceEstimateInputs();
+}
+
+function renderBalanceEstimateInputs() {
+  const cats = state.setup.categories;
+  const marginKeys = [0,1,2,3];
+
+  // Revenue mix inputs — only for named categories
+  const revDiv = document.getElementById('revMixInputs');
+  if (revDiv) {
+    revDiv.innerHTML = cats.map((cat, i) => {
+      if (!cat.trim()) return '';
+      return `<div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;color:var(--text2);width:140px;flex-shrink:0">${escHtml(cat)}</label>
+        <input type="number" min="0" max="100" step="0.1" id="revMix_${i}" value="${state.setup.revMix[i]||''}" placeholder="e.g. 40"
+          style="width:80px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px"
+          oninput="updateRevMix(${i},this.value)">
+        <span style="font-size:12px;color:var(--text3)">%</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Margin inputs — only for named categories, exclude Labor (index 4)
+  const mrgDiv = document.getElementById('marginInputs');
+  if (mrgDiv) {
+    mrgDiv.innerHTML = marginKeys.map(i => {
+      const cat = cats[i];
+      if (!cat.trim()) return '';
+      const defaults = [38, 60, 30, 50];
+      return `<div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;color:var(--text2);width:140px;flex-shrink:0">${escHtml(cat)}</label>
+        <input type="number" min="0" max="100" step="0.1" id="margin_${i}" value="${state.setup.margins[i]||''}" placeholder="${defaults[i]} (benchmark)"
+          style="width:80px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px"
+          oninput="updateMargin(${i},this.value)">
+        <span style="font-size:12px;color:var(--text3)">%</span>
+      </div>`;
+    }).join('');
+  }
+
+  validateRevMix();
+}
+
+function updateRevMix(i, val) {
+  state.setup.revMix[i] = val;
+  validateRevMix();
+}
+
+function updateMargin(i, val) {
+  state.setup.margins[i] = val;
+}
+
+function validateRevMix() {
+  const cats = state.setup.categories;
+  const namedIndices = cats.map((c,i) => c.trim() ? i : -1).filter(i => i >= 0);
+  const vals = state.setup.revMix;
+  const namedFilled = namedIndices.filter(i => vals[i] !== '' && vals[i] !== null && vals[i] !== undefined && !isNaN(parseFloat(vals[i])));
+  const namedEmpty  = namedIndices.filter(i => vals[i] === '' || vals[i] === null || vals[i] === undefined || isNaN(parseFloat(vals[i])));
+  const warn = document.getElementById('revMixWarning');
+  if (!warn) return;
+  const totalNamed = namedIndices.length;
+  const totalEmpty = namedEmpty.length;
+  if (totalEmpty === 0 || totalEmpty === totalNamed) {
+    warn.classList.add('hidden');
+    warn.textContent = '';
+  } else if (totalEmpty === 1) {
+    const sumFilled = namedFilled.reduce((s,i) => s + parseFloat(vals[i]), 0);
+    const derived = 100 - sumFilled;
+    const emptyIdx = namedEmpty[0];
+    const emptyName = cats[emptyIdx];
+    warn.classList.remove('hidden');
+    warn.style.background = 'var(--primary-faint,#eef1fb)';
+    warn.style.borderColor = 'var(--primary,#6687e1)';
+    warn.style.color = 'var(--primary,#6687e1)';
+    warn.textContent = `\u2139 ${escHtml(emptyName)} will use the derived balance: ${derived.toFixed(1)}%`;
+  } else {
+    warn.classList.remove('hidden');
+    warn.style.background = '#fff7ed';
+    warn.style.borderColor = 'var(--orange,#f97316)';
+    warn.style.color = 'var(--orange,#f97316)';
+    warn.textContent = `\u26a0 ${totalEmpty} revenue mix fields are blank. Fill all fields, leave all blank (to skip checks), or leave exactly one blank (to derive the remainder automatically).`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1488,6 +1610,7 @@ function processPLFile(rows, type, filename) {
   const format = rows._confirmedFormat || detectPLFormat(rows);
   const mapped = [], unmatched = [];
   let dataRows = rows;
+  const bucketRefs = { rev: null, cogs: null, comp: null, opex: null };
 
   if (format === 'quickbooks_monthly') {
     // QuickBooks monthly P&L: name in cols 1-6 (B-G), amount = rightmost numeric column
@@ -1510,7 +1633,10 @@ function processPLFile(rows, type, filename) {
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
       if (!code) { unmatched.push({raw, clean, amount}); }
-      else if (code !== 'skip') { mapped.push({raw, clean, code, amount}); }
+      else if (code === 'skip') {
+        const bucket = BUCKET_REF_NAMES[clean];
+        if (bucket && bucketRefs[bucket] === null) { bucketRefs[bucket] = Math.abs(amount); }
+      } else { mapped.push({raw, clean, code, amount}); }
     });
   } else {
     // QuickBooks summary CSV/Excel: col 0 = name, col 1+ = amount
@@ -1532,12 +1658,15 @@ function processPLFile(rows, type, filename) {
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
       if (!code) { unmatched.push({raw, clean, amount}); }
-      else if (code !== 'skip') { mapped.push({raw, clean, code, amount}); }
+      else if (code === 'skip') {
+        const bucket = BUCKET_REF_NAMES[clean];
+        if (bucket && bucketRefs[bucket] === null) { bucketRefs[bucket] = Math.abs(amount); }
+      } else { mapped.push({raw, clean, code, amount}); }
     });
   }
 
   if (type === 'prior') {
-    state.priorPL = {raw: dataRows, mapped, unmatched, filename};
+    state.priorPL = {raw: dataRows, mapped, unmatched, filename, bucketRefs};
     state.rawPriorPL = rows; // retain original raw rows for re-processing
     state.priorUploaded = true;
     const zone = document.getElementById('priorUploadZone');
@@ -1547,7 +1676,7 @@ function processPLFile(rows, type, filename) {
     zone.querySelector('.upload-sub').textContent = `${mapped.length} accounts mapped · ${unmatched.length} unmatched`;
     document.getElementById('priorFileInfo').textContent = '';
   } else {
-    state.currentPL = {raw: dataRows, mapped, unmatched, filename};
+    state.currentPL = {raw: dataRows, mapped, unmatched, filename, bucketRefs};
     state.rawCurrentPL = rows; // retain original raw rows for re-processing
     state.currentUploaded = true;
     const zone = document.getElementById('currentUploadZone');
@@ -1593,6 +1722,10 @@ function loadLookupsFromStorage() {
 // ── Keyword-based code suggestion for unmatched P&L accounts ──
 function suggestPLCode(name) {
   const n = name.toLowerCase();
+  // Labor costs that sometimes appear under COGS in QB
+  if (/\b(direct\s+labor|field\s+labor|install(ation)?\s+labor|tech(nician)?\s+(labor|cost)|crew\s+labor|labor\s+cost|field\s+cost|direct\s+install|install(ation)?\s+cost|direct\s+wages?)\b/.test(n)) return 'c1';
+  // Subcontractor costs that sometimes appear under COGS
+  if (/\b(direct\s+sub(contract)?|field\s+sub(contract)?|sub(contract(or)?)?\s+(labor|cost|wages?)|outsourced?\s+(labor|install))\b/.test(n)) return 'csub';
   if (/\bnet.?(income|profit|loss)\b/.test(n)) return 'net-in';
   if (/\b(monitor|rmr)\b/.test(n) && /\b(income|revenue|sales)\b/.test(n)) return 'mon-in';
   if (/\b(monitor|rmr)\b/.test(n) && /\b(expense|cost)\b/.test(n)) return 'mon-exp';
@@ -2088,79 +2221,246 @@ function showPLReview() {
   document.querySelector('[data-tab="pl"]').innerHTML = '② P&L Upload <span class="done-tab"><span class="tab-check">✓</span></span>';
 }
 
+function getRevMixBenchmarks() {
+  const cats = state.setup.categories;
+  const vals = state.setup.revMix;
+  const revCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'];
+  const namedIndices = cats.map((c,i) => c.trim() ? i : -1).filter(i => i >= 0);
+  const filledIndices = namedIndices.filter(i => vals[i] !== '' && vals[i] !== null && vals[i] !== undefined && !isNaN(parseFloat(vals[i])));
+  const emptyIndices  = namedIndices.filter(i => vals[i] === '' || vals[i] === null || vals[i] === undefined || isNaN(parseFloat(vals[i])));
+
+  if (emptyIndices.length === namedIndices.length) return [];
+  if (emptyIndices.length >= 2) return [];
+
+  const result = [];
+  namedIndices.forEach(i => {
+    let pct;
+    if (emptyIndices.length === 1 && emptyIndices[0] === i) {
+      const sumFilled = filledIndices.reduce((s,j) => s + parseFloat(vals[j]), 0);
+      pct = (100 - sumFilled) / 100;
+    } else {
+      pct = parseFloat(vals[i]) / 100;
+    }
+    result.push({ idx: i, code: revCodes[i], label: cats[i], pct });
+  });
+  return result;
+}
+
+function getMarginBenchmarks() {
+  const cats = state.setup.categories;
+  const vals = state.setup.margins;
+  const defaults = [0.38, 0.60, 0.30, 0.50];
+  const revCodes = ['rev-eq','rev-pa','rev-lf','rev-ms'];
+  const cogCodes = ['cog-eq','cog-pa','cog-lf','cog-ms'];
+  const result = [];
+  [0,1,2,3].forEach(i => {
+    const cat = cats[i];
+    if (!cat.trim()) return;
+    const entered = vals[i] !== '' && vals[i] !== null && vals[i] !== undefined && !isNaN(parseFloat(vals[i]));
+    const pct = entered ? parseFloat(vals[i]) / 100 : defaults[i];
+    result.push({ idx: i, revCode: revCodes[i], cogCode: cogCodes[i], label: cat, pct, isDefault: !entered });
+  });
+  return result;
+}
+
 function showBalanceGate() {
   const allSections = ['plUploadSection','plUnmatchedSection','plRevCogSection','plReviewSection'];
   allSections.forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById('plBalanceGateSection').classList.remove('hidden');
   setPLStep(4);
+  reRenderBalanceGate();
+}
+
+function reRenderBalanceGate() {
+  const expanded = new Set([...document.querySelectorAll('.bucket-correction-table:not(.hidden)')].map(el => el.dataset.bucket + '_' + el.dataset.year));
 
   const priorTotals   = aggregateByCode(state.priorPL?.mapped  || []);
   const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
+  const priorRefs     = state.priorPL?.bucketRefs   || {};
+  const currentRefs   = state.currentPL?.bucketRefs || {};
 
-  const checks = [
-    { label: 'Prior Year',   totals: priorTotals },
-    { label: 'Current Year', totals: currentTotals }
-  ];
+  const totalRevCurr = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(currentTotals[c]||0), 0);
 
-  let anyFail = false;
+  let anyHardFail = false;
   let html = '';
 
-  checks.forEach(({ label, totals }) => {
+  html += `<div style="font-weight:600;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)">Balance Checks</div>`;
+
+  const bucketDefs = [
+    { key:'rev',  label:'Revenue',             codes:['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'] },
+    { key:'cogs', label:'Cost of Goods Sold',  codes:['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'] },
+    { key:'comp', label:'Compensation',        codes:['c1','c2e','c2o','c3','c4','csub'] },
+    { key:'opex', label:'Operating Expenses',  codes:['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'] }
+  ];
+
+  ['prior','current'].forEach(yr => {
+    const totals = yr === 'prior' ? priorTotals : currentTotals;
+    const refs   = yr === 'prior' ? priorRefs   : currentRefs;
+    const label  = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
+    const rev    = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
+    const thr    = Math.max(500, rev * 0.005);
+
+    html += `<div style="margin-bottom:16px">`;
+    html += `<div style="font-weight:600;font-size:13px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">${escHtml(label)}</div>`;
+
+    bucketDefs.forEach(b => {
+      const mapped = b.codes.reduce((s,c) => s+(totals[c]||0), 0);
+      const ref = refs[b.key];
+      let status, icon, color, bg, border;
+
+      if (ref === null || ref === undefined) {
+        status = 'no-ref'; icon = '\u2139'; color = 'var(--text3)'; bg = 'var(--bg2)'; border = 'var(--border)';
+      } else {
+        const diff = Math.abs(mapped - ref);
+        const pass = diff <= thr;
+        if (!pass) anyHardFail = true;
+        status = pass ? 'pass' : 'fail';
+        icon = pass ? '\u2705' : '\u274c';
+        color = pass ? 'var(--green)' : 'var(--red,#dc2626)';
+        bg = pass ? 'var(--green-bg,#f0fdf4)' : '#fef2f2';
+        border = pass ? 'var(--green,#22c55e)' : '#ef4444';
+      }
+
+      const expandKey = b.key + '_' + yr;
+      const isExpanded = status === 'fail' || expanded.has(expandKey);
+      const tableDisplay = isExpanded ? '' : 'hidden';
+
+      html += `<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 14px;margin-bottom:8px">`;
+      html += `<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleBucketTable('${expandKey}')">`;
+      html += `<span style="font-size:16px">${icon}</span>`;
+      html += `<span style="font-weight:600;font-size:13px;color:${color};flex:1">${b.label}</span>`;
+
+      if (ref !== null && ref !== undefined) {
+        const diff = Math.abs(mapped - ref);
+        html += `<span style="font-size:12px;color:var(--text2)">Mapped: <strong>${fmtDollar(mapped)}</strong> \u00b7 QB Total: <strong>${fmtDollar(ref)}</strong> \u00b7 Diff: <strong style="color:${color}">${fmtDollar(diff)}</strong></span>`;
+      } else {
+        html += `<span style="font-size:12px;color:var(--text3)">No QB total row found \u2014 bucket check unavailable</span>`;
+      }
+      html += `<span style="font-size:11px;color:var(--text3);margin-left:8px">${isExpanded ? '\u25b2' : '\u25bc'} accounts</span>`;
+      html += `</div>`;
+
+      html += `<div class="bucket-correction-table ${tableDisplay}" data-bucket="${b.key}" data-year="${yr}" style="margin-top:10px">`;
+      html += buildCorrectionTable(yr === 'prior' ? state.priorPL : state.currentPL, totals, b.codes, yr, b.key);
+      html += `</div>`;
+
+      html += `</div>`;
+    });
+
+    // NI check for this year
     const { computed, reported } = computePLBalance(totals);
-    if (reported === null) {
-      html += `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-        <strong>${label}:</strong> No Net Income line found — balance check skipped.</div>`;
-      return;
+    if (reported !== null) {
+      const tCogs  = ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'].reduce((s,c) => s+(totals[c]||0), 0);
+      const tComp  = ['c1','c2e','c2o','c3','c4','csub'].reduce((s,c) => s+(totals[c]||0), 0);
+      const tOpex  = ['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'].reduce((s,c) => s+(totals[c]||0), 0);
+      const tOther = (totals['mon-in']||0) + (totals['oth-in']||0);
+      const tGP    = rev - tCogs;
+      const diff   = Math.abs(computed - reported);
+      const pass   = diff <= thr;
+      if (!pass) anyHardFail = true;
+      const icon2  = pass ? '\u2705' : '\u274c';
+      const color2 = pass ? 'var(--green)' : 'var(--red,#dc2626)';
+      const bg2    = pass ? 'var(--green-bg,#f0fdf4)' : '#fef2f2';
+      const bdr2   = pass ? 'var(--green,#22c55e)' : '#ef4444';
+
+      html += `<div style="background:${bg2};border:1px solid ${bdr2};border-radius:8px;padding:10px 14px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:16px">${icon2}</span>
+          <strong style="color:${color2};font-size:13px">Net Income Balance</strong>
+        </div>
+        <div style="font-size:13px;display:grid;grid-template-columns:1fr auto;gap:2px 24px;max-width:420px">
+          <span style="color:var(--text2)">Total Revenue</span><span class="mono text-right">${fmtDollar(rev)}</span>
+          <span style="color:var(--text2)">\u2212 Total COGS</span><span class="mono text-right">(${fmtDollar(tCogs)})</span>
+          <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border)">= Gross Profit</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border)">${fmtDollar(tGP)}</span>
+          <span style="color:var(--text2)">\u2212 Total Compensation</span><span class="mono text-right">(${fmtDollar(tComp)})</span>
+          <span style="color:var(--text2)">\u2212 Operating Expenses</span><span class="mono text-right">(${fmtDollar(tOpex)})</span>
+          <span style="color:var(--text2)">+ Other Income</span><span class="mono text-right">${fmtDollar(tOther)}</span>
+          <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border);font-weight:600">= Computed NI</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border);font-weight:600">${fmtDollar(computed)}</span>
+          <span style="color:var(--text2)">Reported NI</span><span class="mono text-right">${fmtDollar(reported)}</span>
+          <span style="color:${color2};font-weight:600">Difference</span><span class="mono text-right" style="color:${color2};font-weight:600">${fmtDollar(diff)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Threshold: ${fmtDollar(thr)}</div>
+        ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><strong>Possible causes:</strong> double-counted subtotal, unmapped account, or account excluded via SKIP.</div>` : ''}
+      </div>`;
     }
 
-    const rev    = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
-    const diff = Math.abs(computed - reported);
-    const threshold = Math.max(500, rev * 0.005);
-    const pass = diff <= threshold;
-    if (!pass) anyFail = true;
-
-    const icon   = pass ? '✅' : '❌';
-    const color  = pass ? 'var(--green)' : 'var(--red,#dc2626)';
-    const bgColor = pass ? 'var(--green-bg,#f0fdf4)' : '#fef2f2';
-    const border = pass ? 'var(--green,#22c55e)' : '#ef4444';
-
-    const tCogs  = ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'].reduce((s,c) => s+(totals[c]||0), 0);
-    const tComp  = ['c1','c2e','c2o','c3','c4','csub'].reduce((s,c) => s+(totals[c]||0), 0);
-    const tOpex  = ['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'].reduce((s,c) => s+(totals[c]||0), 0);
-    const tOther = (totals['mon-in']||0) + (totals['oth-in']||0);
-    const tGP    = rev - tCogs;
-
-    html += `<div style="background:${bgColor};border:1px solid ${border};border-radius:8px;padding:12px 16px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:18px">${icon}</span>
-        <strong style="color:${color};font-size:14px">${label}: Balance ${pass ? 'OK' : 'FAILED'}</strong>
-      </div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Calculation Breakdown</div>
-      <div style="font-size:13px;display:grid;grid-template-columns:1fr auto;gap:2px 24px;max-width:420px;margin-bottom:10px">
-        <span style="color:var(--text2)">Total Revenue</span><span class="mono text-right">${fmtDollar(rev)}</span>
-        <span style="color:var(--text2)">− Total COGS</span><span class="mono text-right">(${fmtDollar(tCogs)})</span>
-        <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border)">= Gross Profit</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border)">${fmtDollar(tGP)}</span>
-        <span style="color:var(--text2)">− Total Compensation</span><span class="mono text-right">(${fmtDollar(tComp)})</span>
-        <span style="color:var(--text2)">− Operating Expenses</span><span class="mono text-right">(${fmtDollar(tOpex)})</span>
-        <span style="color:var(--text2)">+ Other Income</span><span class="mono text-right">${fmtDollar(tOther)}</span>
-        <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border);font-weight:600">= Computed Net Income</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border);font-weight:600">${fmtDollar(computed)}</span>
-        <span style="color:var(--text2)">Reported Net Income</span><span class="mono text-right">${fmtDollar(reported)}</span>
-        <span style="color:${color};font-weight:600">Difference</span><span class="mono text-right" style="color:${color};font-weight:600">${fmtDollar(diff)}</span>
-      </div>
-      <div style="font-size:11px;color:var(--text3)">Threshold: ${fmtDollar(threshold)} (max of $500 or 0.5% of revenue)</div>
-      ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-        <strong>Possible causes:</strong> double-counted subtotal row, unmapped account, or account excluded via SKIP. Use the breakdown above to identify which group looks wrong, then go back and correct.
-      </div>` : ''}
-    </div>`;
+    html += `</div>`;
   });
 
-  if (anyFail) {
-    html += `<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:12px 16px;margin-bottom:12px">
-      <div style="font-weight:600;font-size:13px;color:#dc2626;margin-bottom:8px">⛔ Balance Check Failed</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
-        The computed Net Income does not match the reported Net Income within the allowed threshold.
-        Please go back and correct the mapping before continuing.
-      </div>
+  // Informational warnings
+  const revMixBenchmarks = getRevMixBenchmarks();
+  const marginBenchmarks = getMarginBenchmarks();
+
+  const hasRevMix = revMixBenchmarks.length > 0;
+  const hasMargin = marginBenchmarks.length > 0;
+
+  if (hasRevMix || hasMargin) {
+    html += `<div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border)">`;
+    html += `<div style="font-weight:600;font-size:14px;margin-bottom:4px">Informational Checks</div>`;
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:12px">These checks are advisory only and do not block you from continuing. They flag potential misclassification based on your estimates.</div>`;
+
+    if (hasRevMix) {
+      html += `<div style="font-weight:600;font-size:13px;margin-bottom:8px">Revenue Mix</div>`;
+      ['prior','current'].forEach(yr => {
+        const totals = yr === 'prior' ? priorTotals : currentTotals;
+        const totalRev = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
+        if (totalRev === 0) return;
+        const yrLabel = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
+        html += `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:4px">${escHtml(yrLabel)}</div>`;
+        html += `<div style="display:grid;grid-template-columns:140px 80px 80px 80px auto;gap:4px 12px;font-size:12px;align-items:center;margin-bottom:10px">`;
+        html += `<span style="font-weight:600;color:var(--text3)">Category</span><span style="font-weight:600;color:var(--text3)">Actual</span><span style="font-weight:600;color:var(--text3)">Target</span><span style="font-weight:600;color:var(--text3)">Range</span><span></span>`;
+        revMixBenchmarks.forEach(b => {
+          const actual = totalRev > 0 ? (totals[b.code]||0) / totalRev : 0;
+          const diff = Math.abs(actual - b.pct);
+          const pass = diff <= 0.05;
+          const icon = pass ? '\u2705' : '\u26a0\ufe0f';
+          html += `<span style="color:var(--text2)">${escHtml(b.label)}</span>`;
+          html += `<span class="mono">${fmtPct(actual)}</span>`;
+          html += `<span class="mono">${fmtPct(b.pct)}</span>`;
+          html += `<span class="mono" style="color:var(--text3)">${fmtPct(b.pct-0.05)}\u2013${fmtPct(b.pct+0.05)}</span>`;
+          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>` : ''}</span>`;
+        });
+        html += `</div>`;
+      });
+    }
+
+    if (hasMargin) {
+      html += `<div style="font-weight:600;font-size:13px;margin-bottom:8px;margin-top:8px">Category Gross Margins</div>`;
+      ['prior','current'].forEach(yr => {
+        const totals = yr === 'prior' ? priorTotals : currentTotals;
+        const yrLabel = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
+        html += `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:4px">${escHtml(yrLabel)}</div>`;
+        html += `<div style="display:grid;grid-template-columns:140px 80px 80px 80px auto;gap:4px 12px;font-size:12px;align-items:center;margin-bottom:10px">`;
+        html += `<span style="font-weight:600;color:var(--text3)">Category</span><span style="font-weight:600;color:var(--text3)">Actual GM%</span><span style="font-weight:600;color:var(--text3)">Target</span><span style="font-weight:600;color:var(--text3)">Range</span><span></span>`;
+        marginBenchmarks.forEach(b => {
+          const rev = totals[b.revCode] || 0;
+          const cog = totals[b.cogCode] || 0;
+          if (rev === 0) {
+            html += `<span style="color:var(--text2)">${escHtml(b.label)}</span><span class="mono" style="color:var(--text3)">\u2014</span><span class="mono">${fmtPct(b.pct)}</span><span></span><span style="color:var(--text3);font-size:11px">no revenue</span>`;
+            return;
+          }
+          const actual = (rev - cog) / rev;
+          const diff = Math.abs(actual - b.pct);
+          const pass = diff <= 0.05;
+          const icon = pass ? '\u2705' : '\u26a0\ufe0f';
+          const src = b.isDefault ? ' (benchmark)' : '';
+          html += `<span style="color:var(--text2)">${escHtml(b.label)}</span>`;
+          html += `<span class="mono">${fmtPct(actual)}</span>`;
+          html += `<span class="mono">${fmtPct(b.pct)}<span style="font-size:10px;color:var(--text3)">${src}</span></span>`;
+          html += `<span class="mono" style="color:var(--text3)">${fmtPct(b.pct-0.05)}\u2013${fmtPct(b.pct+0.05)}</span>`;
+          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>` : ''}</span>`;
+        });
+        html += `</div>`;
+      });
+    }
+
+    html += `</div>`;
+  }
+
+  // Escape hatch
+  if (anyHardFail) {
+    html += `<div style="background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:12px 16px;margin-top:16px">
+      <div style="font-weight:600;font-size:13px;color:#dc2626;margin-bottom:8px">\u26d4 One or more balance checks failed</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Use the correction tables above to reassign account codes. Click column headers to expand/collapse each bucket.</div>
       <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:12px;color:var(--text2)">
         <input type="checkbox" id="balanceEscapeHatch" onchange="document.getElementById('balanceGateContinueBtn').disabled=!this.checked" style="margin-top:2px">
         <span>I understand the discrepancy and want to proceed anyway. (The difference may be a known rounding issue or an account I intentionally excluded.)</span>
@@ -2172,6 +2472,66 @@ function showBalanceGate() {
   }
 
   document.getElementById('balanceGateContent').innerHTML = html;
+}
+
+function toggleBucketTable(key) {
+  const parts = key.split('_');
+  const bucket = parts[0];
+  const yr = parts[1];
+  const el = document.querySelector(`.bucket-correction-table[data-bucket="${bucket}"][data-year="${yr}"]`);
+  if (el) el.classList.toggle('hidden');
+}
+
+function buildCorrectionTable(plData, totals, bucketCodes, yr, bucketKey) {
+  if (!plData) return '<div style="font-size:12px;color:var(--text3);padding:8px">No data.</div>';
+  const bucketSet = new Set(bucketCodes);
+  const accountMap = {};
+  plData.mapped.forEach(m => {
+    if (!accountMap[m.clean]) accountMap[m.clean] = { clean: m.clean, amount: 0, code: m.code };
+    accountMap[m.clean].amount += m.amount;
+    accountMap[m.clean].code = m.code;
+  });
+  const accounts = Object.values(accountMap).sort((a,b) => {
+    const aIn = bucketSet.has(a.code);
+    const bIn = bucketSet.has(b.code);
+    if (aIn && !bIn) return -1;
+    if (!aIn && bIn) return 1;
+    return Math.abs(b.amount) - Math.abs(a.amount);
+  });
+
+  const allCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
+
+  let t = `<div style="font-size:11px;color:var(--text3);margin-bottom:6px">Highlighted rows are in this bucket. Change any code to correct the allocation \u2014 applies to this session only.</div>`;
+  t += `<div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">`;
+  t += `<table style="width:100%;font-size:12px;border-collapse:collapse">`;
+  t += `<thead><tr style="background:var(--bg2);position:sticky;top:0"><th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Account</th><th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)">Amount</th><th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Code</th></tr></thead><tbody>`;
+
+  accounts.forEach((a, i) => {
+    const inBucket = bucketSet.has(a.code);
+    const rowBg = inBucket ? 'background:var(--primary-faint,#eef1fb)' : '';
+    t += `<tr style="${rowBg};border-bottom:1px solid var(--border)">`;
+    t += `<td style="padding:5px 8px;color:var(--text)">${escHtml(a.clean)}</td>`;
+    t += `<td style="padding:5px 8px;text-align:right;font-family:monospace">${fmtDollar(a.amount)}</td>`;
+    t += `<td style="padding:5px 8px"><select style="padding:2px 4px;font-size:11px;border:1px solid var(--border);border-radius:4px" onchange="applyGateCorrection('${yr}','${escHtml(a.clean)}',this.value)">`;
+    allCodes.forEach(c => { t += `<option value="${c}" ${c===a.code?'selected':''}>${c}</option>`; });
+    t += `</select></td></tr>`;
+  });
+
+  t += `</tbody></table></div>`;
+  return t;
+}
+
+function applyGateCorrection(yr, accountName, newCode) {
+  const plKey = yr === 'prior' ? 'priorPL' : 'currentPL';
+  if (!state[plKey]) return;
+  if (newCode === 'skip') {
+    state[plKey].mapped = state[plKey].mapped.filter(m => m.clean !== accountName);
+  } else {
+    state[plKey].mapped = state[plKey].mapped.map(m =>
+      m.clean === accountName ? { ...m, code: newCode } : m
+    );
+  }
+  reRenderBalanceGate();
 }
 
 function backToUnmatchedFromGate() {
@@ -3512,6 +3872,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLookupsFromStorage();
   initSetup();
   updateTopbar();
+  renderBalanceEstimateInputs();
 });
 </script>
 </body>
