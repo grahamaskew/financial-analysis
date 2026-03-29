@@ -2113,7 +2113,7 @@ function showBalanceGate() {
       return;
     }
 
-    const rev = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
+    const rev    = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
     const diff = Math.abs(computed - reported);
     const threshold = Math.max(500, rev * 0.005);
     const pass = diff <= threshold;
@@ -2124,20 +2124,32 @@ function showBalanceGate() {
     const bgColor = pass ? 'var(--green-bg,#f0fdf4)' : '#fef2f2';
     const border = pass ? 'var(--green,#22c55e)' : '#ef4444';
 
+    const tCogs  = ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'].reduce((s,c) => s+(totals[c]||0), 0);
+    const tComp  = ['c1','c2e','c2o','c3','c4','csub'].reduce((s,c) => s+(totals[c]||0), 0);
+    const tOpex  = ['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'].reduce((s,c) => s+(totals[c]||0), 0);
+    const tOther = (totals['mon-in']||0) + (totals['oth-in']||0);
+    const tGP    = rev - tCogs;
+
     html += `<div style="background:${bgColor};border:1px solid ${border};border-radius:8px;padding:12px 16px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <span style="font-size:18px">${icon}</span>
         <strong style="color:${color};font-size:14px">${label}: Balance ${pass ? 'OK' : 'FAILED'}</strong>
       </div>
-      <div style="font-size:13px;display:grid;grid-template-columns:auto auto;gap:4px 24px;max-width:360px">
-        <span style="color:var(--text2)">Reported Net Income:</span><span class="mono"><strong>${fmtDollar(reported)}</strong></span>
-        <span style="color:var(--text2)">Computed Net Income:</span><span class="mono"><strong>${fmtDollar(computed)}</strong></span>
-        <span style="color:var(--text2)">Difference:</span><span class="mono" style="color:${color}"><strong>${fmtDollar(diff)}</strong></span>
-        <span style="color:var(--text2)">Threshold (0.5% rev):</span><span class="mono">${fmtDollar(threshold)}</span>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Calculation Breakdown</div>
+      <div style="font-size:13px;display:grid;grid-template-columns:1fr auto;gap:2px 24px;max-width:420px;margin-bottom:10px">
+        <span style="color:var(--text2)">Total Revenue</span><span class="mono text-right">${fmtDollar(rev)}</span>
+        <span style="color:var(--text2)">− Total COGS</span><span class="mono text-right">(${fmtDollar(tCogs)})</span>
+        <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border)">= Gross Profit</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border)">${fmtDollar(tGP)}</span>
+        <span style="color:var(--text2)">− Total Compensation</span><span class="mono text-right">(${fmtDollar(tComp)})</span>
+        <span style="color:var(--text2)">− Operating Expenses</span><span class="mono text-right">(${fmtDollar(tOpex)})</span>
+        <span style="color:var(--text2)">+ Other Income</span><span class="mono text-right">${fmtDollar(tOther)}</span>
+        <span style="color:var(--text2);padding-top:4px;border-top:1px solid var(--border);font-weight:600">= Computed Net Income</span><span class="mono text-right" style="padding-top:4px;border-top:1px solid var(--border);font-weight:600">${fmtDollar(computed)}</span>
+        <span style="color:var(--text2)">Reported Net Income</span><span class="mono text-right">${fmtDollar(reported)}</span>
+        <span style="color:${color};font-weight:600">Difference</span><span class="mono text-right" style="color:${color};font-weight:600">${fmtDollar(diff)}</span>
       </div>
-      ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px">
-        <strong>Possible causes:</strong> double-counted subtotal row, unmapped account, or account excluded via SKIP.
-        Go back and review if needed.
+      <div style="font-size:11px;color:var(--text3)">Threshold: ${fmtDollar(threshold)} (max of $500 or 0.5% of revenue)</div>
+      ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <strong>Possible causes:</strong> double-counted subtotal row, unmapped account, or account excluded via SKIP. Use the breakdown above to identify which group looks wrong, then go back and correct.
       </div>` : ''}
     </div>`;
   });
@@ -2206,6 +2218,8 @@ function resetPL() {
     zone.querySelector('.upload-sub').textContent = 'QuickBooks P&amp;L export • Excel or CSV';
   });
   document.getElementById('processPLBtn').disabled = true;
+  document.getElementById('priorFileInput').value = '';
+  document.getElementById('currentFileInput').value = '';
   setPLStep(1);
 }
 
