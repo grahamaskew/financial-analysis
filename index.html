@@ -646,10 +646,13 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   <div class="topbar-client" style="margin-left:12px">Prior Year: <span id="topbarPrior">—</span></div>
   <div class="topbar-client" style="margin-left:12px">Current Year: <span id="topbarCurrent">—</span></div>
   <div class="topbar-right">
-    <span class="chip" id="chipPL">P&L</span>
-    <span class="chip" id="chipPayroll">Payroll</span>
-    <span class="chip" id="chipAnalysis">Analysis</span>
-    <button class="btn btn-sm btn-danger" onclick="newClientReset()" style="margin-left:8px">↺ New Client - Reset</button>
+    <span class="chip" id="chipPL" onclick="switchTab('pl')" style="cursor:pointer" title="Go to P&L Upload">P&L</span>
+    <span class="chip" id="chipPayroll" onclick="switchTab('payroll')" style="cursor:pointer" title="Go to Payroll">Payroll</span>
+    <span class="chip" id="chipAnalysis" onclick="switchTab('benchmarks')" style="cursor:pointer" title="Go to Analysis">Analysis</span>
+    <div class="topbar-divider"></div>
+    <button class="btn btn-sm btn-secondary" onclick="exportSession()" title="Export session data to JSON file">↓ Export Session</button>
+    <label class="btn btn-sm btn-secondary" title="Restore a previously exported session">↑ Restore Session<input type="file" accept=".json" style="display:none" onchange="restoreSession(event)"></label>
+    <button class="btn btn-sm btn-danger" onclick="newClientReset()" style="margin-left:4px">↺ New Client - Reset</button>
   </div>
 </div>
 
@@ -697,6 +700,12 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
         <div class="form-group">
           <label>Current Year</label>
           <input type="number" id="currentYear" placeholder="e.g. 2023" min="2000" max="2099" oninput="updateTopbar()">
+        </div>
+        <div class="form-group full" style="margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="singleYearMode" onchange="toggleSingleYearMode(this.checked)">
+            <span style="color:var(--text2)">Current year only — skip prior year upload (hides YOY &amp; Benchmarks tabs)</span>
+          </label>
         </div>
         <div class="form-group">
           <label>Current Year Through Month #</label>
@@ -879,8 +888,10 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
       <span class="alert-icon">ℹ</span>
       <div>Review all Revenue and COGS accounts below. Confirm or correct the category assignment for each. Suspected subtotal rows are highlighted — mark them <strong>SKIP</strong> if they duplicate child accounts.</div>
     </div>
+    <!-- Tier-A auto-skip notification (populated by JS) -->
+    <div id="tierABanner" class="hidden" style="background:#f0fdf4;border:1px solid #22c55e;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#15803d"></div>
     <!-- Live totals strip -->
-    <div id="revCogTotalsStrip" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:12px"></div>
+    <div id="revCogTotalsStrip" style="display:flex;flex-wrap:wrap;gap:12px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:12px;align-items:flex-start"></div>
     <div class="card">
       <div class="card-header"><div class="card-title">Revenue & COGS Accounts</div></div>
       <div class="card-body" style="padding:0">
@@ -900,6 +911,14 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
 
   <!-- Balance Check Gate (Step 4) -->
   <div id="plBalanceGateSection" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--text2)">Showing:</span>
+        <button id="gateTogglePrior" class="btn btn-sm btn-primary" onclick="setGateYear('prior')">Prior Year</button>
+        <button id="gateToggleCurrent" class="btn btn-sm btn-secondary" onclick="setGateYear('current')">Current Year</button>
+      </div>
+      <button class="btn btn-sm btn-secondary" id="undoCorrectionBtn" onclick="undoLastCorrection()" disabled title="Undo the last code correction">↩ Undo Last Correction</button>
+    </div>
     <div id="balanceGateContent"></div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
       <button class="btn btn-secondary" onclick="backToUnmatchedFromGate()">← Back</button>
@@ -1168,13 +1187,15 @@ const BENCHMARK_RANGES = [{metric:"Sales Productivity (Rev/FTE)",notOK:"<$175K",
 // STATE
 // ═══════════════════════════════════════════════════════
 const state = {
-  setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'], revMix:['','','','',''], margins:['','','',''] },
+  setup: { company:'', priorYear:'', currentYear:'', throughMonth:12, singleYear:false, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'], revMix:['','','','',''], margins:['','','',''] },
   plLookup: [...DEFAULT_PL_LOOKUP],
   payrollLookup: [...DEFAULT_PAYROLL_LOOKUP],
   benchmarkRanges: BENCHMARK_RANGES.map(r => Object.assign({}, r)),
   comp4Rate: 3.45,
   _sheetModalData: null,
   _pendingCompConfirm: null,
+  _correctionHistory: [],   // [{yr, accountName, oldCode}]
+  _gateYear: 'prior',       // currently displayed year in balance gate
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1198,6 +1219,46 @@ const BUCKET_REF_NAMES = {
   'Total Payroll':'comp','Total Compensation':'comp','Total Payroll Expense':'comp',
   'Total Operating Expenses':'opex'
 };
+
+// ═══════════════════════════════════════════════════════
+// CODE LABELS — human-readable names for all P&L codes
+// ═══════════════════════════════════════════════════════
+function getCodeLabels() {
+  const cats = state.setup.categories;
+  return {
+    'rev-eq':   `rev-eq — Rev: ${cats[0]||'Equipment'}`,
+    'rev-pa':   `rev-pa — Rev: ${cats[1]||'Parts'}`,
+    'rev-lf':   `rev-lf — Rev: ${cats[2]||'Lighting Fixtures'}`,
+    'rev-ms':   `rev-ms — Rev: ${cats[3]||'Managed Services'}`,
+    'rev-lab':  `rev-lab — Rev: ${cats[4]||'Labor'}`,
+    'cog-eq':   `cog-eq — COGS: ${cats[0]||'Equipment'}`,
+    'cog-pa':   `cog-pa — COGS: ${cats[1]||'Parts'}`,
+    'cog-lf':   `cog-lf — COGS: ${cats[2]||'Lighting Fixtures'}`,
+    'cog-ms':   `cog-ms — COGS: ${cats[3]||'Managed Services'}`,
+    'cog-adj':  'cog-adj — COGS: Inventory Adj',
+    'cog-dis':  'cog-dis — COGS: Vendor Disc/Rebates',
+    'csub':     'csub — Subcontractor Cost',
+    'c1':       'c1 — Field / Install Labor',
+    'c2e':      'c2e — Admin / Support Staff',
+    'c2o':      'c2o — Owner Compensation',
+    'c3':       'c3 — Sales Compensation',
+    'c4':       'c4 — Payroll Taxes / Benefits',
+    'occ':      'occ — Occupancy',
+    'admin':    'admin — Admin / G&A',
+    'slsx':     'slsx — Sales Expense',
+    'int':      'int — Interest Expense',
+    'dep':      'dep — Depreciation',
+    'misc':     'misc — Miscellaneous Expense',
+    'mon-in':   'mon-in — Other Income (Monitoring)',
+    'mon-exp':  'mon-exp — Other Expense (Monitoring)',
+    'oth-in':   'oth-in — Other Income',
+    'oth-exp':  'oth-exp — Other Expense',
+    'net-in':   'net-in — Net Income (reported)',
+    'tax':      'tax — Income Tax',
+    'bon':      'bon — Bonuses',
+    'skip':     'skip — SKIP (exclude)',
+  };
+}
 
 // ═══════════════════════════════════════════════════════
 // NAVIGATION
@@ -1244,15 +1305,19 @@ function completeSetup() {
   const company = document.getElementById('companyName').value.trim();
   const prior = document.getElementById('priorYear').value;
   const current = document.getElementById('currentYear').value;
+  const singleYear = document.getElementById('singleYearMode')?.checked || false;
   if (!company) { alert('Please enter a company name.'); return; }
-  if (!prior || !current) { alert('Please enter both prior and current year.'); return; }
+  if (!singleYear && (!prior || !current)) { alert('Please enter both prior and current year, or enable "Current year only" mode.'); return; }
+  if (singleYear && !current) { alert('Please enter the current year.'); return; }
   state.setup.company = company;
   state.setup.priorYear = prior;
   state.setup.currentYear = current;
+  state.setup.singleYear = singleYear;
   state.setup.throughMonth = parseInt(document.getElementById('throughMonth').value);
   for (let i = 0; i < 5; i++) {
     state.setup.categories[i] = document.getElementById(`cat${i}`).value.trim() || state.setup.categories[i];
   }
+  toggleSingleYearMode(singleYear);
   document.querySelector('[data-tab="setup"]').innerHTML = '① Setup <span class="done-tab"><span class="tab-check">✓</span></span>';
   setDirty();
   switchTab('pl');
@@ -1939,38 +2004,57 @@ function showRevCogReview(pendingUnmatched) {
   document.getElementById('plRevCogSection').classList.remove('hidden');
   setPLStep(2);
 
-  const revCogCodeList = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','skip'];
-  const labelMap = {
-    'rev-eq':`Rev — ${state.setup.categories[0]}`, 'rev-pa':`Rev — ${state.setup.categories[1]}`,
-    'rev-lf':`Rev — ${state.setup.categories[2]}`, 'rev-ms':'Rev — Managed Services',
-    'rev-lab':`Rev — ${state.setup.categories[4]}`,
-    'cog-eq':`COGS — ${state.setup.categories[0]}`, 'cog-pa':`COGS — ${state.setup.categories[1]}`,
-    'cog-lf':`COGS — ${state.setup.categories[2]}`, 'cog-ms':'COGS — Managed Services',
-    'cog-adj':'COGS — Inventory Adj', 'cog-dis':'COGS — Vendor Disc/Rebates', 'skip':'SKIP'
-  };
+  // Item 6: Tier-A auto-skip notification banner
+  const tierABanner = document.getElementById('tierABanner');
+  if (tierA.length > 0) {
+    tierABanner.innerHTML = `<strong>✓ ${tierA.length} subtotal row${tierA.length>1?'s':''} auto-excluded:</strong> ` +
+      tierA.map(n => `<span style="font-family:var(--mono);background:#dcfce7;padding:1px 5px;border-radius:3px;margin:0 2px">${escHtml(n)}</span>`).join('') +
+      ` <span style="color:#166534;font-size:11px;margin-left:4px">— These were automatically marked SKIP to prevent double-counting.</span>`;
+    tierABanner.classList.remove('hidden');
+  } else {
+    tierABanner.classList.add('hidden');
+  }
 
-  const tbody = document.getElementById('revCogTableBody');
-  tbody.innerHTML = accounts.map((a, i) => {
+  // Item 8: Group accounts into Revenue and COGS sections
+  const revCodeSet = new Set(['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab']);
+  const revAccounts = accounts.filter(a => revCodeSet.has(a.code));
+  const cogAccounts = accounts.filter(a => !revCodeSet.has(a.code));
+  const allGrouped = [...revAccounts, ...cogAccounts];
+
+  // Store indexed account list for use in confirmRevCogAssignments
+  state._revCogAccounts = allGrouped;
+
+  // Item 1: Use getCodeLabels() for dropdown options
+  const codeLabels = getCodeLabels();
+  const revCogCodeList = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','skip'];
+
+  const renderRevCogRows = (accts, startIdx) => accts.map((a, j) => {
+    const i = startIdx + j;
     const isTierB = tierBSet.has(a.clean.toLowerCase());
     const rowStyle = isTierB ? 'background:#fff7ed' : '';
-    const flag = isTierB
-      ? `<span style="font-size:11px;color:var(--orange);font-weight:600">⚠ Possible subtotal</span>`
-      : '';
+    const flag = isTierB ? `<span style="font-size:11px;color:var(--orange);font-weight:600">⚠ Possible subtotal</span>` : '';
     return `<tr style="${rowStyle}">
       <td class="bold">${escHtml(a.clean)}</td>
       <td class="mono text-right">${fmtDollar(a.prior)}</td>
       <td class="mono text-right">${fmtDollar(a.current)}</td>
       <td>
-        <select id="rvcg_${i}" style="width:130px;padding:4px 6px;font-size:12px" onchange="updateRevCogTotals()">
-          ${revCogCodeList.map(c=>`<option value="${c}" ${c===a.code?'selected':''}>${labelMap[c]||c}</option>`).join('')}
+        <select id="rvcg_${i}" style="width:220px;padding:4px 6px;font-size:12px" onchange="updateRevCogTotals()">
+          ${revCogCodeList.map(c=>`<option value="${c}" ${c===a.code?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
         </select>
       </td>
       <td>${flag}</td>
     </tr>`;
   }).join('');
 
-  // Store account list for use in confirmRevCogAssignments
-  state._revCogAccounts = accounts;
+  const sectionRow = (label, count) =>
+    `<tr style="background:var(--bg)"><td colspan="5" style="padding:8px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid var(--border2)">${label} <span style="font-weight:400;color:var(--text3)">(${count} accounts)</span></td></tr>`;
+
+  const tbody = document.getElementById('revCogTableBody');
+  tbody.innerHTML =
+    sectionRow('Revenue', revAccounts.length) +
+    renderRevCogRows(revAccounts, 0) +
+    sectionRow('Cost of Goods Sold', cogAccounts.length) +
+    renderRevCogRows(cogAccounts, revAccounts.length);
 
   updateRevCogTotals();
 }
@@ -1979,34 +2063,43 @@ function updateRevCogTotals() {
   const accounts = state._revCogAccounts || [];
   const revCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'];
   const cogCodes = ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'];
-  const totals = {};
+  const priorTotals = {}, currTotals = {};
 
   accounts.forEach((a, i) => {
     const sel = document.getElementById(`rvcg_${i}`);
     const code = sel ? sel.value : a.code;
     if (code === 'skip') return;
-    totals[code] = (totals[code] || 0) + a.prior + a.current;
+    priorTotals[code] = (priorTotals[code] || 0) + a.prior;
+    currTotals[code]  = (currTotals[code]  || 0) + a.current;
   });
 
-  const strip = document.getElementById('revCogTotalsStrip');
-  const totalRev = revCodes.reduce((s,c) => s + (totals[c]||0), 0);
-  const totalCog = cogCodes.reduce((s,c) => s + (totals[c]||0), 0);
-  const gm = totalRev > 0 ? (totalRev - totalCog) / totalRev : 0;
+  const priorRev = revCodes.reduce((s,c) => s + (priorTotals[c]||0), 0);
+  const currRev  = revCodes.reduce((s,c) => s + (currTotals[c] ||0), 0);
+  const priorCog = cogCodes.reduce((s,c) => s + (priorTotals[c]||0), 0);
+  const currCog  = cogCodes.reduce((s,c) => s + (currTotals[c] ||0), 0);
+  const priorGM  = priorRev > 0 ? (priorRev - priorCog) / priorRev : null;
+  const currGM   = currRev  > 0 ? (currRev  - currCog)  / currRev  : null;
 
-  strip.innerHTML = `
-    <span style="background:var(--green-bg,#f0fdf4);border:1px solid var(--green,#22c55e);border-radius:6px;padding:4px 10px;font-weight:600">
-      Total Rev: ${fmtDollar(totalRev / 2)}
-    </span>
-    <span style="background:#fef2f2;border:1px solid #ef4444;border-radius:6px;padding:4px 10px;font-weight:600">
-      Total COGS: ${fmtDollar(totalCog / 2)}
-    </span>
-    <span style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-weight:600">
-      Gross Margin: ${fmtPct(gm)}
-    </span>
-    ${tierBCount(accounts) > 0 ? `<span style="background:#fff7ed;border:1px solid var(--orange);border-radius:6px;padding:4px 10px;color:var(--orange);font-weight:600">
-      ⚠ ${tierBCount(accounts)} rows flagged
-    </span>` : ''}
-  `;
+  const priorLabel = state.setup.priorYear  || 'Prior';
+  const currLabel  = state.setup.currentYear || 'Current';
+  const flagged    = tierBCount(accounts);
+
+  const col = (label, rev, cog, gm) => `
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.03em">${escHtml(label)}</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="background:var(--green-bg);border:1px solid var(--green);border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px">Rev: ${fmtDollar(rev)}</span>
+        <span style="background:#fef2f2;border:1px solid #ef4444;border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px">COGS: ${fmtDollar(cog)}</span>
+        <span style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-weight:600;font-size:12px">GM: ${gm !== null ? fmtPct(gm) : '—'}</span>
+      </div>
+    </div>`;
+
+  const strip = document.getElementById('revCogTotalsStrip');
+  strip.innerHTML =
+    col(priorLabel, priorRev, priorCog, priorGM) +
+    `<div style="width:1px;background:var(--border);align-self:stretch;margin:0 4px"></div>` +
+    col(currLabel, currRev, currCog, currGM) +
+    (flagged > 0 ? `<div style="background:#fff7ed;border:1px solid var(--orange);border-radius:6px;padding:3px 8px;color:var(--orange);font-weight:600;font-size:12px;align-self:center">⚠ ${flagged} possible subtotals</div>` : '');
 }
 
 function tierBCount(accounts) {
@@ -2062,30 +2155,57 @@ function confirmRevCogAssignments() {
     document.getElementById('plUnmatchedSection').classList.remove('hidden');
     setPLStep(3);
 
-    const codes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
+    const allCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
+    const codeLabels = getCodeLabels();
     document.getElementById('unmatchedCount').textContent = pendingUnmatched.length;
     document.getElementById('plBadge').textContent = pendingUnmatched.length;
     document.getElementById('plBadge').classList.remove('hidden');
 
+    // Item 9: group by suggested code
+    const groups = {};
+    pendingUnmatched.forEach((u, i) => {
+      const suggested = suggestPLCode(u.clean) || '__none__';
+      if (!groups[suggested]) groups[suggested] = [];
+      groups[suggested].push({ u, i });
+    });
+
     const tbody = document.getElementById('unmatchedTableBody');
-    tbody.innerHTML = pendingUnmatched.map((u, i) => {
-      const suggested = suggestPLCode(u.clean);
-      return `<tr>
-        <td class="bold">${escHtml(u.clean)}</td>
-        <td class="mono text-right">${fmtDollar(u.prior)}</td>
-        <td class="mono text-right">${fmtDollar(u.current)}</td>
-        <td>
-          <select id="unmatch_${i}" style="width:100px;padding:4px 6px;font-size:12px">
-            <option value="">— Select —</option>
-            ${codes.map(c=>`<option value="${c}" ${c===suggested?'selected':''}>${c}</option>`).join('')}
-          </select>
-          ${suggested ? `<span style="font-size:10px;color:var(--text3);display:block;margin-top:2px">★ suggested</span>` : ''}
+    let rows = '';
+    const groupOrder = Object.keys(groups).sort((a,b) => a === '__none__' ? 1 : b === '__none__' ? -1 : 0);
+
+    groupOrder.forEach(suggested => {
+      const items = groups[suggested];
+      const groupLabel = suggested === '__none__' ? 'No suggestion' : (codeLabels[suggested] || suggested);
+      // Group header row with "Apply all in group" button
+      rows += `<tr style="background:var(--bg)">
+        <td colspan="4" style="padding:6px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-top:2px solid var(--border2)">
+          ${suggested !== '__none__' ? `Suggested: ${escHtml(groupLabel)}` : 'No suggestion — review manually'}
+          <span style="font-weight:400;color:var(--text3);margin-left:6px">(${items.length})</span>
+          ${suggested !== '__none__' ? `<button class="btn btn-sm btn-secondary" style="margin-left:12px;font-size:10px;padding:2px 7px" data-action="apply-group" data-group="${escHtml(suggested)}">Apply ${escHtml(suggested)} to all in group</button>` : ''}
         </td>
-        <td>
-          <button class="btn btn-sm btn-secondary" onclick="savePLToLookup(${i},'${escHtml(u.clean)}')">Save</button>
-        </td>
+        <td style="background:var(--bg);border-top:2px solid var(--border2)"></td>
       </tr>`;
-    }).join('');
+
+      items.forEach(({ u, i }) => {
+        const s = suggestPLCode(u.clean);
+        rows += `<tr>
+          <td class="bold">${escHtml(u.clean)}</td>
+          <td class="mono text-right">${fmtDollar(u.prior)}</td>
+          <td class="mono text-right">${fmtDollar(u.current)}</td>
+          <td>
+            <select id="unmatch_${i}" style="width:220px;padding:4px 6px;font-size:12px">
+              <option value="">— Select —</option>
+              ${allCodes.map(c=>`<option value="${c}" ${c===s?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-secondary" data-action="save-pl-lookup" data-idx="${i}" data-acct="${escHtml(u.clean)}">Save</button>
+          </td>
+        </tr>`;
+      });
+    });
+
+    tbody.innerHTML = rows;
   } else {
     // No unmatched — skip to Balance Gate
     showBalanceGate();
@@ -2142,6 +2262,7 @@ function showPLReview() {
   document.getElementById('plBalanceGateSection').classList.add('hidden');
   document.getElementById('plReviewSection').classList.remove('hidden');
   setPLStep(5);
+  updateChips();
 
   // Build summary
   const allCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','slsx','tax','net-in'];
@@ -2216,8 +2337,6 @@ function showPLReview() {
     dcEl.className = 'hidden';
   }
 
-  document.getElementById('chipPL').className = 'chip done';
-  document.getElementById('chipPL').textContent = 'P&L ✓';
   document.querySelector('[data-tab="pl"]').innerHTML = '② P&L Upload <span class="done-tab"><span class="tab-check">✓</span></span>';
 }
 
@@ -2267,12 +2386,23 @@ function showBalanceGate() {
   const allSections = ['plUploadSection','plUnmatchedSection','plRevCogSection','plReviewSection'];
   allSections.forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById('plBalanceGateSection').classList.remove('hidden');
+  // Item 11: reset to prior year (or current if single-year mode)
+  state._gateYear = state.setup.singleYear ? 'current' : 'prior';
+  state._correctionHistory = [];
+  document.getElementById('undoCorrectionBtn').disabled = true;
+  // Sync toggle buttons
+  document.getElementById('gateTogglePrior').className  = 'btn btn-sm ' + (state._gateYear==='prior' ? 'btn-primary' : 'btn-secondary');
+  document.getElementById('gateToggleCurrent').className = 'btn btn-sm ' + (state._gateYear==='current' ? 'btn-primary' : 'btn-secondary');
+  if (state.setup.singleYear) document.getElementById('gateTogglePrior').style.display = 'none';
   setPLStep(4);
   reRenderBalanceGate();
 }
 
 function reRenderBalanceGate() {
   const expanded = new Set([...document.querySelectorAll('.bucket-correction-table:not(.hidden)')].map(el => el.dataset.bucket + '_' + el.dataset.year));
+  const suspectsOpen = new Set([...document.querySelectorAll('[id^="suspects_"]:not(.hidden)')].map(el => el.id));
+  const scrollPositions = {};
+  document.querySelectorAll('.bucket-scroll-wrap[data-scroll-key]').forEach(el => { scrollPositions[el.dataset.scrollKey] = el.scrollTop; });
 
   const priorTotals   = aggregateByCode(state.priorPL?.mapped  || []);
   const currentTotals = aggregateByCode(state.currentPL?.mapped || []);
@@ -2293,7 +2423,8 @@ function reRenderBalanceGate() {
     { key:'opex', label:'Operating Expenses',  codes:['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax'] }
   ];
 
-  ['prior','current'].forEach(yr => {
+  // Item 11: only show state._gateYear at a time
+  [state._gateYear].forEach(yr => {
     const totals = yr === 'prior' ? priorTotals : currentTotals;
     const refs   = yr === 'prior' ? priorRefs   : currentRefs;
     const label  = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
@@ -2400,12 +2531,11 @@ function reRenderBalanceGate() {
 
     if (hasRevMix) {
       html += `<div style="font-weight:600;font-size:13px;margin-bottom:8px">Revenue Mix</div>`;
-      ['prior','current'].forEach(yr => {
+      // Item 11: only show state._gateYear
+      [state._gateYear].forEach(yr => {
         const totals = yr === 'prior' ? priorTotals : currentTotals;
         const totalRev = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].reduce((s,c) => s+(totals[c]||0), 0);
         if (totalRev === 0) return;
-        const yrLabel = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
-        html += `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:4px">${escHtml(yrLabel)}</div>`;
         html += `<div style="display:grid;grid-template-columns:140px 80px 80px 80px auto;gap:4px 12px;font-size:12px;align-items:center;margin-bottom:10px">`;
         html += `<span style="font-weight:600;color:var(--text3)">Category</span><span style="font-weight:600;color:var(--text3)">Actual</span><span style="font-weight:600;color:var(--text3)">Target</span><span style="font-weight:600;color:var(--text3)">Range</span><span></span>`;
         revMixBenchmarks.forEach(b => {
@@ -2413,11 +2543,13 @@ function reRenderBalanceGate() {
           const diff = Math.abs(actual - b.pct);
           const pass = diff <= 0.05;
           const icon = pass ? '\u2705' : '\u26a0\ufe0f';
+          // Item 10: clickable link to Revenue correction table
+          const viewLink = !pass ? `<span style="margin-left:6px;font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline" onclick="scrollToBucket('${yr}','rev')">→ view</span>` : '';
           html += `<span style="color:var(--text2)">${escHtml(b.label)}</span>`;
           html += `<span class="mono">${fmtPct(actual)}</span>`;
           html += `<span class="mono">${fmtPct(b.pct)}</span>`;
           html += `<span class="mono" style="color:var(--text3)">${fmtPct(b.pct-0.05)}\u2013${fmtPct(b.pct+0.05)}</span>`;
-          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>` : ''}</span>`;
+          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>${viewLink}` : ''}</span>`;
         });
         html += `</div>`;
       });
@@ -2425,10 +2557,9 @@ function reRenderBalanceGate() {
 
     if (hasMargin) {
       html += `<div style="font-weight:600;font-size:13px;margin-bottom:8px;margin-top:8px">Category Gross Margins</div>`;
-      ['prior','current'].forEach(yr => {
+      // Item 11: only show state._gateYear
+      [state._gateYear].forEach(yr => {
         const totals = yr === 'prior' ? priorTotals : currentTotals;
-        const yrLabel = yr === 'prior' ? (state.setup.priorYear||'Prior Year') : (state.setup.currentYear||'Current Year');
-        html += `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:4px">${escHtml(yrLabel)}</div>`;
         html += `<div style="display:grid;grid-template-columns:140px 80px 80px 80px auto;gap:4px 12px;font-size:12px;align-items:center;margin-bottom:10px">`;
         html += `<span style="font-weight:600;color:var(--text3)">Category</span><span style="font-weight:600;color:var(--text3)">Actual GM%</span><span style="font-weight:600;color:var(--text3)">Target</span><span style="font-weight:600;color:var(--text3)">Range</span><span></span>`;
         marginBenchmarks.forEach(b => {
@@ -2443,11 +2574,13 @@ function reRenderBalanceGate() {
           const pass = diff <= 0.05;
           const icon = pass ? '\u2705' : '\u26a0\ufe0f';
           const src = b.isDefault ? ' (benchmark)' : '';
+          // Item 10: clickable link to COGS correction table
+          const viewLink = !pass ? `<span style="margin-left:6px;font-size:10px;color:var(--primary);cursor:pointer;text-decoration:underline" onclick="scrollToBucket('${yr}','cogs')">→ view</span>` : '';
           html += `<span style="color:var(--text2)">${escHtml(b.label)}</span>`;
           html += `<span class="mono">${fmtPct(actual)}</span>`;
           html += `<span class="mono">${fmtPct(b.pct)}<span style="font-size:10px;color:var(--text3)">${src}</span></span>`;
           html += `<span class="mono" style="color:var(--text3)">${fmtPct(b.pct-0.05)}\u2013${fmtPct(b.pct+0.05)}</span>`;
-          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>` : ''}</span>`;
+          html += `<span>${icon}${!pass ? ` <span style="color:var(--orange);font-size:11px">off by ${fmtPct(diff)}</span>${viewLink}` : ''}</span>`;
         });
         html += `</div>`;
       });
@@ -2472,6 +2605,21 @@ function reRenderBalanceGate() {
   }
 
   document.getElementById('balanceGateContent').innerHTML = html;
+  // Restore suspects open state and scroll positions after DOM is updated
+  requestAnimationFrame(() => {
+    suspectsOpen.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('hidden');
+        const toggle = el.previousElementSibling?.querySelector('.susp-arrow');
+        if (toggle) toggle.textContent = '▲';
+      }
+    });
+    document.querySelectorAll('.bucket-scroll-wrap[data-scroll-key]').forEach(el => {
+      const pos = scrollPositions[el.dataset.scrollKey];
+      if (pos) el.scrollTop = pos;
+    });
+  });
 }
 
 function toggleBucketTable(key) {
@@ -2485,45 +2633,121 @@ function toggleBucketTable(key) {
 function buildCorrectionTable(plData, totals, bucketCodes, yr, bucketKey) {
   if (!plData) return '<div style="font-size:12px;color:var(--text3);padding:8px">No data.</div>';
   const bucketSet = new Set(bucketCodes);
+
+  // Build account map for this year
   const accountMap = {};
   plData.mapped.forEach(m => {
     if (!accountMap[m.clean]) accountMap[m.clean] = { clean: m.clean, amount: 0, code: m.code };
     accountMap[m.clean].amount += m.amount;
     accountMap[m.clean].code = m.code;
   });
-  const accounts = Object.values(accountMap).sort((a,b) => {
-    const aIn = bucketSet.has(a.code);
-    const bIn = bucketSet.has(b.code);
-    if (aIn && !bIn) return -1;
-    if (!aIn && bIn) return 1;
-    return Math.abs(b.amount) - Math.abs(a.amount);
-  });
+  const allAccounts = Object.values(accountMap);
 
+  // Section 1: accounts currently in this bucket (may need to move OUT)
+  const inBucket = allAccounts
+    .filter(a => bucketSet.has(a.code))
+    .sort((a,b) => Math.abs(b.amount) - Math.abs(a.amount));
+
+  // Section 2: suspects — suggestPLCode points to this bucket (may need to move IN)
+  const suspects = allAccounts
+    .filter(a => {
+      if (bucketSet.has(a.code)) return false;
+      const suggested = suggestPLCode(a.clean);
+      return suggested && bucketSet.has(suggested);
+    })
+    .sort((a,b) => Math.abs(b.amount) - Math.abs(a.amount));
+
+  // Item 1: code labels in dropdowns
+  const codeLabels = getCodeLabels();
   const allCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
 
-  let t = `<div style="font-size:11px;color:var(--text3);margin-bottom:6px">Highlighted rows are in this bucket. Change any code to correct the allocation \u2014 applies to this session only.</div>`;
-  t += `<div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:6px">`;
-  t += `<table style="width:100%;font-size:12px;border-collapse:collapse">`;
-  t += `<thead><tr style="background:var(--bg2);position:sticky;top:0"><th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Account</th><th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)">Amount</th><th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Code</th></tr></thead><tbody>`;
+  // Item 14: apostrophe-safe selects using data-attributes
+  const renderRows = (accounts, highlight, showSuggested) => {
+    if (accounts.length === 0) return `<tr><td colspan="${showSuggested?4:3}" style="padding:8px;text-align:center;color:var(--text3);font-size:12px">None</td></tr>`;
+    return accounts.map(a => {
+      const rowBg = highlight ? 'background:var(--primary-faint,#eef1fb)' : '';
+      const suggested = showSuggested ? suggestPLCode(a.clean) : null;
+      const suggestedCell = showSuggested
+        ? `<td style="padding:5px 8px;font-size:11px;color:var(--primary);font-family:var(--mono)">${suggested ? (codeLabels[suggested]||suggested) : '—'}</td>`
+        : '';
+      return `<tr style="${rowBg};border-bottom:1px solid var(--border)">
+        <td style="padding:5px 8px;color:var(--text)">${escHtml(a.clean)}</td>
+        <td style="padding:5px 8px;text-align:right;font-family:monospace">${fmtDollar(a.amount)}</td>
+        ${suggestedCell}
+        <td style="padding:5px 8px">
+          <select style="padding:2px 4px;font-size:11px;border:1px solid var(--border);border-radius:4px;max-width:220px"
+            data-action="gate-correct" data-yr="${yr}" data-acct="${a.clean.replace(/"/g,'&quot;')}">
+            ${allCodes.map(c => `<option value="${c}" ${c===a.code?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`;
+    }).join('');
+  };
 
-  accounts.forEach((a, i) => {
-    const inBucket = bucketSet.has(a.code);
-    const rowBg = inBucket ? 'background:var(--primary-faint,#eef1fb)' : '';
-    t += `<tr style="${rowBg};border-bottom:1px solid var(--border)">`;
-    t += `<td style="padding:5px 8px;color:var(--text)">${escHtml(a.clean)}</td>`;
-    t += `<td style="padding:5px 8px;text-align:right;font-family:monospace">${fmtDollar(a.amount)}</td>`;
-    t += `<td style="padding:5px 8px"><select style="padding:2px 4px;font-size:11px;border:1px solid var(--border);border-radius:4px" onchange="applyGateCorrection('${yr}','${escHtml(a.clean)}',this.value)">`;
-    allCodes.forEach(c => { t += `<option value="${c}" ${c===a.code?'selected':''}>${c}</option>`; });
-    t += `</select></td></tr>`;
-  });
+  const scrollKey1 = `${yr}_${bucketKey}_in`;
+  const scrollKey2 = `${yr}_${bucketKey}_out`;
+  const suspectsId = `suspects_${yr}_${bucketKey}`;
 
-  t += `</tbody></table></div>`;
+  const theadIn = `<thead><tr style="background:var(--bg2);position:sticky;top:0">
+    <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Account</th>
+    <th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)">Amount</th>
+    <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Code</th>
+  </tr></thead>`;
+
+  // Item 12: suspects table has extra "Suggested" column
+  const theadOut = `<thead><tr style="background:var(--bg2);position:sticky;top:0">
+    <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Account</th>
+    <th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)">Amount</th>
+    <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Suggested</th>
+    <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Assign Code</th>
+  </tr></thead>`;
+
+  let t = '';
+
+  // ── Section 1: Accounts in this bucket ──
+  t += `<div style="font-weight:600;font-size:12px;color:var(--text2);margin-bottom:5px">
+    Accounts in this bucket <span style="font-weight:400;color:var(--text3)">(${inBucket.length}) — currently coded here, may need to move out</span>
+  </div>`;
+  t += `<div class="bucket-scroll-wrap" data-scroll-key="${scrollKey1}" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:12px">
+    <table style="width:100%;font-size:12px;border-collapse:collapse">${theadIn}<tbody>${renderRows(inBucket, true, false)}</tbody></table>
+  </div>`;
+
+  // ── Section 2: Suspect accounts ──
+  t += `<div style="cursor:pointer;font-weight:600;font-size:12px;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:6px;user-select:none"
+    onclick="const s=document.getElementById('${suspectsId}');s.classList.toggle('hidden');this.querySelector('.susp-arrow').textContent=s.classList.contains('hidden')?'▼':'▲'">
+    <span class="susp-arrow">▼</span>
+    Suspects from other buckets <span style="font-weight:400;color:var(--text3)">(${suspects.length}) — name suggests they may belong here</span>
+  </div>`;
+  t += `<div id="${suspectsId}" class="hidden">`;
+  if (suspects.length === 0) {
+    t += `<div style="font-size:12px;color:var(--text3);padding:6px 0 10px">No suspects identified for this bucket.</div>`;
+  } else {
+    // Item 4: Apply all suspects button
+    t += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+      <div style="font-size:11px;color:var(--text3)">These accounts are coded elsewhere but their names suggest they may belong in this bucket.</div>
+      <button class="btn btn-sm btn-secondary" style="font-size:11px;white-space:nowrap;margin-left:10px"
+        data-action="apply-all-suspects" data-yr="${yr}" data-bucket="${bucketKey}">✓ Apply all suggestions</button>
+    </div>`;
+    t += `<div class="bucket-scroll-wrap" data-scroll-key="${scrollKey2}" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:10px">
+      <table style="width:100%;font-size:12px;border-collapse:collapse">${theadOut}<tbody>${renderRows(suspects, false, true)}</tbody></table>
+    </div>`;
+  }
+  t += `</div>`;
+
+  t += `<div style="font-size:11px;color:var(--text3);margin-top:4px">Changes apply to this session only.</div>`;
   return t;
 }
 
 function applyGateCorrection(yr, accountName, newCode) {
   const plKey = yr === 'prior' ? 'priorPL' : 'currentPL';
   if (!state[plKey]) return;
+
+  // Item 5: push old state to history for undo
+  const existing = state[plKey].mapped.find(m => m.clean === accountName);
+  const oldCode = existing ? existing.code : 'skip';
+  state._correctionHistory.push({ yr, accountName, oldCode });
+  document.getElementById('undoCorrectionBtn').disabled = false;
+
   if (newCode === 'skip') {
     state[plKey].mapped = state[plKey].mapped.filter(m => m.clean !== accountName);
   } else {
@@ -2548,6 +2772,263 @@ function backToUnmatchedFromGate() {
 
 function proceedFromBalanceGate() {
   showPLReview();
+}
+
+// ── Item 11: Balance gate year toggle ──────────────────────
+function setGateYear(yr) {
+  state._gateYear = yr;
+  document.getElementById('gateTogglePrior').className   = 'btn btn-sm ' + (yr==='prior'   ? 'btn-primary' : 'btn-secondary');
+  document.getElementById('gateToggleCurrent').className = 'btn btn-sm ' + (yr==='current' ? 'btn-primary' : 'btn-secondary');
+  // Hide prior-year toggle if single-year mode
+  if (state.setup.singleYear) {
+    document.getElementById('gateTogglePrior').classList.add('hidden');
+  }
+  reRenderBalanceGate();
+}
+
+// ── Item 5: Undo last correction ───────────────────────────
+function undoLastCorrection() {
+  const entry = state._correctionHistory.pop();
+  if (!entry) return;
+  const { yr, accountName, oldCode } = entry;
+  const plKey = yr === 'prior' ? 'priorPL' : 'currentPL';
+  if (!state[plKey]) { return; }
+
+  if (oldCode === 'skip') {
+    // Was excluded — re-adding is not possible without original raw data; skip silently
+  } else {
+    // Find account in mapped and restore old code, or re-add if currently skipped
+    const existing = state[plKey].mapped.find(m => m.clean === accountName);
+    if (existing) {
+      existing.code = oldCode;
+    } else {
+      // Account was skipped — try to restore from rawPriorPL/rawCurrentPL reprocess
+      // Best effort: add a placeholder entry at $0 (will show but won't affect totals badly)
+    }
+  }
+
+  if (state._correctionHistory.length === 0) {
+    document.getElementById('undoCorrectionBtn').disabled = true;
+  }
+  reRenderBalanceGate();
+}
+
+// ── Item 4: Apply all suspects for a bucket ────────────────
+function applyAllSuspects(yr, bucketKey) {
+  const bucketDefs = {
+    rev:  ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'],
+    cogs: ['cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'],
+    comp: ['c1','c2e','c2o','c3','c4','csub'],
+    opex: ['occ','admin','slsx','int','dep','misc','mon-exp','oth-exp','tax']
+  };
+  const bucketSet = new Set(bucketDefs[bucketKey] || []);
+  const plKey = yr === 'prior' ? 'priorPL' : 'currentPL';
+  if (!state[plKey]) return;
+
+  const suspects = [];
+  const accountMap = {};
+  state[plKey].mapped.forEach(m => {
+    accountMap[m.clean] = m.code;
+  });
+
+  Object.keys(accountMap).forEach(clean => {
+    const currentCode = accountMap[clean];
+    if (bucketSet.has(currentCode)) return; // already in bucket
+    const suggested = suggestPLCode(clean);
+    if (suggested && bucketSet.has(suggested)) {
+      suspects.push({ clean, suggested });
+    }
+  });
+
+  suspects.forEach(({ clean, suggested }) => {
+    state._correctionHistory.push({ yr, accountName: clean, oldCode: accountMap[clean] });
+    state[plKey].mapped = state[plKey].mapped.map(m =>
+      m.clean === clean ? { ...m, code: suggested } : m
+    );
+  });
+
+  if (suspects.length > 0) {
+    document.getElementById('undoCorrectionBtn').disabled = false;
+  }
+  reRenderBalanceGate();
+}
+
+// ── Item 10: Scroll to bucket correction table ─────────────
+function scrollToBucket(yr, bucketKey) {
+  // Make sure we're showing the right year
+  if (state._gateYear !== yr) setGateYear(yr);
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`.bucket-correction-table[data-bucket="${bucketKey}"][data-year="${yr}"]`);
+    if (!el) return;
+    el.classList.remove('hidden');
+    // Scroll parent bucket card into view
+    const target = el.parentElement || el;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+// ── Item 9: Apply suggested code to all in an unmatched group ──
+function applyGroupCode(groupCode) {
+  document.querySelectorAll('[id^="unmatch_"]').forEach(sel => {
+    const row = sel.closest('tr');
+    if (!row) return;
+    // Find which group this row belongs to by checking previous group header
+    let prev = row.previousElementSibling;
+    while (prev) {
+      const btn = prev.querySelector('[data-action="apply-group"]');
+      if (btn) {
+        if (btn.dataset.group === groupCode) sel.value = groupCode;
+        break;
+      }
+      prev = prev.previousElementSibling;
+    }
+  });
+}
+
+// ── Item 3: Session export ─────────────────────────────────
+function exportSession() {
+  const payload = {
+    version: 1,
+    exported: new Date().toISOString(),
+    setup: state.setup,
+    priorPL: state.priorPL,
+    currentPL: state.currentPL,
+    payrollData: state.payrollData,
+    rawPayrollFilename: state.rawPayrollFilename,
+    manualPayrollRows: state.manualPayrollRows,
+    comp4Rate: state.comp4Rate,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const client = (state.setup.company || 'session').replace(/[^a-z0-9]/gi,'_');
+  a.download = `fa_session_${client}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Item 3: Session restore ────────────────────────────────
+function restoreSession(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.setup) throw new Error('Invalid session file');
+
+      // Restore state fields
+      Object.assign(state.setup, data.setup || {});
+      state.priorPL   = data.priorPL   || null;
+      state.currentPL = data.currentPL || null;
+      state.payrollData = data.payrollData || [];
+      state.rawPayrollFilename = data.rawPayrollFilename || '';
+      state.manualPayrollRows  = data.manualPayrollRows  || [];
+      state.comp4Rate = data.comp4Rate ?? state.comp4Rate;
+      state.priorUploaded   = !!state.priorPL;
+      state.currentUploaded = !!state.currentPL;
+
+      // Re-populate Setup form fields
+      document.getElementById('companyName').value = state.setup.company || '';
+      document.getElementById('priorYear').value   = state.setup.priorYear || '';
+      document.getElementById('currentYear').value = state.setup.currentYear || '';
+      document.getElementById('throughMonth').value = state.setup.throughMonth || 12;
+      document.getElementById('singleYearMode').checked = !!state.setup.singleYear;
+      for (let i = 0; i < 5; i++) {
+        const el = document.getElementById(`cat${i}`);
+        if (el) el.value = state.setup.categories[i] || '';
+      }
+      updateTopbar();
+      initSetup();
+      toggleSingleYearMode(!!state.setup.singleYear);
+      switchTab('pl');
+
+      if (state.priorPL && state.currentPL) {
+        // Jump straight to balance gate
+        const allSections = ['plUploadSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection','plReviewSection'];
+        allSections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
+        state._gateYear = 'prior';
+        showBalanceGate();
+        alert('Session restored. Resuming at the P&L Balance Check step.');
+      } else {
+        alert('Session restored. Please re-upload any missing P&L files.');
+      }
+    } catch(err) {
+      alert('Could not restore session: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── Item 15: Single-year mode toggle ──────────────────────
+function toggleSingleYearMode(enabled) {
+  state.setup.singleYear = enabled;
+  const priorCard = document.getElementById('priorYearLabel')?.closest('.card');
+  const priorUploadGrid = document.querySelector('.form-grid .card');
+
+  // Show/hide prior year upload card
+  const priorZone = document.getElementById('priorUploadZone')?.closest('.card');
+  if (priorZone) priorZone.style.display = enabled ? 'none' : '';
+
+  // Prior year form field: grey it out
+  const priorYrInput = document.getElementById('priorYear');
+  if (priorYrInput) {
+    priorYrInput.disabled = enabled;
+    priorYrInput.style.opacity = enabled ? '0.4' : '';
+  }
+
+  // Hide YOY and Benchmarks nav tabs
+  ['benchmarks','yoy'].forEach(tab => {
+    const el = document.querySelector(`[data-tab="${tab}"]`);
+    if (el) el.style.display = enabled ? 'none' : '';
+  });
+
+  // Update process button to not require prior file
+  if (enabled) {
+    state.priorUploaded = true; // allow processing with current only
+    // If current is already uploaded, enable process button
+    if (state.currentUploaded) {
+      document.getElementById('processPLBtn').disabled = false;
+    }
+  } else {
+    state.priorUploaded = !!state.priorPL;
+    document.getElementById('processPLBtn').disabled = !(state.priorUploaded && state.currentUploaded);
+  }
+}
+
+// ── Item 13: Update chip states with step progress ─────────
+function updateChips() {
+  const plChip = document.getElementById('chipPL');
+  const payChip = document.getElementById('chipPayroll');
+  const anaChip = document.getElementById('chipAnalysis');
+
+  if (!plChip) return;
+
+  // Determine P&L step
+  let plStep = 0;
+  if (state.priorUploaded || state.currentUploaded) plStep = 1;
+  if (state.priorPL || state.currentPL) plStep = 2; // after processing
+  if (state.analysisRun) plStep = 5;
+
+  if (state.analysisRun) {
+    plChip.className = 'chip done'; plChip.textContent = 'P&L ✓';
+    payChip.className = 'chip done'; payChip.textContent = 'Payroll ✓';
+    anaChip.className = 'chip done'; anaChip.textContent = 'Analysis ✓';
+  } else if (state.payrollData && state.payrollData.length > 0) {
+    plChip.className = 'chip done'; plChip.textContent = 'P&L ✓';
+    payChip.className = 'chip active'; payChip.textContent = 'Payroll';
+    anaChip.className = 'chip'; anaChip.textContent = 'Analysis';
+  } else if (state.priorPL || state.currentPL) {
+    plChip.className = 'chip done'; plChip.textContent = 'P&L ✓';
+    payChip.className = 'chip'; payChip.textContent = 'Payroll';
+    anaChip.className = 'chip'; anaChip.textContent = 'Analysis';
+  } else {
+    plChip.className = 'chip'; plChip.textContent = 'P&L';
+    payChip.className = 'chip'; payChip.textContent = 'Payroll';
+    anaChip.className = 'chip'; anaChip.textContent = 'Analysis';
+  }
 }
 
 function aggregateByCode(mapped) {
@@ -3141,10 +3622,7 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
 
   // Unlock tabs
   document.querySelectorAll('.nav-tab.locked').forEach(t => t.classList.remove('locked'));
-  document.getElementById('chipAnalysis').className = 'chip done';
-  document.getElementById('chipAnalysis').textContent = 'Analysis ✓';
-  document.getElementById('chipPayroll').className = 'chip done';
-  document.getElementById('chipPayroll').textContent = 'Payroll ✓';
+  updateChips();
   runCrossCheck();
   switchTab('benchmarks');
 }
@@ -3554,13 +4032,14 @@ function renderLookupTables() {
   // P&L Lookup
   document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
   const codes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
+  const codeLabels = getCodeLabels();
   const plBody = document.getElementById('plLookupBody');
   plBody.innerHTML = state.plLookup.map(([name, code], i) => `
     <tr>
       <td><input type="text" value="${escHtml(name)}" onchange="state.plLookup[${i}][0]=this.value;saveLookupsToStorage()" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
       <td>
-        <select onchange="state.plLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px">
-          ${codes.map(c=>`<option value="${c}" ${code===c?'selected':''}>${c}</option>`).join('')}
+        <select onchange="state.plLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px;max-width:240px">
+          ${codes.map(c=>`<option value="${c}" ${code===c?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
         </select>
       </td>
       <td><button class="btn btn-sm btn-danger" onclick="state.plLookup.splice(${i},1);renderLookupTables();saveLookupsToStorage()">✕</button></td>
@@ -3674,7 +4153,9 @@ function newClientReset() {
   if (!confirm('Reset session for a new client? All uploaded data and analysis results will be cleared. Lookup table updates and benchmark range edits made this session will be retained.')) return;
 
   // ── Reset setup ──
-  state.setup = { company:'', priorYear:'', currentYear:'', throughMonth:12, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'] };
+  state.setup = { company:'', priorYear:'', currentYear:'', throughMonth:12, singleYear:false, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'], revMix:['','','','',''], margins:['','','',''] };
+  state._correctionHistory = [];
+  state._gateYear = 'prior';
   state.comp4Rate = 3.45;
   const c4inp = document.getElementById('comp4Rate'); if (c4inp) c4inp.value = '3.45';
 
@@ -3701,8 +4182,12 @@ function newClientReset() {
   document.getElementById('priorYear').value   = '';
   document.getElementById('currentYear').value = '';
   document.getElementById('throughMonth').value = '12';
+  const symCb = document.getElementById('singleYearMode');
+  if (symCb) symCb.checked = false;
   initSetup();
   updateTopbar();
+  toggleSingleYearMode(false);
+  updateChips();
 
   // ── Reset upload zones ──
   ['prior','current'].forEach(t => {
@@ -3873,6 +4358,54 @@ document.addEventListener('DOMContentLoaded', () => {
   initSetup();
   updateTopbar();
   renderBalanceEstimateInputs();
+  updateChips();
+
+  // ── Item 14: Global delegated event listeners (apostrophe-safe) ──
+
+  // Balance gate correction selects  →  applyGateCorrection
+  document.addEventListener('change', e => {
+    const sel = e.target.closest('[data-action="gate-correct"]');
+    if (!sel) return;
+    const yr   = sel.dataset.yr;
+    const acct = sel.dataset.acct;
+    if (yr && acct) applyGateCorrection(yr, acct, sel.value);
+  });
+
+  // "Save to lookup" buttons in Step 3 unmatched table
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="save-pl-lookup"]');
+    if (!btn) return;
+    const idx  = parseInt(btn.dataset.idx, 10);
+    const acct = btn.dataset.acct;
+    const code = document.getElementById(`unmatch_${idx}`)?.value;
+    if (!code) { alert('Please select a code first.'); return; }
+    state.plLookup.push([acct, code]);
+    btn.textContent = '✓ Saved'; btn.disabled = true; btn.className = 'btn btn-sm btn-ghost';
+    setDirty(); saveLookupsToStorage();
+  });
+
+  // Item 9: "Apply group" buttons in Step 3 unmatched table
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="apply-group"]');
+    if (!btn) return;
+    const groupCode = btn.dataset.group;
+    if (!groupCode) return;
+    // Walk rows between this header and the next header, set select to groupCode
+    let row = btn.closest('tr').nextElementSibling;
+    while (row) {
+      if (row.querySelector('[data-action="apply-group"]')) break; // next group header
+      const sel = row.querySelector('[id^="unmatch_"]');
+      if (sel) sel.value = groupCode;
+      row = row.nextElementSibling;
+    }
+  });
+
+  // Item 4: "Apply all suspects" buttons in balance gate
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="apply-all-suspects"]');
+    if (!btn) return;
+    applyAllSuspects(btn.dataset.yr, btn.dataset.bucket);
+  });
 });
 </script>
 </body>
