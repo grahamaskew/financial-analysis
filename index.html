@@ -1509,7 +1509,7 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
     const hasManyCols = sample.some(r => r.length > 15);
     const monthlyHits = sample.filter(r => {
       const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
-      const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+      const farAmt = r.slice(20).some(v => !isNaN(parseAmount(v)));
       return midName && farAmt;
     }).length;
     const isLikelyPL = hasManyCols && monthlyHits >= 3;
@@ -1529,13 +1529,13 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
     if (score.format === 'quickbooks_monthly') {
       return score.rows.filter(r => {
         const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
-        const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+        const farAmt = r.slice(20).some(v => !isNaN(parseAmount(v)));
         return midName && farAmt;
       }).slice(0, 3).map(r => {
         const nameArr = [1,2,3,4,5,6].map(i=>(r[i]||'').toString().trim()).filter(Boolean);
         let amount = NaN;
         for (let i = r.length-1; i >= 7; i--) {
-          const v = parseFloat((r[i]||'').toString().replace(/[$,\s]/g,''));
+          const v = parseAmount(r[i]);
           if (!isNaN(v)) { amount = v; break; }
         }
         return { name: nameArr[nameArr.length-1]||'', amount };
@@ -1543,10 +1543,10 @@ function showSheetSelectionModal(wb, filename, type, dispatch) {
     } else {
       return score.rows.filter(r =>
         r.length >= 2 && (r[0]||'').toString().trim() &&
-        !isNaN(parseFloat((r[1]||'').toString().replace(/[$,\s]/g,'')))
+        !isNaN(parseAmount(r[1]))
       ).slice(0, 3).map(r => ({
         name: (r[0]||'').toString().trim(),
-        amount: parseFloat((r[1]||'').toString().replace(/[$,\s]/g,''))
+        amount: parseAmount(r[1])
       }));
     }
   }
@@ -1682,16 +1682,29 @@ function buildLookupMap() {
   return map;
 }
 
+// Parse a QB amount string — handles both "1,234.56" and "(1,234.56)" (negative parens) formats
+function parseAmount(str) {
+  const s = (str || '').toString().trim();
+  if (!s) return NaN;
+  const neg = /^\(.*\)$/.test(s);
+  const v = parseFloat(s.replace(/[$,\s()]/g, ''));
+  if (isNaN(v)) return NaN;
+  return neg ? -v : v;
+}
+
 function detectPLFormat(rows) {
   const sample = rows.slice(0, 40);
   // QuickBooks monthly detail: account names in cols 1-6 (B-G), amounts across multiple columns
   const hasManyCols = sample.some(r => r.length > 15);
+  // In monthly format col 0 is nearly always empty (Excel indent layout)
+  const col0Populated = sample.filter(r => (r[0]||'').toString().trim().length > 2).length;
+  const col0MostlyEmpty = col0Populated <= 3;
   const monthlyHits = sample.filter(r => {
     const midName = [1,2,3,4,5,6].some(ci => (r[ci]||'').toString().trim().length > 3);
-    const farAmt = r.slice(20).some(v => !isNaN(parseFloat((v||'').toString().replace(/[$,\s]/g,''))));
+    const farAmt = r.slice(20).some(v => !isNaN(parseAmount(v)));
     return midName && farAmt;
   }).length;
-  if (hasManyCols && monthlyHits >= 3) return 'quickbooks_monthly';
+  if (hasManyCols && col0MostlyEmpty && monthlyHits >= 3) return 'quickbooks_monthly';
   return 'quickbooks';
 }
 
@@ -1715,7 +1728,7 @@ function processPLFile(rows, type, filename) {
       const raw = nameArr[nameArr.length - 1];
       let amount = NaN;
       for (let i = row.length - 1; i >= 7; i--) {
-        const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+        const v = parseAmount(row[i]);
         if (!isNaN(v)) { amount = v; break; }
       }
       if (isNaN(amount)) return;
@@ -1739,7 +1752,7 @@ function processPLFile(rows, type, filename) {
       if (!raw.trim()) return;
       const amount = (() => {
         for (let i = 1; i < row.length; i++) {
-          const v = parseFloat((row[i]||'').toString().replace(/[$,\s]/g,''));
+          const v = parseAmount(row[i]);
           if (!isNaN(v) && (row[i]||'').toString().trim() !== '') return v;
         }
         return 0;
@@ -4385,6 +4398,9 @@ function newClientReset() {
   state._correctionHistory = [];
   state._gateYear = 'prior';
   state._splitAllocations = {};
+  state._pendingUnmatched = [];
+  state._revCogAccounts   = [];
+  state.metrics           = null;
   state.comp4Rate = 3.45;
   const c4inp = document.getElementById('comp4Rate'); if (c4inp) c4inp.value = '3.45';
 
@@ -4416,7 +4432,6 @@ function newClientReset() {
   initSetup();
   updateTopbar();
   toggleSingleYearMode(false);
-  updateChips();
 
   // ── Reset upload zones ──
   ['prior','current'].forEach(t => {
@@ -4436,10 +4451,24 @@ function newClientReset() {
   // ── Reset payroll census table ──
   renderPayrollTable();
 
-  // ── Reset P&L page sections ──
-  document.getElementById('plReviewSection').classList.add('hidden');
-  document.getElementById('plUnmatchedSection').classList.add('hidden');
+  // ── Reset P&L page sections (ALL sections) ──
+  ['plReviewSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection'].forEach(id => {
+    document.getElementById(id)?.classList.add('hidden');
+  });
   document.getElementById('plUploadSection').classList.remove('hidden');
+  // Explicitly restore prior year upload card in case single-year mode was active
+  const priorCard = document.getElementById('priorUploadZone')?.closest('.card');
+  if (priorCard) priorCard.style.display = '';
+  // Clear stale rendered content in hidden sections
+  const summaryBody = document.getElementById('plSummaryBody');
+  if (summaryBody) summaryBody.innerHTML = '';
+  const gateContent = document.getElementById('balanceGateContent');
+  if (gateContent) gateContent.innerHTML = '';
+  // Reset balance gate year toggle button visibility
+  const gtPrior = document.getElementById('gateTogglePrior');
+  if (gtPrior) { gtPrior.style.display = ''; gtPrior.className = 'btn btn-sm btn-primary'; }
+  const gtCurrent = document.getElementById('gateToggleCurrent');
+  if (gtCurrent) { gtCurrent.style.display = ''; gtCurrent.className = 'btn btn-sm btn-secondary'; }
   setPLStep(1);
 
   // ── Reset payroll unmatched panel ──
@@ -4450,14 +4479,6 @@ function newClientReset() {
   document.getElementById('yoyContent').innerHTML        = '<div class="alert alert-info"><span class="alert-icon">ℹ</span>Complete P&L Upload to generate the year-over-year comparison.</div>';
   clearDirty();
 
-  // ── Reset status chips ──
-  document.getElementById('chipPL').className      = 'chip';
-  document.getElementById('chipPL').textContent    = 'P&L';
-  document.getElementById('chipPayroll').className = 'chip';
-  document.getElementById('chipPayroll').textContent = 'Payroll';
-  document.getElementById('chipAnalysis').className = 'chip';
-  document.getElementById('chipAnalysis').textContent = 'Analysis';
-
   // ── Reset nav tab labels ──
   document.querySelector('[data-tab="setup"]').innerHTML      = '① Setup';
   document.querySelector('[data-tab="pl"]').innerHTML         = '② P&L Upload <span id="plBadge" class="tab-badge hidden">!</span>';
@@ -4467,7 +4488,15 @@ function newClientReset() {
   document.querySelector('[data-tab="benchmarks"]').classList.add('locked');
   document.querySelector('[data-tab="yoy"]').classList.add('locked');
 
+  // ── Switch to setup first, then reset chips last so nothing can clobber them ──
   switchTab('setup');
+
+  document.getElementById('chipPL').className       = 'chip';
+  document.getElementById('chipPL').textContent     = 'P&L';
+  document.getElementById('chipPayroll').className  = 'chip';
+  document.getElementById('chipPayroll').textContent = 'Payroll';
+  document.getElementById('chipAnalysis').className  = 'chip';
+  document.getElementById('chipAnalysis').textContent = 'Analysis';
 }
 
 // ── BENCHMARK RANGE EDITING ──
