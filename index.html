@@ -888,8 +888,6 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
       <span class="alert-icon">ℹ</span>
       <div>Review all Revenue and COGS accounts below. Confirm or correct the category assignment for each. Suspected subtotal rows are highlighted — mark them <strong>SKIP</strong> if they duplicate child accounts.</div>
     </div>
-    <!-- Tier-A auto-skip notification (populated by JS) -->
-    <div id="tierABanner" class="hidden" style="background:#f0fdf4;border:1px solid #22c55e;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#15803d"></div>
     <!-- Live totals strip -->
     <div id="revCogTotalsStrip" style="display:flex;flex-wrap:wrap;gap:12px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:12px;align-items:flex-start"></div>
     <div class="card">
@@ -973,14 +971,14 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
 
   <!-- Manual entry fallback -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">Payroll Census</div>
-      <div style="display:flex;gap:8px">
+    <div class="card-header" style="cursor:pointer" onclick="togglePayrollCensus()">
+      <div class="card-title">Payroll Census <span id="payrollCensusArrow" style="font-size:11px;color:var(--text3);margin-left:6px;font-weight:400">▼ show</span></div>
+      <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
         <button class="btn btn-sm btn-secondary" onclick="addPayrollRow()">+ Add Employee</button>
         <button class="btn btn-sm btn-secondary" onclick="clearPayroll()">Clear All</button>
       </div>
     </div>
-    <div class="card-body" style="padding:0">
+    <div id="payrollCensusBody" class="hidden" style="padding:0">
       <div class="table-wrap" style="border:none;border-radius:0;max-height:400px;overflow-y:auto">
         <table>
           <thead><tr><th>Employee Name</th><th>Title</th><th>COMP Bucket</th><th>Owner</th><th>Billable</th><th class="text-right">Annual Wages</th><th>Hrs/Wk</th><th>Bill Rate</th><th>Bill %</th><th></th></tr></thead>
@@ -1095,18 +1093,9 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm btn-secondary" onclick="document.getElementById('plLookupUpload').click()">↑ Upload New Version</button>
         <button class="btn btn-sm btn-secondary" onclick="exportPLLookup()">↓ Download CSV</button>
-        <button class="btn btn-sm btn-secondary" onclick="addPLLookupRow()">+ Add Row</button>
       </div>
     </div>
     <input type="file" id="plLookupUpload" accept=".csv" style="display:none" onchange="uploadPLLookup(event)">
-    <div class="card-body" style="padding:0">
-      <div class="table-wrap" style="border:none;border-radius:0;max-height:360px;overflow-y:auto">
-        <table>
-          <thead><tr><th>Account Name</th><th>Category Code</th><th></th></tr></thead>
-          <tbody id="plLookupBody"></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 
   <!-- Payroll Lookup -->
@@ -1119,18 +1108,9 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm btn-secondary" onclick="document.getElementById('payrollLookupUpload').click()">↑ Upload New Version</button>
         <button class="btn btn-sm btn-secondary" onclick="exportPayrollLookup()">↓ Download CSV</button>
-        <button class="btn btn-sm btn-secondary" onclick="addPayrollLookupRow()">+ Add Row</button>
       </div>
     </div>
     <input type="file" id="payrollLookupUpload" accept=".csv" style="display:none" onchange="uploadPayrollLookup(event)">
-    <div class="card-body" style="padding:0">
-      <div class="table-wrap" style="border:none;border-radius:0;max-height:360px;overflow-y:auto">
-        <table>
-          <thead><tr><th>Title</th><th>COMP Bucket</th><th>Owner</th><th>Billable</th><th></th></tr></thead>
-          <tbody id="payrollLookupBody"></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 
   <!-- Benchmark Ranges -->
@@ -1471,8 +1451,13 @@ function processUploadedFile(file, type) {
           // Payroll: just use first sheet, no selection needed
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:''});
           dispatch(rows);
+        } else if (wb.SheetNames.length === 1) {
+          // P&L single-sheet: auto-detect format and dispatch without modal
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:''});
+          rows._confirmedFormat = detectPLFormat(rows);
+          dispatch(rows);
         } else {
-          // P&L: show sheet + format selection modal
+          // P&L multi-sheet: show sheet + format selection modal
           showSheetSelectionModal(wb, file.name, type, dispatch);
         }
       } catch(err) {
@@ -1734,7 +1719,8 @@ function processPLFile(rows, type, filename) {
       if (isNaN(amount)) return;
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
-      if (!code) { unmatched.push({raw, clean, amount}); }
+      // Catch-all revenue accounts always go to unmatched so the split modal runs
+      if (!code || isCatchAllRevenue(clean)) { unmatched.push({raw, clean, amount}); }
       else if (code === 'skip') {
         const bucket = BUCKET_REF_NAMES[clean];
         if (bucket && bucketRefs[bucket] === null) { bucketRefs[bucket] = Math.abs(amount); }
@@ -1759,7 +1745,8 @@ function processPLFile(rows, type, filename) {
       })();
       const clean = stripAccountNumber(raw.trim());
       const code = lookupMap[clean];
-      if (!code) { unmatched.push({raw, clean, amount}); }
+      // Catch-all revenue accounts always go to unmatched so the split modal runs
+      if (!code || isCatchAllRevenue(clean)) { unmatched.push({raw, clean, amount}); }
       else if (code === 'skip') {
         const bucket = BUCKET_REF_NAMES[clean];
         if (bucket && bucketRefs[bucket] === null) { bucketRefs[bucket] = Math.abs(amount); }
@@ -2040,17 +2027,6 @@ function showRevCogReview(pendingUnmatched) {
   allSections.forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById('plRevCogSection').classList.remove('hidden');
   setPLStep(2);
-
-  // Item 6: Tier-A auto-skip notification banner
-  const tierABanner = document.getElementById('tierABanner');
-  if (tierA.length > 0) {
-    tierABanner.innerHTML = `<strong>✓ ${tierA.length} subtotal row${tierA.length>1?'s':''} auto-excluded:</strong> ` +
-      tierA.map(n => `<span style="font-family:var(--mono);background:#dcfce7;padding:1px 5px;border-radius:3px;margin:0 2px">${escHtml(n)}</span>`).join('') +
-      ` <span style="color:#166534;font-size:11px;margin-left:4px">— These were automatically marked SKIP to prevent double-counting.</span>`;
-    tierABanner.classList.remove('hidden');
-  } else {
-    tierABanner.classList.add('hidden');
-  }
 
   // Item 8: Group accounts into Revenue and COGS sections
   const revCodeSet = new Set(['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab']);
@@ -2692,7 +2668,7 @@ function reRenderBalanceGate() {
       }
 
       const expandKey = b.key + '_' + yr;
-      const isExpanded = status === 'fail' || expanded.has(expandKey);
+      const isExpanded = expanded.has(expandKey);
       const tableDisplay = isExpanded ? '' : 'hidden';
 
       html += `<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 14px;margin-bottom:8px">`;
@@ -3419,6 +3395,13 @@ function processPayrollFileData(rows, filename) {
   state.manualPayrollRows = [];    // clear manual rows on new file upload
   state.payrollData = employees;
   renderPayrollTable();
+  // Auto-expand payroll census when data is loaded
+  const censusBody = document.getElementById('payrollCensusBody');
+  const censusArrow = document.getElementById('payrollCensusArrow');
+  if (censusBody && censusBody.classList.contains('hidden')) {
+    censusBody.classList.remove('hidden');
+    if (censusArrow) censusArrow.textContent = '▲ hide';
+  }
   if (unmatched.length > 0) renderPayrollUnmatched(unmatched);
 
   const zone = document.getElementById('payrollUploadZone');
@@ -3601,6 +3584,13 @@ function reprocessFromRaw(silent = false) {
   }
   // Only re-trigger the full P&L unmatched UI flow when NOT called from runAnalysis
   if (!silent && state.rawPriorPL && state.rawCurrentPL) processPL();
+}
+
+function togglePayrollCensus() {
+  const body = document.getElementById('payrollCensusBody');
+  const arrow = document.getElementById('payrollCensusArrow');
+  const isHidden = body.classList.toggle('hidden');
+  arrow.textContent = isHidden ? '▼ show' : '▲ hide';
 }
 
 function setDirty() {
@@ -3945,11 +3935,16 @@ function renderBenchmarks(m) {
     : '';
 
   // Section wrapper
-  const section = (title, content) =>
-    `<div style="margin-bottom:24px;padding:20px;background:var(--bg2);border-radius:10px;border:1px solid var(--border)">
-      <div class="section-title mb8" style="margin-bottom:14px;margin-top:0">${title}</div>
-      ${content}
+  const section = (title, content) => {
+    const sid = 'anl_' + title.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    return `<div style="margin-bottom:24px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--border)" onclick="toggleAnalysisSection('${sid}')">
+        <div class="section-title" style="margin:0">${title}</div>
+        <span id="${sid}_arrow" style="font-size:11px;color:var(--text3)">▲ collapse</span>
+      </div>
+      <div id="${sid}" style="padding:20px">${content}</div>
     </div>`;
+  };
 
   // Scorecard dot helper
   const dot = (label, abbr, status, targetId) =>
@@ -4193,6 +4188,7 @@ function renderYOY(m) {
     ? `<div class="alert alert-info" style="margin:0 0 16px"><span class="alert-icon">ℹ</span>Compensation source: <strong>${compSourceLabels[m.compSource]||m.compSource}</strong></div>`
     : '';
 
+  const yoyDetailId = 'yoy_detail_table';
   const html = `
   <div class="yoy-summary-grid">
     ${summaryCard('Total Revenue',          priorRev,  currRev)}
@@ -4202,63 +4198,70 @@ function renderYOY(m) {
     ${summaryCard('Total Operating Costs',  priorMOC,  currMOC)}
   </div>
 
-  ${compSourceNote}
-
-  <div class="card">
-    <div class="card-body" style="padding:0">
-      <div class="table-wrap" style="border:none;border-radius:0">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:220px">Line Item</th>
-              <th class="text-right">${pY} $</th>
-              <th class="text-right">${pY} %</th>
-              <th class="text-right">${cY} $</th>
-              <th class="text-right">${cY} %</th>
-              <th class="text-right">Change $</th>
-              <th class="text-right">Change %</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${secRow('REVENUE')}
-            ${yoyRow(cats[0], p['rev-eq']||0, c['rev-eq']||0)}
-            ${yoyRow(cats[1], p['rev-pa']||0, c['rev-pa']||0)}
-            ${yoyRow(cats[2], p['rev-lf']||0, c['rev-lf']||0)}
-            ${yoyRow(cats[3], p['rev-ms']||0, c['rev-ms']||0)}
-            ${yoyRow(cats[4], p['rev-lab']||0, c['rev-lab']||0)}
-            ${keyTotal('TOTAL REVENUE', priorRev, currRev)}
-            ${secRow('COST OF GOODS SOLD')}
-            ${yoyRow(`COGS — ${cats[0]}`, p['cog-eq']||0, c['cog-eq']||0)}
-            ${yoyRow(`COGS — ${cats[1]}`, p['cog-pa']||0, c['cog-pa']||0)}
-            ${yoyRow(`COGS — ${cats[2]}`, p['cog-lf']||0, c['cog-lf']||0)}
-            ${yoyRow(`COGS — ${cats[3]}`, p['cog-ms']||0, c['cog-ms']||0)}
-            ${yoyRow('Inventory Adjustments', p['cog-adj']||0, c['cog-adj']||0)}
-            ${yoyRow('Vendor Disc / Rebates', p['cog-dis']||0, c['cog-dis']||0)}
-            ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
-            ${keyTotal('GROSS PROFIT', priorGP, currGP)}
-            ${secRow('COMPENSATION')}
-            ${yoyRow('C1 — Direct Labor', pComp['c1'], cComp['c1'])}
-            ${yoyRow('C2E — Admin (Employees)', pComp['c2e'], cComp['c2e'])}
-            ${yoyRow('C2O — Admin (Owners)', pComp['c2o'], cComp['c2o'])}
-            ${yoyRow('C3 — Sales & Commissions', pComp['c3'], cComp['c3'])}
-            ${yoyRow('C4 — Benefits & Taxes', pComp['c4'], cComp['c4'])}
-            ${yoyRow('Subcontractors', pComp['csub'], cComp['csub'])}
-            ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
-            ${secRow('MAJOR OPERATING COSTS')}
-            ${yoyRow('Admin Expense', p['admin']||0, c['admin']||0)}
-            ${yoyRow('Occupancy Expense', p['occ']||0, c['occ']||0)}
-            ${yoyRow('Sales Expense', p['slsx']||0, c['slsx']||0)}
-            ${yoyRow('TOTAL MOC', priorMOC, currMOC, true)}
-            ${secRow('OTHER')}
-            ${yoyRow('Interest', p['int']||0, c['int']||0)}
-            ${yoyRow('Depreciation', p['dep']||0, c['dep']||0)}
-            ${yoyRow('Miscellaneous', p['misc']||0, c['misc']||0)}
-            ${yoyRow('Other Income', p['oth-in']||0, c['oth-in']||0)}
-            ${yoyRow('Other Expense', p['oth-exp']||0, c['oth-exp']||0)}
-            ${yoyRow('Taxes', p['tax']||0, c['tax']||0)}
-            ${keyTotal('NET OPERATING PROFIT', priorNOI, currNOI)}
-          </tbody>
-        </table>
+  <div style="margin-top:16px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border)" onclick="toggleAnalysisSection('${yoyDetailId}')">
+      <div style="font-weight:600;font-size:13px;color:var(--text)">Year-over-Year Detail</div>
+      <span id="${yoyDetailId}_arrow" style="font-size:11px;color:var(--text3)">▲ collapse</span>
+    </div>
+    <div id="${yoyDetailId}" style="padding:0">
+      ${compSourceNote}
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap" style="border:none;border-radius:0">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:220px">Line Item</th>
+                  <th class="text-right">${pY} $</th>
+                  <th class="text-right">${pY} %</th>
+                  <th class="text-right">${cY} $</th>
+                  <th class="text-right">${cY} %</th>
+                  <th class="text-right">Change $</th>
+                  <th class="text-right">Change %</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${secRow('REVENUE')}
+                ${yoyRow(cats[0], p['rev-eq']||0, c['rev-eq']||0)}
+                ${yoyRow(cats[1], p['rev-pa']||0, c['rev-pa']||0)}
+                ${yoyRow(cats[2], p['rev-lf']||0, c['rev-lf']||0)}
+                ${yoyRow(cats[3], p['rev-ms']||0, c['rev-ms']||0)}
+                ${yoyRow(cats[4], p['rev-lab']||0, c['rev-lab']||0)}
+                ${keyTotal('TOTAL REVENUE', priorRev, currRev)}
+                ${secRow('COST OF GOODS SOLD')}
+                ${yoyRow(`COGS — ${cats[0]}`, p['cog-eq']||0, c['cog-eq']||0)}
+                ${yoyRow(`COGS — ${cats[1]}`, p['cog-pa']||0, c['cog-pa']||0)}
+                ${yoyRow(`COGS — ${cats[2]}`, p['cog-lf']||0, c['cog-lf']||0)}
+                ${yoyRow(`COGS — ${cats[3]}`, p['cog-ms']||0, c['cog-ms']||0)}
+                ${yoyRow('Inventory Adjustments', p['cog-adj']||0, c['cog-adj']||0)}
+                ${yoyRow('Vendor Disc / Rebates', p['cog-dis']||0, c['cog-dis']||0)}
+                ${yoyRow('TOTAL COGS', priorCOGS, currCOGS, true)}
+                ${keyTotal('GROSS PROFIT', priorGP, currGP)}
+                ${secRow('COMPENSATION')}
+                ${yoyRow('C1 — Direct Labor', pComp['c1'], cComp['c1'])}
+                ${yoyRow('C2E — Admin (Employees)', pComp['c2e'], cComp['c2e'])}
+                ${yoyRow('C2O — Admin (Owners)', pComp['c2o'], cComp['c2o'])}
+                ${yoyRow('C3 — Sales & Commissions', pComp['c3'], cComp['c3'])}
+                ${yoyRow('C4 — Benefits & Taxes', pComp['c4'], cComp['c4'])}
+                ${yoyRow('Subcontractors', pComp['csub'], cComp['csub'])}
+                ${yoyRow('TOTAL COMPENSATION', priorComp, currComp, true)}
+                ${secRow('MAJOR OPERATING COSTS')}
+                ${yoyRow('Admin Expense', p['admin']||0, c['admin']||0)}
+                ${yoyRow('Occupancy Expense', p['occ']||0, c['occ']||0)}
+                ${yoyRow('Sales Expense', p['slsx']||0, c['slsx']||0)}
+                ${yoyRow('TOTAL MOC', priorMOC, currMOC, true)}
+                ${secRow('OTHER')}
+                ${yoyRow('Interest', p['int']||0, c['int']||0)}
+                ${yoyRow('Depreciation', p['dep']||0, c['dep']||0)}
+                ${yoyRow('Miscellaneous', p['misc']||0, c['misc']||0)}
+                ${yoyRow('Other Income', p['oth-in']||0, c['oth-in']||0)}
+                ${yoyRow('Other Expense', p['oth-exp']||0, c['oth-exp']||0)}
+                ${yoyRow('Taxes', p['tax']||0, c['tax']||0)}
+                ${keyTotal('NET OPERATING PROFIT', priorNOI, currNOI)}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -4271,36 +4274,10 @@ function renderYOY(m) {
 // ═══════════════════════════════════════════════════════
 function renderLookupTables() {
   // P&L Lookup
-  document.getElementById('plLookupCount').textContent = `${state.plLookup.length} mappings`;
-  const codes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
-  const codeLabels = getCodeLabels();
-  const plBody = document.getElementById('plLookupBody');
-  plBody.innerHTML = state.plLookup.map(([name, code], i) => `
-    <tr>
-      <td><input type="text" value="${escHtml(name)}" onchange="state.plLookup[${i}][0]=this.value;saveLookupsToStorage()" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
-      <td>
-        <select onchange="state.plLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px;max-width:240px">
-          ${codes.map(c=>`<option value="${c}" ${code===c?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
-        </select>
-      </td>
-      <td><button class="btn btn-sm btn-danger" onclick="state.plLookup.splice(${i},1);renderLookupTables();saveLookupsToStorage()">✕</button></td>
-    </tr>`).join('');
+  document.getElementById('plLookupCount').textContent = `${state.plLookup.length} account mappings loaded`;
 
   // Payroll Lookup
-  document.getElementById('payrollLookupCount').textContent = `${state.payrollLookup.length} titles`;
-  const payBody = document.getElementById('payrollLookupBody');
-  payBody.innerHTML = state.payrollLookup.map(([title, comp, owner, bill], i) => `
-    <tr>
-      <td><input type="text" value="${escHtml(title)}" onchange="state.payrollLookup[${i}][0]=this.value;saveLookupsToStorage()" style="width:100%;padding:3px 6px;font-size:12px;border:1px solid var(--border);border-radius:4px"></td>
-      <td>
-        <select onchange="state.payrollLookup[${i}][1]=this.value;saveLookupsToStorage()" style="padding:3px 6px;font-size:12px">
-          ${['c1','c2e','c2o','c3'].map(c=>`<option value="${c}" ${comp===c?'selected':''}>${c}</option>`).join('')}
-        </select>
-      </td>
-      <td style="text-align:center"><input type="checkbox" ${(owner==='Yes'||owner===true)?'checked':''} onchange="state.payrollLookup[${i}][2]=this.checked?'Yes':'No';saveLookupsToStorage()"></td>
-      <td style="text-align:center"><input type="checkbox" ${(bill==='Yes'||bill===true)?'checked':''} onchange="state.payrollLookup[${i}][3]=this.checked?'Yes':'No';saveLookupsToStorage()"></td>
-      <td><button class="btn btn-sm btn-danger" onclick="state.payrollLookup.splice(${i},1);renderLookupTables();saveLookupsToStorage()">✕</button></td>
-    </tr>`).join('');
+  document.getElementById('payrollLookupCount').textContent = `${state.payrollLookup.length} job titles loaded`;
 
   // Benchmark Ranges — editable
   const bmBody = document.getElementById('benchmarkRangesBody');
@@ -4601,6 +4578,14 @@ function fmtK(v) {
 }
 function fmtPct(v) { return v === null || v === undefined ? '—' : (v*100).toFixed(1)+'%'; }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toggleAnalysisSection(sid) {
+  const el = document.getElementById(sid);
+  const arrow = document.getElementById(sid + '_arrow');
+  if (!el) return;
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? '' : 'none';
+  if (arrow) arrow.textContent = isHidden ? '▲ collapse' : '▼ expand';
+}
 function downloadFile(content, filename, mime) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([content], {type:mime}));
