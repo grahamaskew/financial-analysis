@@ -1196,6 +1196,7 @@ const state = {
   _pendingCompConfirm: null,
   _correctionHistory: [],   // [{yr, accountName, oldCode}]
   _gateYear: 'prior',       // currently displayed year in balance gate
+  _splitAllocations: {},    // accountName → [{code, pct}] for catch-all splits
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1219,6 +1220,29 @@ const BUCKET_REF_NAMES = {
   'Total Payroll':'comp','Total Compensation':'comp','Total Payroll Expense':'comp',
   'Total Operating Expenses':'opex'
 };
+
+// ═══════════════════════════════════════════════════════
+// CATCH-ALL REVENUE DETECTION
+// ═══════════════════════════════════════════════════════
+const CATCH_ALL_REVENUE_NAMES = new Set([
+  'sales',
+  'income',
+  'revenue',
+  'product sales',
+  'service income',
+  'service sales',
+  'sales income',
+  'general sales',
+  'sales of product income',
+  'sales of service',
+  'sales of services',
+  'total service revenue',
+  'total product revenue',
+]);
+
+function isCatchAllRevenue(name) {
+  return CATCH_ALL_REVENUE_NAMES.has(name.trim().toLowerCase());
+}
 
 // ═══════════════════════════════════════════════════════
 // CODE LABELS — human-readable names for all P&L codes
@@ -2161,22 +2185,63 @@ function confirmRevCogAssignments() {
     document.getElementById('plBadge').textContent = pendingUnmatched.length;
     document.getElementById('plBadge').classList.remove('hidden');
 
-    // Item 9: group by suggested code
-    const groups = {};
+    // Separate catch-all accounts from regular ones
+    const catchAllItems = [];
+    const regularItems  = [];
     pendingUnmatched.forEach((u, i) => {
+      if (isCatchAllRevenue(u.clean)) catchAllItems.push({ u, i });
+      else regularItems.push({ u, i });
+    });
+
+    const tbody = document.getElementById('unmatchedTableBody');
+    let rows = '';
+
+    // ── Catch-all section ──────────────────────────────────
+    if (catchAllItems.length > 0) {
+      rows += `<tr style="background:var(--orange-bg)">
+        <td colspan="5" style="padding:7px 12px;font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.04em;border-top:2px solid var(--orange-border)">
+          ⚡ Catch-all revenue accounts — split across categories required
+          <span style="font-weight:400;color:var(--text2);margin-left:6px">(${catchAllItems.length})</span>
+        </td>
+      </tr>`;
+      catchAllItems.forEach(({ u, i }) => {
+        const splitConfig = state._splitAllocations[u.clean];
+        const splitSummary = splitConfig
+          ? splitConfig.map(s => `${s.pct}% → ${s.code}`).join(', ')
+          : null;
+        rows += `<tr style="background:#fffbf5">
+          <td class="bold">${escHtml(u.clean)}</td>
+          <td class="mono text-right">${fmtDollar(u.prior)}</td>
+          <td class="mono text-right">${fmtDollar(u.current)}</td>
+          <td>
+            ${splitSummary
+              ? `<span style="font-size:11px;color:var(--green);font-weight:600">✓ ${escHtml(splitSummary)}</span>`
+              : `<span style="font-size:11px;color:var(--orange);font-weight:600">Split not yet configured</span>`
+            }
+          </td>
+          <td>
+            <button class="btn btn-sm ${splitSummary ? 'btn-secondary' : 'btn-primary'}"
+              data-action="open-split-modal" data-idx="${i}" data-acct="${u.clean.replace(/"/g,'&quot;')}"
+              data-prior="${u.prior}" data-current="${u.current}">
+              ${splitSummary ? 'Edit split' : 'Configure split →'}
+            </button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    // ── Regular accounts grouped by suggestion ─────────────
+    const groups = {};
+    regularItems.forEach(({ u, i }) => {
       const suggested = suggestPLCode(u.clean) || '__none__';
       if (!groups[suggested]) groups[suggested] = [];
       groups[suggested].push({ u, i });
     });
 
-    const tbody = document.getElementById('unmatchedTableBody');
-    let rows = '';
     const groupOrder = Object.keys(groups).sort((a,b) => a === '__none__' ? 1 : b === '__none__' ? -1 : 0);
-
     groupOrder.forEach(suggested => {
       const items = groups[suggested];
       const groupLabel = suggested === '__none__' ? 'No suggestion' : (codeLabels[suggested] || suggested);
-      // Group header row with "Apply all in group" button
       rows += `<tr style="background:var(--bg)">
         <td colspan="4" style="padding:6px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-top:2px solid var(--border2)">
           ${suggested !== '__none__' ? `Suggested: ${escHtml(groupLabel)}` : 'No suggestion — review manually'}
@@ -2185,7 +2250,6 @@ function confirmRevCogAssignments() {
         </td>
         <td style="background:var(--bg);border-top:2px solid var(--border2)"></td>
       </tr>`;
-
       items.forEach(({ u, i }) => {
         const s = suggestPLCode(u.clean);
         rows += `<tr>
@@ -2213,38 +2277,54 @@ function confirmRevCogAssignments() {
 }
 
 function confirmPLMapping() {
-  // Apply manual mappings to the data
-  const rows = document.querySelectorAll('#unmatchedTableBody tr');
+  const pending = state._pendingUnmatched || [];
+
+  // Validate: all catch-all accounts must have a split configured
+  const unconfigured = pending.filter(u => isCatchAllRevenue(u.clean) && !state._splitAllocations[u.clean]);
+  if (unconfigured.length > 0) {
+    alert(`Please configure splits for: ${unconfigured.map(u => u.clean).join(', ')}`);
+    return;
+  }
+
+  // Collect regular (non-catch-all) account assignments from dropdowns
   const newMap = {};
-  rows.forEach((row, i) => {
+  pending.forEach((u, i) => {
+    if (isCatchAllRevenue(u.clean)) return;
     const sel = document.getElementById(`unmatch_${i}`);
-    if (sel && sel.value) {
-      const name = row.querySelector('td.bold').textContent;
-      newMap[name] = sel.value;
-    }
+    if (sel && sel.value) newMap[u.clean] = sel.value;
   });
 
-  // Save ALL manual assignments to state.plLookup so they survive reprocessFromRaw
+  // Save regular manual assignments to plLookup (catch-all splits are session-only, not saved)
   Object.entries(newMap).forEach(([name, code]) => {
-    if (!state.plLookup.find(e => e[0] === name)) {
-      state.plLookup.push([name, code]);
-    } else {
-      // Update existing entry if already present
-      const existing = state.plLookup.find(e => e[0] === name);
-      if (existing) existing[1] = code;
-    }
+    const existing = state.plLookup.find(e => e[0] === name);
+    if (!existing) state.plLookup.push([name, code]);
+    else existing[1] = code;
   });
 
-  // Re-map with new codes
+  // Re-map both years
   const remapPL = (plData) => {
     if (!plData) return;
+    const toRemove = new Set();
     plData.unmatched.forEach(u => {
-      const code = newMap[u.clean];
-      if (code && code !== 'skip') {
-        plData.mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount});
+      if (!isCatchAllRevenue(u.clean)) {
+        // Regular account
+        const code = newMap[u.clean];
+        if (code && code !== 'skip') {
+          plData.mapped.push({ raw: u.raw, clean: u.clean, code, amount: u.amount });
+        }
+        if (code) toRemove.add(u.clean);
+      } else {
+        // Catch-all: create one mapped entry per split row
+        const splits = state._splitAllocations[u.clean];
+        if (splits) {
+          splits.forEach(s => {
+            plData.mapped.push({ raw: u.raw, clean: u.clean, code: s.code, amount: u.amount * (s.pct / 100) });
+          });
+          toRemove.add(u.clean);
+        }
       }
     });
-    plData.unmatched = plData.unmatched.filter(u => !newMap[u.clean]);
+    plData.unmatched = plData.unmatched.filter(u => !toRemove.has(u.clean));
   };
   remapPL(state.priorPL);
   remapPL(state.currentPL);
@@ -2253,6 +2333,152 @@ function confirmPLMapping() {
   document.getElementById('plBadge').classList.add('hidden');
   document.getElementById('plUnmatchedSection').classList.add('hidden');
   showBalanceGate();
+}
+
+// ── Catch-all split modal ─────────────────────────────────────
+
+function openSplitModal(accountName, prior, current) {
+  const codeLabels = getCodeLabels();
+  // Only revenue and COGS codes are valid split targets
+  const splitCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'];
+
+  // Pre-populate with existing allocation if already configured
+  const existing = state._splitAllocations[accountName];
+  // Stash context on the modal so save can access it
+  document.getElementById('modalOverlay').dataset.splitAcct   = accountName;
+  document.getElementById('modalOverlay').dataset.splitPrior   = prior;
+  document.getElementById('modalOverlay').dataset.splitCurrent = current;
+
+  document.getElementById('modalTitle').textContent = `Configure split — ${accountName}`;
+
+  const rows = existing
+    ? existing.map(s => ({ code: s.code, pct: s.pct }))
+    : [{ code: '', pct: '' }, { code: '', pct: '' }];
+
+  const rowsHtml = rows.map((r, idx) => splitRowHtml(idx, r.code, r.pct, splitCodes, codeLabels)).join('');
+
+  document.getElementById('modalBody').innerHTML = `
+    <p style="font-size:12px;color:var(--text2);margin:0 0 12px">
+      Allocate <strong>${accountName}</strong> across Revenue and/or COGS categories by percentage.
+      Total must equal exactly 100%.
+    </p>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+      Prior: <strong>${fmtDollar(prior)}</strong> &nbsp;|&nbsp; Current: <strong>${fmtDollar(current)}</strong>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px" id="splitRowsTable">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:4px 6px;font-weight:600">Code</th>
+          <th style="text-align:right;padding:4px 6px;font-weight:600">%</th>
+          <th style="text-align:right;padding:4px 6px;font-weight:600;color:var(--text2)">Prior $</th>
+          <th style="text-align:right;padding:4px 6px;font-weight:600;color:var(--text2)">Current $</th>
+          <th style="padding:4px 6px"></th>
+        </tr>
+      </thead>
+      <tbody id="splitRowsBody">${rowsHtml}</tbody>
+    </table>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+      <button class="btn btn-sm btn-secondary" onclick="addSplitRow()">+ Add row</button>
+      <span id="splitTotalDisplay" style="font-size:12px;margin-left:auto"></span>
+    </div>`;
+
+  document.getElementById('modalFooter').innerHTML = `
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" id="saveSplitBtn" onclick="saveSplitAllocation()" disabled>Save allocation</button>`;
+
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  updateSplitPreview();
+}
+
+function splitRowHtml(idx, selectedCode, pct, splitCodes, codeLabels) {
+  if (!codeLabels) codeLabels = getCodeLabels();
+  if (!splitCodes) splitCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis'];
+  const options = splitCodes.map(c =>
+    `<option value="${c}" ${c===selectedCode?'selected':''}>${codeLabels[c]||c}</option>`
+  ).join('');
+  return `<tr data-split-row="${idx}">
+    <td style="padding:4px 6px">
+      <select style="width:190px;padding:3px 5px;font-size:12px" onchange="updateSplitPreview()">
+        <option value="">— Select —</option>${options}
+      </select>
+    </td>
+    <td style="padding:4px 6px">
+      <input type="number" min="0" max="100" step="0.1" value="${pct}"
+        style="width:60px;text-align:right;padding:3px 5px;font-size:12px"
+        oninput="updateSplitPreview()">
+    </td>
+    <td class="mono text-right" style="padding:4px 6px;color:var(--text2);font-size:12px" data-split-prior>—</td>
+    <td class="mono text-right" style="padding:4px 6px;color:var(--text2);font-size:12px" data-split-current>—</td>
+    <td style="padding:4px 6px">
+      <button class="btn btn-sm" style="padding:1px 6px;font-size:11px;border:1px solid var(--border)"
+        onclick="removeSplitRow(this)">✕</button>
+    </td>
+  </tr>`;
+}
+
+function addSplitRow() {
+  const tbody = document.getElementById('splitRowsBody');
+  if (!tbody) return;
+  const idx = tbody.querySelectorAll('tr').length;
+  const tr = document.createElement('tr');
+  tr.dataset.splitRow = idx;
+  tr.innerHTML = splitRowHtml(idx, '', '', null, null).replace(/^<tr[^>]*>/, '').replace(/<\/tr>$/, '');
+  tbody.appendChild(tr);
+  updateSplitPreview();
+}
+
+function removeSplitRow(btn) {
+  btn.closest('tr').remove();
+  updateSplitPreview();
+}
+
+function updateSplitPreview() {
+  const overlay  = document.getElementById('modalOverlay');
+  const prior    = parseFloat(overlay.dataset.splitPrior)   || 0;
+  const current  = parseFloat(overlay.dataset.splitCurrent) || 0;
+  const tbody    = document.getElementById('splitRowsBody');
+  if (!tbody) return;
+
+  let total = 0;
+  tbody.querySelectorAll('tr[data-split-row]').forEach(row => {
+    const pct = parseFloat(row.querySelector('input')?.value) || 0;
+    total += pct;
+    row.querySelector('[data-split-prior]').textContent   = pct ? fmtDollar(prior   * pct / 100) : '—';
+    row.querySelector('[data-split-current]').textContent = pct ? fmtDollar(current * pct / 100) : '—';
+  });
+
+  const totalEl = document.getElementById('splitTotalDisplay');
+  const saveBtn = document.getElementById('saveSplitBtn');
+  const rounded = Math.round(total * 10) / 10;
+  const ok = rounded === 100;
+  totalEl.textContent = `Total: ${rounded}%`;
+  totalEl.style.color = ok ? 'var(--green)' : (rounded > 100 ? 'var(--red)' : 'var(--text2)');
+  if (saveBtn) saveBtn.disabled = !ok;
+}
+
+function saveSplitAllocation() {
+  const overlay = document.getElementById('modalOverlay');
+  const acct    = overlay.dataset.splitAcct;
+  const tbody   = document.getElementById('splitRowsBody');
+  if (!acct || !tbody) return;
+
+  const splits = [];
+  let total = 0;
+  tbody.querySelectorAll('tr[data-split-row]').forEach(row => {
+    const code = row.querySelector('select')?.value;
+    const pct  = parseFloat(row.querySelector('input')?.value) || 0;
+    if (code && pct > 0) { splits.push({ code, pct }); total += pct; }
+  });
+
+  if (Math.round(total * 10) / 10 !== 100) { alert('Percentages must total exactly 100%.'); return; }
+  if (splits.length === 0) { alert('Add at least one split row.'); return; }
+
+  state._splitAllocations[acct] = splits;
+  closeModal();
+
+  // Re-render unmatched table to reflect the newly configured split
+  const pendingUnmatched = state._pendingUnmatched || [];
+  if (pendingUnmatched.length > 0) confirmRevCogAssignments();
 }
 
 function showPLReview() {
@@ -2897,6 +3123,7 @@ function exportSession() {
     rawPayrollFilename: state.rawPayrollFilename,
     manualPayrollRows: state.manualPayrollRows,
     comp4Rate: state.comp4Rate,
+    splitAllocations: state._splitAllocations,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2926,6 +3153,7 @@ function restoreSession(event) {
       state.rawPayrollFilename = data.rawPayrollFilename || '';
       state.manualPayrollRows  = data.manualPayrollRows  || [];
       state.comp4Rate = data.comp4Rate ?? state.comp4Rate;
+      state._splitAllocations = data.splitAllocations || {};
       state.priorUploaded   = !!state.priorPL;
       state.currentUploaded = !!state.currentPL;
 
@@ -4156,6 +4384,7 @@ function newClientReset() {
   state.setup = { company:'', priorYear:'', currentYear:'', throughMonth:12, singleYear:false, categories:['Equipment','Parts','Lighting Fixtures','Managed Services','Labor'], revMix:['','','','',''], margins:['','','',''] };
   state._correctionHistory = [];
   state._gateYear = 'prior';
+  state._splitAllocations = {};
   state.comp4Rate = 3.45;
   const c4inp = document.getElementById('comp4Rate'); if (c4inp) c4inp.value = '3.45';
 
@@ -4405,6 +4634,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = e.target.closest('[data-action="apply-all-suspects"]');
     if (!btn) return;
     applyAllSuspects(btn.dataset.yr, btn.dataset.bucket);
+  });
+
+  // Catch-all split modal trigger
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="open-split-modal"]');
+    if (!btn) return;
+    openSplitModal(btn.dataset.acct, parseFloat(btn.dataset.prior)||0, parseFloat(btn.dataset.current)||0);
   });
 });
 </script>
