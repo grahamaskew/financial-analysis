@@ -650,8 +650,6 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     <span class="chip" id="chipPayroll" onclick="switchTab('payroll')" style="cursor:pointer" title="Go to Payroll">Payroll</span>
     <span class="chip" id="chipAnalysis" onclick="switchTab('benchmarks')" style="cursor:pointer" title="Go to Analysis">Analysis</span>
     <div class="topbar-divider"></div>
-    <button class="btn btn-sm btn-secondary" onclick="exportSession()" title="Export session data to JSON file">↓ Export Session</button>
-    <label class="btn btn-sm btn-secondary" title="Restore a previously exported session">↑ Restore Session<input type="file" accept=".json" style="display:none" onchange="restoreSession(event)"></label>
     <button class="btn btn-sm btn-danger" onclick="newClientReset()" style="margin-left:4px">↺ New Client - Reset</button>
   </div>
 </div>
@@ -3220,84 +3218,6 @@ function applyGroupCode(groupCode) {
   });
 }
 
-// ── Item 3: Session export ─────────────────────────────────
-function exportSession() {
-  const payload = {
-    version: 1,
-    exported: new Date().toISOString(),
-    setup: state.setup,
-    priorPL: state.priorPL,
-    currentPL: state.currentPL,
-    payrollData: state.payrollData,
-    rawPayrollFilename: state.rawPayrollFilename,
-    manualPayrollRows: state.manualPayrollRows,
-    comp4Rate: state.comp4Rate,
-    splitAllocations: state._splitAllocations,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const client = (state.setup.company || 'session').replace(/[^a-z0-9]/gi,'_');
-  a.download = `fa_session_${client}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ── Item 3: Session restore ────────────────────────────────
-function restoreSession(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data.version || !data.setup) throw new Error('Invalid session file');
-
-      // Restore state fields
-      Object.assign(state.setup, data.setup || {});
-      state.priorPL   = data.priorPL   || null;
-      state.currentPL = data.currentPL || null;
-      state.payrollData = data.payrollData || [];
-      state.rawPayrollFilename = data.rawPayrollFilename || '';
-      state.manualPayrollRows  = data.manualPayrollRows  || [];
-      state.comp4Rate = data.comp4Rate ?? state.comp4Rate;
-      state._splitAllocations = data.splitAllocations || {};
-      state.priorUploaded   = !!state.priorPL;
-      state.currentUploaded = !!state.currentPL;
-
-      // Re-populate Setup form fields
-      document.getElementById('companyName').value = state.setup.company || '';
-      document.getElementById('priorYear').value   = state.setup.priorYear || '';
-      document.getElementById('currentYear').value = state.setup.currentYear || '';
-      document.getElementById('throughMonth').value = state.setup.throughMonth || 12;
-      document.getElementById('singleYearMode').checked = !!state.setup.singleYear;
-      for (let i = 0; i < 5; i++) {
-        const el = document.getElementById(`cat${i}`);
-        if (el) el.value = state.setup.categories[i] || '';
-      }
-      updateTopbar();
-      initSetup();
-      toggleSingleYearMode(!!state.setup.singleYear);
-      switchTab('pl');
-
-      if (state.priorPL && state.currentPL) {
-        // Jump straight to balance gate
-        const allSections = ['plUploadSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection','plReviewSection'];
-        allSections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
-        state._gateYear = 'prior';
-        showBalanceGate();
-        alert('Session restored. Resuming at the P&L Balance Check step.');
-      } else {
-        alert('Session restored. Please re-upload any missing P&L files.');
-      }
-    } catch(err) {
-      alert('Could not restore session: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
 
 // ── Item 15: Single-year mode toggle ──────────────────────
 function toggleSingleYearMode(enabled) {
