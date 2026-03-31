@@ -889,8 +889,11 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     <div id="plBalanceAlert" class="hidden"></div>
     <div id="plDoubleCountAlert" class="hidden"></div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Mapped Category Totals</div></div>
-      <div class="card-body" style="padding:0">
+      <div class="card-header" style="cursor:pointer;user-select:none" onclick="toggleMappedTotals()">
+        <div class="card-title">Mapped Category Totals</div>
+        <span id="mappedTotalsArrow" style="font-size:12px;color:var(--text3)">▼ show</span>
+      </div>
+      <div id="mappedTotalsBody" class="hidden" style="padding:0">
         <div class="table-wrap" style="border:none;border-radius:0">
           <table>
             <thead><tr><th>Code</th><th>Category</th><th class="text-right">Prior Year</th><th class="text-right">Current Year</th></tr></thead>
@@ -909,7 +912,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   <div id="plRevCogSection" class="hidden">
     <div class="alert alert-info" style="background:var(--blue-bg,#eff6ff);border:1px solid var(--blue,#3b82f6);border-radius:8px;padding:12px 16px;margin-bottom:16px">
       <span class="alert-icon">ℹ</span>
-      <div>Review all Revenue and COGS accounts below. Confirm or correct the category assignment for each. Suspected subtotal rows are highlighted — mark them <strong>SKIP</strong> if they duplicate child accounts.</div>
+      <div id="revCogBannerText">Review all Revenue and COGS accounts below. Confirm or correct the category assignment for each.</div>
     </div>
     <!-- Live totals strip -->
     <div id="revCogTotalsStrip" style="display:flex;flex-wrap:wrap;gap:12px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:12px;align-items:flex-start"></div>
@@ -979,10 +982,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
         <div class="form-group mb8">
           <label>COMP 4 Benefits Rate (% of total wages)</label>
           <input type="number" id="comp4Rate" value="3.45" step="0.01" min="0" max="100" placeholder="e.g. 3.45" oninput="state.comp4Rate=parseFloat(this.value)||3.45;const bm=document.getElementById('comp4RateBM');if(bm){bm.value=state.comp4Rate;bm.style.background=state.comp4Rate!==3.45?'var(--primary-faint)':'var(--bg2)';}setDirty()">
-        </div>
-        <div class="form-group mb8">
-          <label>Subcontractor Budget / Month ($)</label>
-          <input type="number" id="subBudget" value="0" step="100" min="0" placeholder="e.g. 5000">
+          <div style="margin-top:5px;padding:6px 10px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:5px;font-size:11px;color:var(--orange)">⚠ Review before proceeding — used to estimate employer benefits &amp; taxes from census wages when no C4 accounts are mapped in the P&L. Default is 3.45%.</div>
         </div>
         <div class="form-group">
           <label>Average Hourly Billing Rate ($)</label>
@@ -1208,6 +1208,7 @@ const state = {
   _gateYear: 'prior',       // currently displayed year in balance gate
   _splitAllocations: {},    // accountName → [{code, pct}] for catch-all splits
   _sessionSkips: new Set(), // session-only skip overrides (never persisted to localStorage)
+  _manualPLComp: null,      // optional manual current-year P&L comp override entered in cross-validation
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1941,8 +1942,8 @@ function excludeDoubleCount(btn) {
   ['priorPL','currentPL'].forEach(key => {
     if (state[key]) state[key].mapped = state[key].mapped.filter(m => m.clean !== name);
   });
-  // Re-render Balance Gate immediately
-  showBalanceGate();
+  // Re-render the Review section in-place (stay on current page)
+  showPLReview();
 }
 
 // Tier-A: exact "Total X" name AND X also appears in same code bucket → auto-skip
@@ -2181,6 +2182,13 @@ function showRevCogReview(pendingUnmatched) {
   document.getElementById('plRevCogSection').classList.remove('hidden');
   setPLStep(2);
 
+  // 1.1 — Conditionally append subtotal guidance only when tier B rows exist
+  const bannerText = document.getElementById('revCogBannerText');
+  if (bannerText) {
+    bannerText.innerHTML = 'Review all Revenue and COGS accounts below. Confirm or correct the category assignment for each.'
+      + (tierB.length > 0 ? ' Suspected subtotal rows are highlighted — mark them <strong>SKIP</strong> if they duplicate child accounts.' : '');
+  }
+
   // Item 8: Group accounts into Revenue and COGS sections
   const revCodeSet = new Set(['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab']);
   const revAccounts = accounts.filter(a => revCodeSet.has(a.code));
@@ -2260,12 +2268,18 @@ function updateRevCogTotals() {
       </div>
     </div>`;
 
+  const hasSplits = state._splitAllocations && Object.keys(state._splitAllocations).length > 0;
+  const splitNote = hasSplits
+    ? `<div style="width:100%;font-size:11px;color:var(--text3);margin-top:4px;padding-top:6px;border-top:1px solid var(--border)">ℹ Revenue from allocated splits (e.g. Sales) is not reflected in the totals above — it will be included in the full Balance Check.</div>`
+    : '';
+
   const strip = document.getElementById('revCogTotalsStrip');
   strip.innerHTML =
     col(priorLabel, priorRev, priorCog, priorGM) +
     `<div style="width:1px;background:var(--border);align-self:stretch;margin:0 4px"></div>` +
     col(currLabel, currRev, currCog, currGM) +
-    (flagged > 0 ? `<div style="background:#fff7ed;border:1px solid var(--orange);border-radius:6px;padding:3px 8px;color:var(--orange);font-weight:600;font-size:12px;align-self:center">⚠ ${flagged} possible subtotals</div>` : '');
+    (flagged > 0 ? `<div style="background:#fff7ed;border:1px solid var(--orange);border-radius:6px;padding:3px 8px;color:var(--orange);font-weight:600;font-size:12px;align-self:center">⚠ ${flagged} possible subtotals</div>` : '') +
+    splitNote;
 }
 
 function tierBCount(accounts) {
@@ -2647,19 +2661,39 @@ function showPLReview() {
   const allMapped = [...(state.priorPL?.mapped||[]), ...(state.currentPL?.mapped||[])];
   const dcWarnings = detectDoubleCounts(allMapped);
   if (dcWarnings.length) {
+    // Build per-account current-year amounts for each flagged account
+    const dcAmounts = {};
+    (state.currentPL?.mapped || []).forEach(m => {
+      if (dcWarnings.includes(m.clean)) {
+        dcAmounts[m.clean] = (dcAmounts[m.clean] || 0) + Math.abs(m.amount);
+      }
+    });
+    const combinedDCTotal = dcWarnings.reduce((s, w) => s + (dcAmounts[w] || 0), 0);
+
+    // Compute current year balance discrepancy for comparison
+    const { computed: dcComputed, reported: dcReported } = computePLBalance(currentTotals);
+    const dcDiscrepancy = dcReported !== null ? Math.abs(dcComputed - dcReported) : null;
+
     dcEl.className = '';
     dcEl.style.cssText = 'background:#fff7ed;border:1px solid var(--orange);border-radius:8px;padding:12px 16px;margin-bottom:12px';
     dcEl.innerHTML = `<div style="font-weight:600;font-size:13px;color:var(--orange);margin-bottom:6px">⚠️ Possible Double-Count (${dcWarnings.length})</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">These "Total" rows appear alongside their component accounts — both may be included in the same code, doubling the amount:</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">These "Total" rows appear alongside their component accounts — both may be included in the same code, doubling the amount. Click <strong>Exclude duplicate</strong> to remove any that are confirmed subtotals.</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${dcWarnings.map(w => `
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--orange-border);border-radius:6px;padding:6px 10px">
-            <span style="font-size:12px;color:var(--text);font-weight:500">${escHtml(w)}</span>
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:12px;color:var(--text);font-weight:500">${escHtml(w)}</span>
+              ${dcAmounts[w] ? `<span style="font-size:11px;color:var(--text3)">Current year: ${fmtDollar(dcAmounts[w])}</span>` : ''}
+            </div>
             <button class="btn btn-sm" style="font-size:11px;padding:2px 10px;white-space:nowrap;background:var(--orange);color:#fff;border:none;border-radius:4px;cursor:pointer"
               data-dc-name="${escHtml(w).replace(/"/g,'&quot;')}"
               onclick="excludeDoubleCount(this)">Exclude duplicate</button>
           </div>`).join('')}
       </div>
+      ${combinedDCTotal > 0 ? `<div style="font-size:12px;color:var(--text2);margin-top:10px;padding-top:8px;border-top:1px solid var(--orange-border)">
+        Combined current year total of flagged rows: <strong>${fmtDollar(combinedDCTotal)}</strong>${dcDiscrepancy !== null ? ` &nbsp;·&nbsp; Current year discrepancy: <strong>${fmtDollar(dcDiscrepancy)}</strong>` : ''}
+        ${dcDiscrepancy !== null && combinedDCTotal >= dcDiscrepancy * 0.9 ? `<span style="color:var(--green);margin-left:6px;font-weight:600">✓ Excluding all would likely resolve the discrepancy</span>` : dcDiscrepancy !== null ? `<span style="color:var(--text3);margin-left:6px">(excludes only part of the discrepancy)</span>` : ''}
+      </div>` : ''}
       <div style="font-size:11px;color:var(--text3);margin-top:8px">Excluding a duplicate removes it from totals for this session only.</div>`;
   } else {
     dcEl.className = 'hidden';
@@ -2838,7 +2872,7 @@ function reRenderBalanceGate() {
           <span style="color:${color2};font-weight:600">Difference</span><span class="mono text-right" style="color:${color2};font-weight:600">${fmtDollar(diff)}</span>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:6px">Threshold: ${fmtDollar(thr)}</div>
-        ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><strong>Possible causes:</strong> double-counted subtotal, unmapped account, or account excluded via SKIP.</div>` : ''}
+        ${!pass ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">If the difference persists after correcting bucket assignments above, use the <strong>Exclude duplicate</strong> tool in the next step to remove any double-counted subtotal rows.</div>` : ''}
       </div>`;
     }
 
@@ -2950,6 +2984,14 @@ function reRenderBalanceGate() {
   });
 }
 
+function toggleMappedTotals() {
+  const body  = document.getElementById('mappedTotalsBody');
+  const arrow = document.getElementById('mappedTotalsArrow');
+  if (!body) return;
+  const hidden = body.classList.toggle('hidden');
+  if (arrow) arrow.textContent = hidden ? '▼ show' : '▲ hide';
+}
+
 function toggleBucketTable(key) {
   const parts = key.split('_');
   const bucket = parts[0];
@@ -3048,7 +3090,7 @@ function buildCorrectionTable(plData, totals, bucketCodes, yr, bucketKey) {
   </div>`;
   t += `<div id="${suspectsId}" class="hidden">`;
   if (suspects.length === 0) {
-    t += `<div style="font-size:12px;color:var(--text3);padding:6px 0 10px">No suspects identified for this bucket.</div>`;
+    t += `<div style="font-size:12px;color:var(--text2);padding:6px 0 10px">No accounts in other categories appear to belong here. The remaining difference may be due to accounts that were excluded via SKIP, not yet mapped, or assigned to a category not visible above. If this is unexpected, review your lookup table.</div>`;
   } else {
     // Item 4: Apply all suspects button
     t += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
@@ -3535,17 +3577,20 @@ function clearPayroll() { state.payrollData = []; renderPayrollTable(); }
 // COMP CROSS-CHECK
 // ═══════════════════════════════════════════════════════
 function runCrossCheck() {
-  const priorTotals = aggregateByCode(state.priorPL?.mapped || []);
-  const comp4Rate = state.comp4Rate/100;
+  const currTotals = aggregateByCode(state.currentPL?.mapped || []);
+  const comp4Rate  = state.comp4Rate / 100;
 
+  // Build census totals
   const censusTotals = {'c1':0, 'c2e':0, 'c2o':0, 'c3':0, 'c4':0};
   state.payrollData.forEach(emp => {
     if (censusTotals[emp.comp] !== undefined) censusTotals[emp.comp] += emp.wages;
   });
   const totalWages = censusTotals['c1'] + censusTotals['c2e'] + censusTotals['c2o'] + censusTotals['c3'];
-  censusTotals['c4'] = totalWages * comp4Rate;
+  const plC4 = currTotals['c4'] || 0;
+  censusTotals['c4'] = plC4 > 0 ? plC4 : totalWages * comp4Rate;
 
   const grid = document.getElementById('crossCheckGrid');
+  if (!grid) return;
   const buckets = [
     {key:'c1',  label:'C1 — Direct Labor'},
     {key:'c2e', label:'C2E — Admin (Employees)'},
@@ -3554,12 +3599,12 @@ function runCrossCheck() {
     {key:'c4',  label:'C4 — Benefits & Taxes'}
   ];
 
-  grid.innerHTML = buckets.map(({key,label}) => {
+  const hasPL = state.currentPL !== null;
+
+  grid.innerHTML = buckets.map(({key, label}) => {
     const census = censusTotals[key] || 0;
-    // P&L uses the same codes as the census — direct comparison
-    const pl = priorTotals[key] || 0;
-    const hasPL = state.priorPL !== null;
-    const pct = pl > 0 ? Math.abs(census-pl)/pl : 0;
+    const pl     = currTotals[key]   || 0;
+    const pct    = pl > 0 ? Math.abs(census - pl) / pl : 0;
     const isMatch = hasPL && pct <= 0.01;
     const cls = !hasPL ? '' : isMatch ? 'match' : 'mismatch';
     return `<div class="cross-check-item ${cls}">
@@ -3568,6 +3613,67 @@ function runCrossCheck() {
       <div class="cross-check-sub">${hasPL ? (isMatch ? `✓ P&L: ${fmtDollar(pl)}` : `P&L: ${fmtDollar(pl)} · Δ ${fmtPct(pct)}`) : 'Census only'}</div>
     </div>`;
   }).join('');
+
+  // ── Total row + manual P&L COMP panel ──
+  const censusTotal = totalWages + censusTotals['c4'];
+  const plTotal     = plCompTotal(currTotals);
+  const totalPct    = plTotal > 0 ? Math.abs(censusTotal - plTotal) / plTotal : 0;
+  const totalMatch  = hasPL && totalPct <= 0.05;
+  const totalCls    = !hasPL ? '' : totalMatch ? 'match' : 'mismatch';
+
+  // Total summary row appended after the grid
+  let summaryHtml = `
+    <div style="margin-top:12px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Total COMP</span>
+        <div style="font-size:18px;font-weight:700;color:var(--text);font-family:var(--mono)">${fmtDollar(censusTotal)}</div>
+        <div style="font-size:11px;color:var(--text3)">Payroll Census</div>
+      </div>
+      ${hasPL ? `<div style="text-align:right">
+        <div style="font-size:13px;font-weight:600;color:${totalMatch ? 'var(--green)' : 'var(--orange)'}">
+          ${totalMatch ? '✓ Within 5% threshold' : `⚠ ${fmtPct(totalPct)} variance — exceeds 5% threshold`}
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">Current Year P&L Total COMP: <strong>${fmtDollar(plTotal)}</strong></div>
+      </div>` : ''}
+    </div>`;
+
+  // If variance > 5% and P&L data present, show manual override input
+  if (hasPL && !totalMatch) {
+    const existing = state._manualPLComp ? state._manualPLComp.toFixed(0) : '';
+    summaryHtml += `
+      <div style="margin-top:10px;padding:12px 14px;border-radius:8px;border:1px solid var(--orange-border);background:var(--orange-bg)">
+        <div style="font-size:12px;font-weight:600;color:var(--orange);margin-bottom:6px">Manual P&L Compensation Override (Current Year Only)</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">If the P&L total above is incorrect (e.g. some comp accounts are unmapped), enter the correct total here. This will be used in place of the P&L figure during analysis.</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="number" id="manualPLCompInput" value="${existing}" placeholder="e.g. 650000"
+            style="padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;width:160px;font-family:var(--mono)">
+          <button class="btn btn-sm btn-secondary" onclick="applyManualPLComp()">Save Override</button>
+          ${state._manualPLComp ? `<button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="clearManualPLComp()">✕ Clear</button>
+          <span style="font-size:11px;color:var(--green);font-weight:600">✓ Override active: ${fmtDollar(state._manualPLComp)}</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // Insert summary after grid
+  let summaryEl = document.getElementById('crossCheckSummary');
+  if (!summaryEl) {
+    summaryEl = document.createElement('div');
+    summaryEl.id = 'crossCheckSummary';
+    grid.parentNode.insertBefore(summaryEl, grid.nextSibling);
+  }
+  summaryEl.innerHTML = summaryHtml;
+}
+
+function applyManualPLComp() {
+  const val = parseFloat(document.getElementById('manualPLCompInput')?.value);
+  if (!val || val <= 0) { alert('Please enter a valid dollar amount greater than zero.'); return; }
+  state._manualPLComp = val;
+  runCrossCheck(); // re-render to show confirmation
+}
+
+function clearManualPLComp() {
+  state._manualPLComp = null;
+  runCrossCheck();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3745,6 +3851,10 @@ function showCompReconciliationModal(censusComp, plCompCurr, onConfirm) {
         <input type="radio" name="compSource" value="pl_both">
         <span><strong>Use P&L for both years independently</strong></span>
       </label>
+      ${state._manualPLComp ? `<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+        <input type="radio" name="compSource" value="pl_manual">
+        <span><strong>Use manually entered P&L value</strong> — ${fmt(state._manualPLComp)} <span style="font-size:11px;color:var(--text3)">(entered in COMP Cross-Validation)</span></span>
+      </label>` : ''}
     </div>`;
   document.getElementById('modalFooter').innerHTML = `
     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -3842,7 +3952,10 @@ function _runAnalysisWithCompSource(prior, curr, censusComp, plCompCurr, compSou
 
   // Current year comp source depends on user choice
   let currCompLines;
-  if (!usePayroll || compSource === 'pl_both' || compSource === 'pl_curr') {
+  if (compSource === 'pl_manual' && state._manualPLComp) {
+    // User entered a manual P&L comp total in cross-validation — scale census proportions to it
+    currCompLines = scaleCensusToTotal(censusComp, state._manualPLComp);
+  } else if (!usePayroll || compSource === 'pl_both' || compSource === 'pl_curr') {
     // No census, user chose P&L, or user chose each year independently
     currCompLines = compSource === 'pl_curr'
       ? scaleCensusToTotal(censusComp, plCompCurr)
@@ -4495,6 +4608,7 @@ function newClientReset() {
   state._gateYear = 'prior';
   state._splitAllocations = {};
   state._sessionSkips     = new Set();
+  state._manualPLComp     = null;
   state._pendingUnmatched = [];
   state._catchAllList     = [];
   state._regularUnmatched = [];
