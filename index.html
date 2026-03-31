@@ -2063,33 +2063,28 @@ function confirmCatchAllStep() {
     return;
   }
 
-  // Apply splits to mapped arrays immediately
-  const applySplits = (plData, label) => {
-    if (!plData) { console.log('[DEBUG applySplits]', label, 'skipped — null'); return; }
+  // Apply splits to mapped arrays immediately.
+  // Uses aggregated amounts from state._catchAllList rather than plData.unmatched,
+  // because the auto-skip re-run in processPL() may have already cleared unmatched.
+  const applySplits = (plData, year) => {
+    if (!plData) return;
     const catchAllNames = new Set(catchAlls.map(u => u.clean));
-    console.log('[DEBUG applySplits]', label, 'unmatched before:', JSON.stringify(plData.unmatched.map(u=>u.clean)));
-    console.log('[DEBUG applySplits]', label, 'mapped.length before:', plData.mapped.length);
     // Remove any pre-existing single-code mapped entries for catch-all accounts
     plData.mapped = plData.mapped.filter(m => !catchAllNames.has(m.clean));
-    console.log('[DEBUG applySplits]', label, 'mapped.length after first filter:', plData.mapped.length);
-    // Remove catch-alls from unmatched and push split entries into mapped
-    plData.unmatched = plData.unmatched.filter(u => {
-      if (!catchAllNames.has(u.clean)) return true;
+    // Also remove catch-alls from unmatched in case they're still present
+    plData.unmatched = plData.unmatched.filter(u => !catchAllNames.has(u.clean));
+    // Push split entries using the aggregated totals stored in state._catchAllList
+    catchAlls.forEach(u => {
+      const totalAmount = year === 'prior' ? u.prior : u.current;
       const splits = state._splitAllocations[u.clean];
-      console.log('[DEBUG applySplits]', label, 'processing catch-all:', u.clean, 'splits:', JSON.stringify(splits), 'u.amount:', u.amount);
-      if (!splits) return true;
+      if (!splits) return;
       splits.forEach(s => {
-        const entry = { raw: u.raw, clean: u.clean, code: s.code, amount: u.amount * (s.pct / 100) };
-        console.log('[DEBUG applySplits]', label, 'pushing entry:', JSON.stringify(entry), 'mapped ref same?', plData.mapped === state.currentPL?.mapped);
-        plData.mapped.push(entry);
-        console.log('[DEBUG applySplits]', label, 'mapped.length after push:', plData.mapped.length);
+        plData.mapped.push({ raw: u.clean, clean: u.clean, code: s.code, amount: totalAmount * (s.pct / 100) });
       });
-      return false;
     });
-    console.log('[DEBUG applySplits]', label, 'FINAL mapped rev count:', plData.mapped.filter(m=>['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab'].includes(m.code)).length);
   };
-  applySplits(state.priorPL, 'priorPL');
-  applySplits(state.currentPL, 'currentPL');
+  applySplits(state.priorPL, 'prior');
+  applySplits(state.currentPL, 'current');
 
   // Hide catch-all section and proceed to Rev/COGS review
   document.getElementById('plCatchAllSection').classList.add('hidden');
