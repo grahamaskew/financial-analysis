@@ -2117,8 +2117,8 @@ function showRevCogReview(pendingUnmatched) {
 
   // Run subtotal detection on rev/cog rows
   const allRevCogMapped = [
-    ...(state.priorPL?.mapped || []).filter(m => revCogCodes.has(m.code)),
-    ...(state.currentPL?.mapped || []).filter(m => revCogCodes.has(m.code))
+    ...(state.priorPL?.mapped || []).filter(m => revCogCodes.has(m.code) && !isCatchAllRevenue(m.clean)),
+    ...(state.currentPL?.mapped || []).filter(m => revCogCodes.has(m.code) && !isCatchAllRevenue(m.clean))
   ];
   const { tierA, tierB } = detectSuspectedSubtotals(allRevCogMapped);
   const tierASet = new Set(tierA.map(n => n.toLowerCase()));
@@ -2126,6 +2126,7 @@ function showRevCogReview(pendingUnmatched) {
 
   // Auto-apply Tier A: remap to skip in state
   tierA.forEach(name => {
+    if (isCatchAllRevenue(name)) return; // never wipe catch-all split entries
     ['priorPL','currentPL'].forEach(key => {
       if (!state[key]) return;
       state[key].mapped = state[key].mapped.filter(m => m.clean !== name);
