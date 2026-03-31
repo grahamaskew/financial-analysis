@@ -3799,6 +3799,33 @@ function confirmCompSource() {
   }
 }
 
+function reApplySavedSplits() {
+  // After reprocessFromRaw resets mapped from raw data, re-push any saved catch-all splits
+  if (!state._splitAllocations || Object.keys(state._splitAllocations).length === 0) return;
+  ['priorPL','currentPL'].forEach(key => {
+    const plData = state[key];
+    if (!plData) return;
+    // Find catch-all accounts currently sitting in unmatched
+    const totals = {};
+    plData.unmatched.forEach(u => {
+      if (isCatchAllRevenue(u.clean) && state._splitAllocations[u.clean]) {
+        totals[u.clean] = (totals[u.clean] || 0) + u.amount;
+      }
+    });
+    if (Object.keys(totals).length === 0) return;
+    const catchAllNames = new Set(Object.keys(totals));
+    // Remove any stale mapped entries and the unmatched entries
+    plData.mapped   = plData.mapped.filter(m => !catchAllNames.has(m.clean));
+    plData.unmatched = plData.unmatched.filter(u => !catchAllNames.has(u.clean));
+    // Push split entries
+    Object.entries(totals).forEach(([clean, totalAmount]) => {
+      (state._splitAllocations[clean] || []).forEach(s => {
+        plData.mapped.push({ raw: clean, clean, code: s.code, amount: totalAmount * (s.pct / 100) });
+      });
+    });
+  });
+}
+
 function runAnalysis() {
   // Auto-save any open unmatched assignments before re-processing
   autoSaveUnmatched();
@@ -3807,6 +3834,9 @@ function runAnalysis() {
   if (state.rawPriorPL || state.rawCurrentPL || state.rawPayroll) {
     reprocessFromRaw(true);
   }
+
+  // Re-apply catch-all split allocations — reprocessFromRaw resets mapped from raw data
+  reApplySavedSplits();
 
   if (!state.currentPL || (!state.priorPL && !state.setup.singleYear)) {
     alert('Please complete P&L upload before running analysis.'); return;
