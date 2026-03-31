@@ -1116,9 +1116,16 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
         <div class="card-sub" id="plLookupCount"></div>
       </div>
       <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="addPLLookupRow()">+ Add Row</button>
         <button class="btn btn-sm btn-secondary" onclick="document.getElementById('plLookupUpload').click()">↑ Upload New Version</button>
         <button class="btn btn-sm btn-secondary" onclick="exportPLLookup()">↓ Download CSV</button>
       </div>
+    </div>
+    <div class="card-body" style="padding:12px 16px 8px">
+      <input type="text" id="plLookupSearch" placeholder="Search account names…"
+        oninput="renderLookupTables()"
+        style="width:100%;padding:6px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;box-sizing:border-box">
+      <div id="plLookupTable" style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:6px"></div>
     </div>
     <input type="file" id="plLookupUpload" accept=".csv" style="display:none" onchange="uploadPLLookup(event)">
   </div>
@@ -1202,6 +1209,7 @@ const state = {
   _correctionHistory: [],   // [{yr, accountName, oldCode}]
   _gateYear: 'prior',       // currently displayed year in balance gate
   _splitAllocations: {},    // accountName → [{code, pct}] for catch-all splits
+  _sessionSkips: new Set(), // session-only skip overrides (never persisted to localStorage)
   priorPL: null,   // { raw:[], mapped:{} }
   currentPL: null,
   payrollData: [],
@@ -1703,6 +1711,8 @@ function stripAccountNumber(name) {
 function buildLookupMap() {
   const map = {};
   state.plLookup.forEach(([name, code]) => { map[name] = code; });
+  // Session-only skips override persistent lookup entries (never written to localStorage)
+  state._sessionSkips.forEach(name => { map[name] = 'skip'; });
   return map;
 }
 
@@ -1924,6 +1934,19 @@ function detectDoubleCounts(mapped) {
   return [...new Set(warnings)];
 }
 
+function excludeDoubleCount(btn) {
+  const name = btn.dataset.dcName;
+  if (!name) return;
+  // Add to session-only skips
+  state._sessionSkips.add(name);
+  // Remove from both years' mapped arrays
+  ['priorPL','currentPL'].forEach(key => {
+    if (state[key]) state[key].mapped = state[key].mapped.filter(m => m.clean !== name);
+  });
+  // Re-render Balance Gate immediately
+  showBalanceGate();
+}
+
 // Tier-A: exact "Total X" name AND X also appears in same code bucket → auto-skip
 // Tier-B: "Total X" name OR amount-overlap only → returned for user review
 function detectSuspectedSubtotals(mappedRows) {
@@ -1980,8 +2003,8 @@ function processPL() {
   let autoSkipped = 0;
   Object.values(allUnmatched).forEach(u => {
     if (Math.abs(u.prior) <= THRESHOLD && Math.abs(u.current) <= THRESHOLD) {
-      // Add to lookup as SKIP and remove from unmatched pool
-      state.plLookup.push([u.clean, 'skip']);
+      // Add to session-only skips (not persisted to localStorage)
+      state._sessionSkips.add(u.clean);
       delete allUnmatched[u.clean];
       autoSkipped++;
     }
@@ -2150,10 +2173,8 @@ function showRevCogReview(pendingUnmatched) {
       if (!state[key]) return;
       state[key].mapped = state[key].mapped.filter(m => m.clean !== name);
     });
-    // Add to lookup as skip
-    if (!state.plLookup.find(e => e[0] === name)) {
-      state.plLookup.push([name, 'skip']);
-    }
+    // Add to session-only skips (not persisted to localStorage)
+    state._sessionSkips.add(name);
   });
 
   // Show section
@@ -2631,9 +2652,17 @@ function showPLReview() {
     dcEl.className = '';
     dcEl.style.cssText = 'background:#fff7ed;border:1px solid var(--orange);border-radius:8px;padding:12px 16px;margin-bottom:12px';
     dcEl.innerHTML = `<div style="font-weight:600;font-size:13px;color:var(--orange);margin-bottom:6px">⚠️ Possible Double-Count (${dcWarnings.length})</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">These "Total" rows appear alongside their component accounts — both may be included in the same code, doubling the amount:</div>
-      <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text2)">${dcWarnings.map(w=>`<li>${escHtml(w)}</li>`).join('')}</ul>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">Review the lookup table and set one of the pair to <strong>skip</strong> if needed.</div>`;
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">These "Total" rows appear alongside their component accounts — both may be included in the same code, doubling the amount:</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${dcWarnings.map(w => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--orange-border);border-radius:6px;padding:6px 10px">
+            <span style="font-size:12px;color:var(--text);font-weight:500">${escHtml(w)}</span>
+            <button class="btn btn-sm" style="font-size:11px;padding:2px 10px;white-space:nowrap;background:var(--orange);color:#fff;border:none;border-radius:4px;cursor:pointer"
+              data-dc-name="${escHtml(w).replace(/"/g,'&quot;')}"
+              onclick="excludeDoubleCount(this)">Exclude duplicate</button>
+          </div>`).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">Excluding a duplicate removes it from totals for this session only.</div>`;
   } else {
     dcEl.className = 'hidden';
   }
@@ -4394,8 +4423,48 @@ function renderYOY(m) {
 // LOOKUP TABLE EDITOR
 // ═══════════════════════════════════════════════════════
 function renderLookupTables() {
-  // P&L Lookup
+  // P&L Lookup count
   document.getElementById('plLookupCount').textContent = `${state.plLookup.length} account mappings loaded`;
+
+  // P&L Lookup editable table
+  const plSearch = (document.getElementById('plLookupSearch')?.value || '').trim().toLowerCase();
+  const codeLabels = getCodeLabels();
+  const allLookupCodes = ['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab','cog-eq','cog-pa','cog-lf','cog-ms','cog-adj','cog-dis','csub','c1','c2e','c2o','c3','c4','occ','admin','int','dep','misc','mon-in','mon-exp','oth-in','oth-exp','net-in','slsx','tax','skip'];
+  const filtered = state.plLookup.map((r,i) => ({r, i})).filter(({r}) => !plSearch || r[0].toLowerCase().includes(plSearch));
+  const plTable = document.getElementById('plLookupTable');
+  if (plTable) {
+    if (filtered.length === 0) {
+      plTable.innerHTML = `<div style="padding:12px;text-align:center;font-size:12px;color:var(--text3)">No matching accounts.</div>`;
+    } else {
+      plTable.innerHTML = `<table style="width:100%;font-size:12px;border-collapse:collapse">
+        <thead><tr style="background:var(--bg2);position:sticky;top:0">
+          <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600">Account Name</th>
+          <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:600">Code</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--border);width:32px"></th>
+        </tr></thead>
+        <tbody>${filtered.map(({r, i}) => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:3px 8px">
+              <input type="text" value="${escHtml(r[0])}"
+                style="width:100%;padding:2px 4px;font-size:12px;border:1px solid transparent;border-radius:3px;background:transparent;box-sizing:border-box"
+                onfocus="this.style.borderColor='var(--border)';this.style.background='var(--bg)'"
+                onblur="this.style.borderColor='transparent';this.style.background='transparent';updatePLLookupEntry(${i},0,this.value)">
+            </td>
+            <td style="padding:3px 8px">
+              <select style="padding:2px 4px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--bg2);${r[1]==='skip'?'color:var(--text3);font-style:italic':''}"
+                onchange="updatePLLookupEntry(${i},1,this.value)">
+                ${allLookupCodes.map(c=>`<option value="${c}" ${c===r[1]?'selected':''}>${codeLabels[c]||c}</option>`).join('')}
+              </select>
+            </td>
+            <td style="padding:3px 8px;text-align:center">
+              <button class="btn btn-sm btn-ghost" style="font-size:10px;padding:1px 5px;color:var(--red)"
+                onclick="deletePLLookupRow(${i})">✕</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
 
   // Payroll Lookup
   document.getElementById('payrollLookupCount').textContent = `${state.payrollLookup.length} job titles loaded`;
@@ -4451,6 +4520,15 @@ function renderLookupTables() {
 }
 
 function addPLLookupRow() { state.plLookup.push(['New Account','skip']); renderLookupTables(); saveLookupsToStorage(); }
+function updatePLLookupEntry(idx, field, value) {
+  if (!state.plLookup[idx]) return;
+  state.plLookup[idx][field] = value;
+  document.getElementById('plLookupCount').textContent = `${state.plLookup.length} account mappings loaded`;
+  saveLookupsToStorage(); setDirty();
+}
+function deletePLLookupRow(idx) {
+  state.plLookup.splice(idx, 1); renderLookupTables(); saveLookupsToStorage(); setDirty();
+}
 function addPayrollLookupRow() { state.payrollLookup.push(['New Title','c1','No','Yes']); renderLookupTables(); saveLookupsToStorage(); }
 
 function exportPLLookup() {
@@ -4496,6 +4574,7 @@ function newClientReset() {
   state._correctionHistory = [];
   state._gateYear = 'prior';
   state._splitAllocations = {};
+  state._sessionSkips     = new Set();
   state._pendingUnmatched = [];
   state._catchAllList     = [];
   state._regularUnmatched = [];
