@@ -1415,9 +1415,23 @@ function validateRevMix() {
   if (!warn) return;
   const totalNamed = namedIndices.length;
   const totalEmpty = namedEmpty.length;
-  if (totalEmpty === 0 || totalEmpty === totalNamed) {
+  if (totalEmpty === totalNamed) {
+    // All blank — user is skipping checks
     warn.classList.add('hidden');
     warn.textContent = '';
+  } else if (totalEmpty === 0) {
+    // All filled — verify they sum to 100%
+    const total = namedFilled.reduce((s,i) => s + parseFloat(vals[i]), 0);
+    if (Math.round(total * 10) / 10 !== 100) {
+      warn.classList.remove('hidden');
+      warn.style.background = '#fff7ed';
+      warn.style.borderColor = 'var(--orange,#f97316)';
+      warn.style.color = 'var(--orange,#f97316)';
+      warn.textContent = `⚠ Revenue mix totals ${total.toFixed(1)}% — adjust values to reach exactly 100%.`;
+    } else {
+      warn.classList.add('hidden');
+      warn.textContent = '';
+    }
   } else if (totalEmpty === 1) {
     const sumFilled = namedFilled.reduce((s,i) => s + parseFloat(vals[i]), 0);
     const derived = 100 - sumFilled;
