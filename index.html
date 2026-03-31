@@ -4533,6 +4533,9 @@ function newClientReset() {
   pzone.querySelector('.upload-title').textContent = 'Click or drag to upload';
   pzone.querySelector('.upload-sub').textContent   = 'QuickBooks payroll export • Columns: Employee Name, Title, Annual Wages';
   document.getElementById('processPLBtn').disabled = true;
+  document.getElementById('priorFileInput').value   = '';
+  document.getElementById('currentFileInput').value = '';
+  document.getElementById('payrollFileInput').value = '';
 
   // ── Reset payroll census table ──
   renderPayrollTable();
