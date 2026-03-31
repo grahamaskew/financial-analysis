@@ -2083,6 +2083,12 @@ function confirmCatchAllStep() {
   applySplits(state.priorPL);
   applySplits(state.currentPL);
 
+  // DEBUG — remove after fix confirmed
+  const revCodes = new Set(['rev-eq','rev-pa','rev-lf','rev-ms','rev-lab']);
+  console.log('[DEBUG] After applySplits — currentPL.unmatched:', JSON.stringify(state.currentPL?.unmatched?.map(u=>u.clean)));
+  console.log('[DEBUG] After applySplits — currentPL.mapped rev entries:', JSON.stringify(state.currentPL?.mapped?.filter(m=>revCodes.has(m.code)).map(m=>({clean:m.clean,code:m.code,amount:m.amount}))));
+  console.log('[DEBUG] state._splitAllocations:', JSON.stringify(state._splitAllocations));
+
   // Hide catch-all section and proceed to Rev/COGS review
   document.getElementById('plCatchAllSection').classList.add('hidden');
   showRevCogReview(state._regularUnmatched || []);
