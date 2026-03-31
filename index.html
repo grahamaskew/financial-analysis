@@ -786,7 +786,7 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
   <div class="steps mb8">
     <div class="step active" id="plStep1"><div class="step-num">1</div> Upload Files</div>
     <div class="step-line" id="plLine1"></div>
-    <div class="step" id="plStep2"><div class="step-num">2</div> Rev/COGS Review</div>
+    <div class="step" id="plStep2"><div class="step-num">2</div> Category Setup</div>
     <div class="step-line" id="plLine2"></div>
     <div class="step" id="plStep3"><div class="step-num">3</div> Resolve Unmatched</div>
     <div class="step-line" id="plLine3"></div>
@@ -825,6 +825,31 @@ td.code-cell { font-family: var(--mono); font-size: 11px; }
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-primary" id="processPLBtn" onclick="processPL()" disabled>Process P&L Files →</button>
+    </div>
+  </div>
+
+  <!-- Catch-all revenue splits (shown before Rev/COGS review if applicable) -->
+  <div id="plCatchAllSection" class="hidden">
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚡</span>
+      <div><strong id="catchAllCount">0</strong> catch-all revenue account(s) detected. These accounts contain mixed revenue types and must be split across categories before proceeding.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Revenue Split Configuration</div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap" style="border:none;border-radius:0">
+          <table>
+            <thead><tr><th>Account Name</th><th>Prior Year</th><th>Current Year</th><th>Split Configuration</th><th></th></tr></thead>
+            <tbody id="catchAllTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+      <button class="btn btn-secondary" onclick="backFromCatchAll()">← Back</button>
+      <button class="btn btn-primary" id="confirmCatchAllBtn" onclick="confirmCatchAllStep()">Continue →</button>
     </div>
   </div>
 
@@ -1954,7 +1979,7 @@ function processPL() {
       state[key].unmatched.forEach(u => {
         const code = lookupMap[u.clean];
         if (code === 'skip') { /* silently excluded */ }
-        else if (code) { state[key].mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount}); }
+        else if (code && !isCatchAllRevenue(u.clean)) { state[key].mapped.push({raw:u.raw, clean:u.clean, code, amount:u.amount}); }
         else { stillUnmatched.push(u); }
       });
       state[key].unmatched = stillUnmatched;
@@ -1963,8 +1988,19 @@ function processPL() {
 
   const unmatchedList = Object.values(allUnmatched);
 
-  // Always go through Rev/COGS review first (Step 2)
-  showRevCogReview(unmatchedList);
+  // Separate catch-all revenue accounts from regular unmatched
+  const catchAllList = unmatchedList.filter(u => isCatchAllRevenue(u.clean));
+  const regularList  = unmatchedList.filter(u => !isCatchAllRevenue(u.clean));
+
+  // Store both lists in state for use in subsequent steps
+  state._catchAllList      = catchAllList;
+  state._regularUnmatched  = regularList;
+
+  if (catchAllList.length > 0) {
+    showCatchAllSplitStep(catchAllList);
+  } else {
+    showRevCogReview(regularList);
+  }
 }
 
 function savePLToLookup(idx, name) {
@@ -1979,6 +2015,83 @@ function savePLToLookup(idx, name) {
 
 function skipAllUnmatched() {
   document.querySelectorAll('[id^="unmatch_"]').forEach(sel => { sel.value = 'skip'; });
+}
+
+function showCatchAllSplitStep(catchAllList) {
+  const allSections = ['plUploadSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection','plReviewSection'];
+  allSections.forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('plCatchAllSection').classList.remove('hidden');
+  setPLStep(2);
+
+  document.getElementById('catchAllCount').textContent = catchAllList.length;
+
+  const tbody = document.getElementById('catchAllTableBody');
+  tbody.innerHTML = catchAllList.map(u => {
+    const splitConfig = state._splitAllocations[u.clean];
+    const splitSummary = splitConfig
+      ? splitConfig.map(s => `${s.pct}% → ${s.code}`).join(', ')
+      : null;
+    return `<tr>
+      <td class="bold">${escHtml(u.clean)}</td>
+      <td class="mono text-right">${fmtDollar(u.prior)}</td>
+      <td class="mono text-right">${fmtDollar(u.current)}</td>
+      <td>
+        ${splitSummary
+          ? `<span style="font-size:11px;color:var(--green);font-weight:600">✓ ${escHtml(splitSummary)}</span>`
+          : `<span style="font-size:11px;color:var(--orange);font-weight:600">Not yet configured</span>`}
+      </td>
+      <td>
+        <button class="btn btn-sm ${splitSummary ? 'btn-secondary' : 'btn-primary'}"
+          data-action="open-split-modal"
+          data-acct="${u.clean.replace(/"/g,'&quot;')}"
+          data-prior="${u.prior}"
+          data-current="${u.current}">
+          ${splitSummary ? 'Edit split' : 'Configure split →'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function confirmCatchAllStep() {
+  const catchAlls = state._catchAllList || [];
+
+  // Validate: all catch-all accounts must have a split configured
+  const unconfigured = catchAlls.filter(u => !state._splitAllocations[u.clean]);
+  if (unconfigured.length > 0) {
+    alert(`Please configure splits for: ${unconfigured.map(u => u.clean).join(', ')}`);
+    return;
+  }
+
+  // Apply splits to mapped arrays immediately
+  const applySplits = (plData) => {
+    if (!plData) return;
+    const catchAllNames = new Set(catchAlls.map(u => u.clean));
+    // Remove any pre-existing single-code mapped entries for catch-all accounts
+    plData.mapped = plData.mapped.filter(m => !catchAllNames.has(m.clean));
+    // Remove catch-alls from unmatched and push split entries into mapped
+    plData.unmatched = plData.unmatched.filter(u => {
+      if (!catchAllNames.has(u.clean)) return true;
+      const splits = state._splitAllocations[u.clean];
+      if (!splits) return true;
+      splits.forEach(s => {
+        plData.mapped.push({ raw: u.raw, clean: u.clean, code: s.code, amount: u.amount * (s.pct / 100) });
+      });
+      return false;
+    });
+  };
+  applySplits(state.priorPL);
+  applySplits(state.currentPL);
+
+  // Hide catch-all section and proceed to Rev/COGS review
+  document.getElementById('plCatchAllSection').classList.add('hidden');
+  showRevCogReview(state._regularUnmatched || []);
+}
+
+function backFromCatchAll() {
+  document.getElementById('plCatchAllSection').classList.add('hidden');
+  document.getElementById('plUploadSection').classList.remove('hidden');
+  setPLStep(1);
 }
 
 function showRevCogReview(pendingUnmatched) {
@@ -2174,50 +2287,11 @@ function confirmRevCogAssignments() {
     document.getElementById('plBadge').textContent = pendingUnmatched.length;
     document.getElementById('plBadge').classList.remove('hidden');
 
-    // Separate catch-all accounts from regular ones
-    const catchAllItems = [];
-    const regularItems  = [];
-    pendingUnmatched.forEach((u, i) => {
-      if (isCatchAllRevenue(u.clean)) catchAllItems.push({ u, i });
-      else regularItems.push({ u, i });
-    });
+    // Only regular (non-catch-all) accounts shown here — catch-alls handled in earlier step
+    const regularItems = pendingUnmatched.map((u, i) => ({ u, i }));
 
     const tbody = document.getElementById('unmatchedTableBody');
     let rows = '';
-
-    // ── Catch-all section ──────────────────────────────────
-    if (catchAllItems.length > 0) {
-      rows += `<tr style="background:var(--orange-bg)">
-        <td colspan="5" style="padding:7px 12px;font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.04em;border-top:2px solid var(--orange-border)">
-          ⚡ Catch-all revenue accounts — split across categories required
-          <span style="font-weight:400;color:var(--text2);margin-left:6px">(${catchAllItems.length})</span>
-        </td>
-      </tr>`;
-      catchAllItems.forEach(({ u, i }) => {
-        const splitConfig = state._splitAllocations[u.clean];
-        const splitSummary = splitConfig
-          ? splitConfig.map(s => `${s.pct}% → ${s.code}`).join(', ')
-          : null;
-        rows += `<tr style="background:#fffbf5">
-          <td class="bold">${escHtml(u.clean)}</td>
-          <td class="mono text-right">${fmtDollar(u.prior)}</td>
-          <td class="mono text-right">${fmtDollar(u.current)}</td>
-          <td>
-            ${splitSummary
-              ? `<span style="font-size:11px;color:var(--green);font-weight:600">✓ ${escHtml(splitSummary)}</span>`
-              : `<span style="font-size:11px;color:var(--orange);font-weight:600">Split not yet configured</span>`
-            }
-          </td>
-          <td>
-            <button class="btn btn-sm ${splitSummary ? 'btn-secondary' : 'btn-primary'}"
-              data-action="open-split-modal" data-idx="${i}" data-acct="${u.clean.replace(/"/g,'&quot;')}"
-              data-prior="${u.prior}" data-current="${u.current}">
-              ${splitSummary ? 'Edit split' : 'Configure split →'}
-            </button>
-          </td>
-        </tr>`;
-      });
-    }
 
     // ── Regular accounts grouped by suggestion ─────────────
     const groups = {};
@@ -2268,13 +2342,6 @@ function confirmRevCogAssignments() {
 function confirmPLMapping() {
   const pending = state._pendingUnmatched || [];
 
-  // Validate: all catch-all accounts must have a split configured
-  const unconfigured = pending.filter(u => isCatchAllRevenue(u.clean) && !state._splitAllocations[u.clean]);
-  if (unconfigured.length > 0) {
-    alert(`Please configure splits for: ${unconfigured.map(u => u.clean).join(', ')}`);
-    return;
-  }
-
   // Collect regular (non-catch-all) account assignments from dropdowns
   const newMap = {};
   pending.forEach((u, i) => {
@@ -2303,14 +2370,8 @@ function confirmPLMapping() {
         }
         if (code) toRemove.add(u.clean);
       } else {
-        // Catch-all: create one mapped entry per split row
-        const splits = state._splitAllocations[u.clean];
-        if (splits) {
-          splits.forEach(s => {
-            plData.mapped.push({ raw: u.raw, clean: u.clean, code: s.code, amount: u.amount * (s.pct / 100) });
-          });
-          toRemove.add(u.clean);
-        }
+        // Catch-all accounts are applied earlier in confirmCatchAllStep — skip here
+        toRemove.add(u.clean);
       }
     });
     plData.unmatched = plData.unmatched.filter(u => !toRemove.has(u.clean));
@@ -2464,10 +2525,14 @@ function saveSplitAllocation() {
 
   state._splitAllocations[acct] = splits;
   closeModal();
-
-  // Re-render unmatched table to reflect the newly configured split
-  const pendingUnmatched = state._pendingUnmatched || [];
-  if (pendingUnmatched.length > 0) confirmRevCogAssignments();
+  // Re-render whichever step triggered the modal
+  if (state._catchAllList && state._catchAllList.length > 0 &&
+      !document.getElementById('plCatchAllSection').classList.contains('hidden')) {
+    showCatchAllSplitStep(state._catchAllList);
+  } else {
+    const pendingUnmatched = state._pendingUnmatched || [];
+    if (pendingUnmatched.length > 0) confirmRevCogAssignments();
+  }
 }
 
 function showPLReview() {
@@ -2974,14 +3039,19 @@ function applyGateCorrection(yr, accountName, newCode) {
 }
 
 function backToUnmatchedFromGate() {
-  const pendingUnmatched = state._pendingUnmatched || [];
   document.getElementById('plBalanceGateSection').classList.add('hidden');
-  if (pendingUnmatched.length > 0) {
+  if ((state._pendingUnmatched || []).length > 0) {
     document.getElementById('plUnmatchedSection').classList.remove('hidden');
     setPLStep(3);
-  } else {
+  } else if ((state._revCogAccounts || []).length > 0) {
     document.getElementById('plRevCogSection').classList.remove('hidden');
     setPLStep(2);
+  } else if ((state._catchAllList || []).length > 0) {
+    document.getElementById('plCatchAllSection').classList.remove('hidden');
+    setPLStep(2);
+  } else {
+    document.getElementById('plUploadSection').classList.remove('hidden');
+    setPLStep(1);
   }
 }
 
@@ -4376,6 +4446,8 @@ function newClientReset() {
   state._gateYear = 'prior';
   state._splitAllocations = {};
   state._pendingUnmatched = [];
+  state._catchAllList     = [];
+  state._regularUnmatched = [];
   state._revCogAccounts   = [];
   state.metrics           = null;
   state.comp4Rate = 3.45;
@@ -4429,7 +4501,7 @@ function newClientReset() {
   renderPayrollTable();
 
   // ── Reset P&L page sections (ALL sections) ──
-  ['plReviewSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection'].forEach(id => {
+  ['plReviewSection','plUnmatchedSection','plRevCogSection','plBalanceGateSection','plCatchAllSection'].forEach(id => {
     document.getElementById(id)?.classList.add('hidden');
   });
   document.getElementById('plUploadSection').classList.remove('hidden');
