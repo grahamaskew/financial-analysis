@@ -3808,11 +3808,11 @@ function runAnalysis() {
     reprocessFromRaw(true);
   }
 
-  if (!state.priorPL || !state.currentPL) {
+  if (!state.currentPL || (!state.priorPL && !state.setup.singleYear)) {
     alert('Please complete P&L upload before running analysis.'); return;
   }
 
-  const prior = aggregateByCode(state.priorPL.mapped);
+  const prior = aggregateByCode(state.priorPL?.mapped || []);
   const curr  = aggregateByCode(state.currentPL.mapped);
 
   // Build census comp breakdown
