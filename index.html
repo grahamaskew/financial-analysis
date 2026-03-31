@@ -2107,6 +2107,7 @@ function showRevCogReview(pendingUnmatched) {
     const yr = key === 'priorPL' ? 'prior' : 'current';
     (state[key]?.mapped || []).forEach(m => {
       if (!revCogCodes.has(m.code)) return;
+      if (isCatchAllRevenue(m.clean)) return; // already split in catch-all step — don't re-show here
       if (!accountMap[m.clean]) accountMap[m.clean] = { clean: m.clean, prior: 0, current: 0, code: m.code };
       accountMap[m.clean][yr] += m.amount;
     });
