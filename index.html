@@ -1837,7 +1837,9 @@ function loadLookupsFromStorage() {
 function suggestPLCode(name) {
   const n = name.toLowerCase();
   // Labor costs that sometimes appear under COGS in QB
-  if (/\b(direct\s+labor|field\s+labor|install(ation)?\s+labor|tech(nician)?\s+(labor|cost)|crew\s+labor|labor\s+cost|field\s+cost|direct\s+install|install(ation)?\s+cost|direct\s+wages?)\b/.test(n)) return 'c1';
+  if (/\b(direct\s+labor|field\s+labor|install(ation)?\s+labor|tech(nician)?\s+(labor|cost)|crew\s+labor|labor\s+cost|cost\s+of\s+labou?r|field\s+cost|direct\s+install|install(ation)?\s+cost|direct\s+wages?)\b/.test(n)) return 'c1';
+  // Payroll combined with labor = direct labor cost (must precede generic 'cost' check)
+  if (/\bpayroll\b/.test(n) && /\blabou?r\b/.test(n)) return 'c1';
   // Subcontractor costs that sometimes appear under COGS
   if (/\b(direct\s+sub(contract)?|field\s+sub(contract)?|sub(contract(or)?)?\s+(labor|cost|wages?)|outsourced?\s+(labor|install))\b/.test(n)) return 'csub';
   if (/\bnet.?(income|profit|loss)\b/.test(n)) return 'net-in';
